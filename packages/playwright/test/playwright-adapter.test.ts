@@ -5,7 +5,7 @@ import type {
   UserDecision,
 } from "@agentclutch/action-card";
 import type { Page } from "playwright";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -282,6 +282,67 @@ describe("attachClutch", () => {
       match: rules[0]?.match,
       decision: "require_clutch",
     });
+  });
+
+  it("creates missing rules directory and applies the saved rule to the next matching action", async () => {
+    const rootDir = join(await tempRoot(), ".agentclutch");
+    const firstPage = createFakePage("create_rule", undefined, {
+      description: "Block repeat FakeStore checkout.",
+      decision: "block",
+    });
+    const firstClutch = await attachClutch(firstPage, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      rulesRootDir: rootDir,
+    });
+
+    const firstResult = await firstClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+    });
+
+    expect(firstResult.decision.type).toBe("create_rule");
+    expect(firstPage.clicked).toBe(false);
+    expect((await stat(join(rootDir, "rules"))).isDirectory()).toBe(true);
+
+    const rulesJson = JSON.parse(
+      await readFile(rulesFilePath(rootDir), "utf8"),
+    ) as unknown;
+    expect(rulesJson).toEqual([
+      expect.objectContaining({
+        description: "Block repeat FakeStore checkout.",
+        match: {
+          action_kind: "browser.checkout",
+          target_app: "FakeStore",
+          target_surface: "browser",
+          consequence_class: "payment_or_purchase",
+        },
+        decision: "block",
+        created_at: "2026-06-22T04:01:00.000Z",
+      }),
+    ]);
+
+    const secondPage = createFakePage("approve_once");
+    const secondClutch = await attachClutch(secondPage, {
+      runId: "run_test_2",
+      recorder: new MemoryRecorder(),
+      rulesRootDir: rootDir,
+    });
+
+    const secondResult = await secondClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+    });
+
+    expect(secondResult.decision).toMatchObject({
+      type: "block",
+      blockedBy: "AgentClutch rule",
+    });
+    expect(secondResult.executed).toBe(false);
+    expect(secondPage.clicked).toBe(false);
+    expect(secondPage.shownActionCards).toBe(0);
   });
 
   it("applies matching allow rules without showing the overlay", async () => {

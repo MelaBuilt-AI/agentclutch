@@ -134,16 +134,13 @@ export async function attachClutch(
     const userDecision = await showActionCard(page, card);
     await record(options.recorder, userDecision);
 
-    const createdRule =
-      userDecision.decision === "create_rule"
-        ? createRuleFromDecision(card, userDecision)
-        : undefined;
-    const decision = userDecisionToClutchDecision(userDecision, createdRule);
+    const decision = await persistCreateRuleDecision(
+      options,
+      card,
+      userDecision,
+      userDecisionToClutchDecision(userDecision),
+    );
     const resumeContext = buildResumeContext(proposal, decision);
-
-    if (createdRule !== undefined) {
-      await saveCreatedRule(options, createdRule);
-    }
 
     await record(
       options.recorder,
@@ -445,10 +442,7 @@ function actionCardFromProposal(
   });
 }
 
-function userDecisionToClutchDecision(
-  decision: UserDecision,
-  createdRule?: LocalRule,
-): ClutchDecision {
+function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
   const actor = decision.actor?.display_name ?? "local-user";
 
   switch (decision.decision) {
@@ -485,7 +479,7 @@ function userDecisionToClutchDecision(
         type: "create_rule",
         approvedBy: actor,
         decidedAt: decision.decided_at,
-        rule: createdRule ?? {
+        rule: {
           id: createId("rule"),
           description: "Rule created from AgentClutch browser overlay.",
           match: {
@@ -504,6 +498,23 @@ function userDecisionToClutchDecision(
         reason: `Browser action was not approved: ${decision.decision}.`,
       };
   }
+}
+
+async function persistCreateRuleDecision(
+  options: AttachClutchOptions,
+  card: ActionCard,
+  userDecision: UserDecision,
+  decision: ClutchDecision,
+): Promise<ClutchDecision> {
+  if (decision.type !== "create_rule") return decision;
+
+  const rule = createRuleFromDecision(card, userDecision);
+  await saveCreatedRule(options, rule);
+
+  return {
+    ...decision,
+    rule,
+  };
 }
 
 function userDecisionFromRule(card: ActionCard, rule: LocalRule): UserDecision {

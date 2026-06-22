@@ -46,6 +46,7 @@ export async function runCheckoutDemo(): Promise<void> {
       runId,
       agentName: "demo-shopping-agent",
       recorder,
+      rulesRootDir: ".agentclutch",
     });
 
     const result = await clutch.click("#checkout", {
