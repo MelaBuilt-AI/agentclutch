@@ -25,6 +25,13 @@ import { buildResumeContext, normalizeActionProposal } from "@agentclutch/loop";
 import type { JsonlRecorder } from "@agentclutch/recorder";
 import type { Locator, Page } from "playwright";
 import { browserOverlayScript } from "./browserOverlay.js";
+import {
+  createRuleFromDecision,
+  evaluateRules,
+  loadRules,
+  saveRules,
+  type LocalRule,
+} from "./rules.js";
 
 export interface ClutchRecorder {
   record(event: unknown): Promise<void> | void;
@@ -35,6 +42,7 @@ export interface AttachClutchOptions {
   agentName?: string;
   agentModel?: string;
   recorder?: ClutchRecorder | Pick<JsonlRecorder, "record">;
+  rulesRootDir?: string;
 }
 
 export interface BrowserActionOptions {
@@ -96,11 +104,46 @@ export async function attachClutch(
     const card = actionCardFromProposal(proposal, runId);
     await record(options.recorder, card);
 
+    const ruleEvaluation = evaluateRules(
+      await loadRules(options.rulesRootDir),
+      card,
+    );
+
+    if (ruleEvaluation.matched && ruleEvaluation.decision !== "require_clutch") {
+      const userDecision = userDecisionFromRule(card, ruleEvaluation.rule);
+      await record(options.recorder, userDecision);
+
+      const decision = ruleToClutchDecision(userDecision, ruleEvaluation.rule);
+      const resumeContext = buildResumeContext(proposal, decision);
+
+      await record(
+        options.recorder,
+        loopEvent(proposal, "resume_context.created", resumeContext),
+      );
+
+      return {
+        proposal,
+        card,
+        userDecision,
+        decision,
+        resumeContext,
+        executed: false,
+      };
+    }
+
     const userDecision = await showActionCard(page, card);
     await record(options.recorder, userDecision);
 
-    const decision = userDecisionToClutchDecision(userDecision);
+    const createdRule =
+      userDecision.decision === "create_rule"
+        ? createRuleFromDecision(card, userDecision)
+        : undefined;
+    const decision = userDecisionToClutchDecision(userDecision, createdRule);
     const resumeContext = buildResumeContext(proposal, decision);
+
+    if (createdRule !== undefined) {
+      await saveCreatedRule(options, createdRule);
+    }
 
     await record(
       options.recorder,
@@ -402,7 +445,10 @@ function actionCardFromProposal(
   });
 }
 
-function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
+function userDecisionToClutchDecision(
+  decision: UserDecision,
+  createdRule?: LocalRule,
+): ClutchDecision {
   const actor = decision.actor?.display_name ?? "local-user";
 
   switch (decision.decision) {
@@ -439,7 +485,7 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
         type: "create_rule",
         approvedBy: actor,
         decidedAt: decision.decided_at,
-        rule: {
+        rule: createdRule ?? {
           id: createId("rule"),
           description: "Rule created from AgentClutch browser overlay.",
           match: {
@@ -458,6 +504,75 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
         reason: `Browser action was not approved: ${decision.decision}.`,
       };
   }
+}
+
+function userDecisionFromRule(card: ActionCard, rule: LocalRule): UserDecision {
+  return {
+    type: "agentclutch.user_decision.v0",
+    id: createId("decision"),
+    action_card_id: card.id,
+    run_id: card.run_id,
+    decided_at: new Date().toISOString(),
+    decision: rule.decision === "allow" ? "approve_once" : "block",
+    ...(rule.decision === "block"
+      ? { reason: `Blocked by AgentClutch rule ${rule.id}.` }
+      : {}),
+    rule: ruleToJsonObject(rule),
+    actor: {
+      display_name: "AgentClutch rule",
+    },
+  };
+}
+
+function ruleToClutchDecision(
+  decision: UserDecision,
+  rule: LocalRule,
+): ClutchDecision {
+  const actor = decision.actor?.display_name ?? "AgentClutch rule";
+
+  if (rule.decision === "allow") {
+    return {
+      type: "approve_once",
+      approvedBy: actor,
+      decidedAt: decision.decided_at,
+      note: `Allowed by rule ${rule.id}: ${rule.description}`,
+    };
+  }
+
+  return {
+    type: "block",
+    blockedBy: actor,
+    decidedAt: decision.decided_at,
+    reason: `Blocked by rule ${rule.id}: ${rule.description}`,
+  };
+}
+
+async function saveCreatedRule(
+  options: AttachClutchOptions,
+  rule: LocalRule,
+): Promise<void> {
+  const rules = await loadRules(options.rulesRootDir);
+  await saveRules(
+    [...rules.filter((item) => item.id !== rule.id), rule],
+    options.rulesRootDir,
+  );
+}
+
+function ruleToJsonObject(rule: LocalRule): JsonObject {
+  return {
+    id: rule.id,
+    description: rule.description,
+    match: {
+      action_kind: rule.match.action_kind,
+      target_surface: rule.match.target_surface,
+      ...(rule.match.target_app === undefined
+        ? {}
+        : { target_app: rule.match.target_app }),
+      consequence_class: rule.match.consequence_class,
+    },
+    decision: rule.decision,
+    created_at: rule.created_at,
+  };
 }
 
 async function submitElement(locator: Locator): Promise<void> {
