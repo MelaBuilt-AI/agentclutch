@@ -1,0 +1,294 @@
+import {
+  buildActionCard,
+  type ActionCard,
+  type UserDecision
+} from "@agentclutch/action-card";
+import {
+  describe,
+  expect,
+  it,
+  vi
+} from "vitest";
+import {
+  ClutchSession,
+  classifyConsequence,
+  createClutch,
+  generateRunStory,
+  riskFromConsequence
+} from "../src/index.js";
+
+const createdAt = "2026-06-22T04:00:00.000Z";
+const decidedAt = "2026-06-22T04:01:00.000Z";
+
+function testCard(): ActionCard {
+  return buildActionCard({
+    id: "acard_test_1",
+    run_id: "run_test_1",
+    created_at: createdAt,
+    agent: { name: "test-agent", runtime: "custom" },
+    proposed_action: {
+      id: "act_test_1",
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      surface: "browser",
+      target: {
+        surface: "browser",
+        button_text: "Complete checkout"
+      }
+    },
+    consequence: classifyConsequence({
+      kind: "browser.checkout",
+      label: "Complete checkout"
+    }),
+    risk: riskFromConsequence(
+      classifyConsequence({
+        kind: "browser.checkout",
+        label: "Complete checkout"
+      })
+    )
+  });
+}
+
+function approveDecision(): UserDecision {
+  return {
+    type: "agentclutch.user_decision.v0",
+    id: "decision_test_1",
+    action_card_id: "acard_test_1",
+    run_id: "run_test_1",
+    decided_at: decidedAt,
+    decision: "approve_once"
+  };
+}
+
+describe("classifyConsequence", () => {
+  it("classifies checkout consequence", () => {
+    const consequence = classifyConsequence({
+      kind: "browser.checkout",
+      label: "Complete checkout"
+    });
+
+    expect(consequence.class).toBe("payment_or_purchase");
+    expect(consequence.reversibility).toBe("compensable");
+  });
+
+  it("classifies email send consequence", () => {
+    const consequence = classifyConsequence({
+      kind: "email.send",
+      label: "Send email"
+    });
+
+    expect(consequence.class).toBe("external_message_send");
+    expect(consequence.blast_radius).toBe("team");
+  });
+
+  it("classifies submit form consequence", () => {
+    const consequence = classifyConsequence({
+      kind: "browser.form_submit",
+      label: "Submit expense report"
+    });
+
+    expect(consequence.class).toBe("external_business_submission");
+    expect(consequence.reversibility).toBe("not_cleanly_reversible");
+  });
+
+  it("classifies delete consequence", () => {
+    const consequence = classifyConsequence({
+      kind: "file.delete",
+      label: "Delete file"
+    });
+
+    expect(consequence.class).toBe("local_file_delete");
+    expect(consequence.blast_radius).toBe("workspace");
+  });
+
+  it("classifies deploy and merge consequence", () => {
+    const deploy = classifyConsequence({
+      kind: "shell.exec",
+      label: "Deploy to production"
+    });
+    const merge = classifyConsequence({
+      kind: "github.write",
+      label: "Merge pull request"
+    });
+
+    expect(deploy.class).toBe("production_change");
+    expect(merge.class).toBe("production_change");
+  });
+
+  it("classifies unknown consequence", () => {
+    const consequence = classifyConsequence({
+      kind: "custom",
+      label: "Do thing"
+    });
+
+    expect(consequence.class).toBe("unknown");
+    expect(consequence.requires_confirmation).toBe(true);
+  });
+});
+
+describe("riskFromConsequence", () => {
+  it("scores consequence risk", () => {
+    const risk = riskFromConsequence({
+      class: "production_change",
+      label: "Production change",
+      reversibility: "irreversible",
+      blast_radius: "production",
+      requires_confirmation: true
+    });
+
+    expect(risk.score).toBe(100);
+    expect(risk.level).toBe("critical");
+    expect(risk.reasons).toContain("This action may be irreversible.");
+  });
+});
+
+describe("ClutchSession", () => {
+  it("tracks session transitions", () => {
+    const session = new ClutchSession("run_test_1");
+
+    expect(session.snapshot().state).toBe("idle");
+    session.start();
+    expect(session.snapshot().state).toBe("running");
+
+    session.proposeAction(testCard());
+    expect(session.snapshot().state).toBe("action_pending");
+    expect(session.snapshot().current_action_card?.id).toBe("acard_test_1");
+
+    session.decide(approveDecision());
+    expect(session.snapshot().state).toBe("running");
+    expect(session.snapshot().current_action_card).toBeUndefined();
+
+    session.pause();
+    expect(session.snapshot().state).toBe("paused");
+    session.resume();
+    expect(session.snapshot().state).toBe("running");
+    session.complete();
+    expect(session.snapshot().state).toBe("completed");
+  });
+});
+
+describe("createClutch", () => {
+  it("supports confirmAction prompt_guard path", async () => {
+    const clutch = createClutch({
+      runId: "run_prompt_1",
+      renderer: {
+        decide: async () => ({
+          type: "approve_once",
+          approvedBy: "tester",
+          decidedAt
+        })
+      }
+    });
+
+    const result = await clutch.confirmAction({
+      id: "aprop_prompt_1",
+      loopId: "loop_prompt_1",
+      createdAt,
+      proposedAction: {
+        kind: "email.send",
+        label: "Send email",
+        targetSurface: "email"
+      }
+    });
+
+    expect(result.proposal.sourceMode).toBe("prompt_guard");
+    expect(result.card.consequence.class).toBe("external_message_send");
+    expect(result.resumeContext.decision.type).toBe("approve_once");
+  });
+
+  it("supports wrapTool approve path", async () => {
+    const tool = vi.fn(async (to: string) => `sent:${to}`);
+    const clutch = createClutch({
+      renderer: {
+        decide: async () => ({
+          type: "approve_once",
+          approvedBy: "tester",
+          decidedAt
+        })
+      }
+    });
+    const guarded = clutch.wrapTool(tool, {
+      kind: "email.send",
+      label: "Send email",
+      targetSurface: "email"
+    });
+
+    await expect(guarded("client@example.com")).resolves.toBe(
+      "sent:client@example.com"
+    );
+    expect(tool).toHaveBeenCalledWith("client@example.com");
+  });
+
+  it("supports wrapTool block path", async () => {
+    const tool = vi.fn(async () => "deleted");
+    const clutch = createClutch({
+      renderer: {
+        decide: async () => ({
+          type: "block",
+          blockedBy: "tester",
+          decidedAt,
+          reason: "No"
+        })
+      }
+    });
+    const guarded = clutch.wrapTool(tool, {
+      kind: "file.delete",
+      label: "Delete file",
+      targetSurface: "filesystem"
+    });
+
+    await expect(guarded()).resolves.toBeUndefined();
+    expect(tool).not.toHaveBeenCalled();
+  });
+
+  it("supports onActionProposed loop_native path", async () => {
+    const clutch = createClutch({
+      renderer: {
+        decide: async () => ({
+          type: "approve_once",
+          approvedBy: "tester",
+          decidedAt
+        })
+      }
+    });
+
+    const result = await clutch.onActionProposed({
+      id: "aprop_loop_1",
+      loopId: "loop_native_1",
+      stepId: "step_007",
+      createdAt,
+      sourceMode: "loop_native",
+      agent: { runtime: "custom", name: "loop-agent" },
+      proposedAction: {
+        kind: "browser.checkout",
+        label: "Complete checkout",
+        targetSurface: "browser"
+      },
+      loopContext: {
+        previousStepIds: ["step_006"]
+      },
+      evidence: []
+    });
+
+    expect(result.proposal.sourceMode).toBe("loop_native");
+    expect(result.proposal.loopId).toBe("loop_native_1");
+    expect(result.card.consequence.class).toBe("payment_or_purchase");
+  });
+});
+
+describe("generateRunStory", () => {
+  it("generates a Run Story from action cards and decisions", () => {
+    const story = generateRunStory("run_test_1", [
+      testCard(),
+      approveDecision()
+    ]);
+
+    expect(story.type).toBe("agentclutch.run_story.v0");
+    expect(story.steps).toHaveLength(2);
+    expect(story.steps[0]?.text).toContain("The agent proposed");
+    expect(story.steps[1]?.text).toBe("The user approved the action once.");
+    expect(story.summary).toBe(
+      "The run included 1 proposed consequential action(s) and 1 user decision event(s)."
+    );
+  });
+});
