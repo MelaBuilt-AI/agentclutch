@@ -52,7 +52,26 @@ importers:
 
   packages/loop: {}
 
-  packages/playwright: {}
+  packages/playwright:
+    dependencies:
+      '@agentclutch/action-card':
+        specifier: workspace:*
+        version: link:../action-card
+      '@agentclutch/core':
+        specifier: workspace:*
+        version: link:../core
+      '@agentclutch/loop':
+        specifier: workspace:*
+        version: link:../loop
+      '@agentclutch/recorder':
+        specifier: workspace:*
+        version: link:../recorder
+      playwright:
+        specifier: '>=1.45.0'
+        version: 1.61.0
+    peerDependencies:
+      playwright:
+        specifier: '>=1.45.0'
 
   packages/react: {}
 

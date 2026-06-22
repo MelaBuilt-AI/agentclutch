@@ -1,7 +1,7 @@
 {
   "name": "@agentclutch/playwright",
   "version": "0.0.0",
-  "description": "AgentClutch Playwright adapter package scaffold.",
+  "description": "Playwright adapter for AgentClutch Action Cards and takeover UX.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,16 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentclutch/action-card": "workspace:*",
+    "@agentclutch/core": "workspace:*",
+    "@agentclutch/loop": "workspace:*",
+    "@agentclutch/recorder": "workspace:*"
+  },
+  "peerDependencies": {
+    "playwright": ">=1.45.0"
   }
 }
