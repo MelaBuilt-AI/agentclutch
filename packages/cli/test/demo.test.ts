@@ -1,10 +1,26 @@
+import { loadRules, saveRules } from "@agentclutch/playwright";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { Page } from "playwright";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import {
   applyCheckoutEditPatch,
+  checkoutDemoRule,
   type CheckoutEditDecision,
   completeEditedCheckout,
+  parseCheckoutDemoArgs,
+  prepareCheckoutDemoRules,
 } from "../src/commands/demo.js";
+
+const tempDirs: string[] = [];
+
+afterEach(async () => {
+  await Promise.all(
+    tempDirs.map((dir) => rm(dir, { recursive: true, force: true })),
+  );
+  tempDirs.length = 0;
+});
 
 describe("applyCheckoutEditPatch", () => {
   it("applies edited quantity and recalculates fake store total", async () => {
@@ -105,6 +121,59 @@ describe("applyCheckoutEditPatch", () => {
   });
 });
 
+describe("checkout demo rules", () => {
+  it("parses checkout demo rule flags", () => {
+    expect(
+      parseCheckoutDemoArgs(["--clear-rules", "--seed-block-rule"]),
+    ).toEqual({
+      clearRules: true,
+      seedRuleDecision: "block",
+    });
+    expect(parseCheckoutDemoArgs(["--seed-allow-rule"])).toEqual({
+      seedRuleDecision: "allow",
+    });
+    expect(parseCheckoutDemoArgs(["--seed-require-clutch-rule"])).toEqual({
+      seedRuleDecision: "require_clutch",
+    });
+  });
+
+  it("clears checkout demo rules", async () => {
+    const rootDir = await tempRoot();
+    await saveRules(
+      [checkoutDemoRule("allow", "2026-06-22T04:00:00.000Z")],
+      rootDir,
+    );
+
+    await expect(
+      prepareCheckoutDemoRules({ clearRules: true }, rootDir),
+    ).resolves.toEqual([]);
+    await expect(loadRules(rootDir)).resolves.toEqual([]);
+  });
+
+  it("seeds checkout demo rules with duplicate replacement", async () => {
+    const rootDir = await tempRoot();
+
+    await prepareCheckoutDemoRules(
+      {
+        seedRuleDecision: "allow",
+      },
+      rootDir,
+      "2026-06-22T04:00:00.000Z",
+    );
+    await prepareCheckoutDemoRules(
+      {
+        seedRuleDecision: "block",
+      },
+      rootDir,
+      "2026-06-22T04:01:00.000Z",
+    );
+
+    await expect(loadRules(rootDir)).resolves.toEqual([
+      checkoutDemoRule("block", "2026-06-22T04:01:00.000Z"),
+    ]);
+  });
+});
+
 interface EvaluatedCallback {
   selector: string;
   source: string;
@@ -157,4 +226,10 @@ function fakeCheckoutPage(
       };
     },
   } as unknown as Pick<Page, "locator">;
+}
+
+async function tempRoot(): Promise<string> {
+  const dir = await mkdtemp(join(tmpdir(), "agentclutch-cli-rules-"));
+  tempDirs.push(dir);
+  return dir;
 }

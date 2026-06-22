@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import { runCheckoutDemo } from "./commands/demo.js";
+import { parseCheckoutDemoArgs, runCheckoutDemo } from "./commands/demo.js";
 
 async function main(args: string[]): Promise<void> {
   const [command, subcommand] = args;
 
   if (command === "demo" && (subcommand === undefined || subcommand === "checkout")) {
-    await runCheckoutDemo();
+    await runCheckoutDemo(parseCheckoutDemoArgs(args.slice(2)));
     return;
   }
 
@@ -20,7 +20,7 @@ function printHelp(): void {
   console.log(`AgentClutch
 
 Usage:
-  agentclutch demo checkout
+  agentclutch demo checkout [--clear-rules] [--seed-allow-rule|--seed-block-rule|--seed-require-clutch-rule]
 
 Commands:
   demo checkout   Run the local fake store checkout demo`);

@@ -394,6 +394,31 @@ describe("attachClutch", () => {
     expect(page.clicked).toBe(false);
     expect(page.shownActionCards).toBe(0);
   });
+
+  it("shows the Action Card for matching require_clutch rules", async () => {
+    const rootDir = await tempRoot();
+    await saveRules([checkoutRule("require_clutch")], rootDir);
+    const page = createFakePage("approve_once");
+    const clutch = await attachClutch(page, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      rulesRootDir: rootDir,
+    });
+
+    const result = await clutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+    });
+
+    expect(result.decision).toMatchObject({
+      type: "approve_once",
+      approvedBy: "tester",
+    });
+    expect(result.executed).toBe(true);
+    expect(page.clicked).toBe(true);
+    expect(page.shownActionCards).toBe(1);
+  });
 });
 
 describe("local rules", () => {
@@ -450,6 +475,80 @@ describe("local rules", () => {
     ).toEqual({
       matched: false,
       decision: "require_clutch",
+    });
+  });
+
+  it("replaces duplicate matching rules when saving", async () => {
+    const rootDir = await tempRoot();
+
+    await saveRules(
+      [
+        {
+          ...checkoutRule("allow"),
+          id: "rule_first",
+          description: "first rule",
+        },
+        {
+          ...checkoutRule("block"),
+          id: "rule_second",
+          description: "second rule",
+        },
+      ],
+      rootDir,
+    );
+
+    await expect(loadRules(rootDir)).resolves.toEqual([
+      {
+        ...checkoutRule("block"),
+        id: "rule_second",
+        description: "second rule",
+      },
+    ]);
+  });
+
+  it("replaces duplicate matching rules from repeated create_rule decisions", async () => {
+    const rootDir = await tempRoot();
+    const firstPage = createFakePage("create_rule", undefined, {
+      description: "First require rule.",
+      decision: "require_clutch",
+    });
+    const firstClutch = await attachClutch(firstPage, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      rulesRootDir: rootDir,
+    });
+    await firstClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+    });
+
+    const secondPage = createFakePage("create_rule", undefined, {
+      description: "Second require rule.",
+      decision: "require_clutch",
+    });
+    const secondClutch = await attachClutch(secondPage, {
+      runId: "run_test_2",
+      recorder: new MemoryRecorder(),
+      rulesRootDir: rootDir,
+    });
+    await secondClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+    });
+
+    const rules = await loadRules(rootDir);
+    expect(rules).toHaveLength(1);
+    expect(rules[0]).toMatchObject({
+      description: "Second require rule.",
+      decision: "require_clutch",
+      match: {
+        action_kind: "browser.checkout",
+        target_app: "FakeStore",
+        target_surface: "browser",
+        consequence_class: "payment_or_purchase",
+      },
     });
   });
 });

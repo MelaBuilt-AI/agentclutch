@@ -30,6 +30,7 @@ import {
   evaluateRules,
   loadRules,
   saveRules,
+  upsertRule,
   type LocalRule,
 } from "./rules.js";
 
@@ -563,10 +564,7 @@ async function saveCreatedRule(
   rule: LocalRule,
 ): Promise<void> {
   const rules = await loadRules(options.rulesRootDir);
-  await saveRules(
-    [...rules.filter((item) => item.id !== rule.id), rule],
-    options.rulesRootDir,
-  );
+  await saveRules(upsertRule(rules, rule), options.rulesRootDir);
 }
 
 function ruleToJsonObject(rule: LocalRule): JsonObject {

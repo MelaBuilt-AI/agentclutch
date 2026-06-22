@@ -72,7 +72,25 @@ export async function saveRules(
 ): Promise<void> {
   const path = rulesFilePath(rootDir);
   await mkdir(join(rootDir, "rules"), { recursive: true });
-  await writeFile(path, `${JSON.stringify(rules, null, 2)}\n`, "utf8");
+  await writeFile(
+    path,
+    `${JSON.stringify(dedupeRules(rules), null, 2)}\n`,
+    "utf8",
+  );
+}
+
+export function upsertRule(rules: LocalRule[], rule: LocalRule): LocalRule[] {
+  const existingIndex = rules.findIndex((item) =>
+    rulesHaveSameMatch(item, rule),
+  );
+
+  if (existingIndex === -1) return [...rules, rule];
+
+  return [
+    ...rules.slice(0, existingIndex),
+    rule,
+    ...rules.slice(existingIndex + 1),
+  ];
 }
 
 export function evaluateRules(
@@ -134,6 +152,22 @@ function ruleMatchesActionCard(rule: LocalRule, card: ActionCard): boolean {
   }
 
   return true;
+}
+
+function dedupeRules(rules: LocalRule[]): LocalRule[] {
+  return rules.reduce<LocalRule[]>(
+    (deduped, rule) => upsertRule(deduped, rule),
+    [],
+  );
+}
+
+function rulesHaveSameMatch(left: LocalRule, right: LocalRule): boolean {
+  return (
+    left.match.action_kind === right.match.action_kind &&
+    left.match.target_surface === right.match.target_surface &&
+    left.match.target_app === right.match.target_app &&
+    left.match.consequence_class === right.match.consequence_class
+  );
 }
 
 function ruleDescription(decision: RuleDecision, card: ActionCard): string {

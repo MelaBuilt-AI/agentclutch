@@ -1,4 +1,11 @@
-import { attachClutch } from "@agentclutch/playwright";
+import {
+  attachClutch,
+  loadRules,
+  saveRules,
+  upsertRule,
+  type LocalRule,
+  type RuleDecision,
+} from "@agentclutch/playwright";
 import { RunStore } from "@agentclutch/recorder";
 import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
@@ -7,6 +14,7 @@ import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "playwright";
 
 const CHECKOUT_UNIT_PRICE_CENTS = 24_900;
+const RULES_ROOT_DIR = ".agentclutch";
 
 export interface CheckoutEditApplication {
   quantity: number;
@@ -25,9 +33,84 @@ export interface CheckoutEditDecision {
   }>;
 }
 
-export async function runCheckoutDemo(): Promise<void> {
+export interface CheckoutDemoOptions {
+  clearRules?: boolean;
+  seedRuleDecision?: RuleDecision;
+}
+
+export function parseCheckoutDemoArgs(args: string[]): CheckoutDemoOptions {
+  const options: CheckoutDemoOptions = {};
+
+  for (const arg of args) {
+    switch (arg) {
+      case "--":
+        break;
+      case "--clear-rules":
+        options.clearRules = true;
+        break;
+      case "--seed-allow-rule":
+        options.seedRuleDecision = "allow";
+        break;
+      case "--seed-block-rule":
+        options.seedRuleDecision = "block";
+        break;
+      case "--seed-require-clutch-rule":
+        options.seedRuleDecision = "require_clutch";
+        break;
+      default:
+        throw new Error(`Unknown checkout demo flag: ${arg}`);
+    }
+  }
+
+  return options;
+}
+
+export async function prepareCheckoutDemoRules(
+  options: CheckoutDemoOptions,
+  rootDir = RULES_ROOT_DIR,
+  createdAt = new Date().toISOString(),
+): Promise<LocalRule[]> {
+  let rules = options.clearRules ? [] : await loadRules(rootDir);
+
+  if (options.seedRuleDecision !== undefined) {
+    rules = upsertRule(
+      rules,
+      checkoutDemoRule(options.seedRuleDecision, createdAt),
+    );
+  }
+
+  if (options.clearRules === true || options.seedRuleDecision !== undefined) {
+    await saveRules(rules, rootDir);
+  }
+
+  return rules;
+}
+
+export function checkoutDemoRule(
+  decision: RuleDecision,
+  createdAt = new Date().toISOString(),
+): LocalRule {
+  return {
+    id: `rule_checkout_${decision}`,
+    description: checkoutRuleDescription(decision),
+    match: {
+      action_kind: "browser.checkout",
+      target_surface: "browser",
+      target_app: "FakeStore",
+      consequence_class: "payment_or_purchase",
+    },
+    decision,
+    created_at: createdAt,
+  };
+}
+
+export async function runCheckoutDemo(
+  options: CheckoutDemoOptions = {},
+): Promise<void> {
+  await prepareCheckoutDemoRules(options, RULES_ROOT_DIR);
+
   const runId = createRunId();
-  const store = new RunStore(".agentclutch");
+  const store = new RunStore(RULES_ROOT_DIR);
   const recorder = await store.createRecorder(runId);
   const browser = await chromium.launch({ headless: false });
 
@@ -46,7 +129,7 @@ export async function runCheckoutDemo(): Promise<void> {
       runId,
       agentName: "demo-shopping-agent",
       recorder,
-      rulesRootDir: ".agentclutch",
+      rulesRootDir: RULES_ROOT_DIR,
     });
 
     const result = await clutch.click("#checkout", {
@@ -117,6 +200,17 @@ export async function runCheckoutDemo(): Promise<void> {
     await waitForBrowserReview();
   } finally {
     await browser.close();
+  }
+}
+
+function checkoutRuleDescription(decision: RuleDecision): string {
+  switch (decision) {
+    case "allow":
+      return "Allow FakeStore checkout without showing an Action Card.";
+    case "block":
+      return "Block FakeStore checkout without showing an Action Card.";
+    case "require_clutch":
+      return "Require AgentClutch approval for FakeStore checkout.";
   }
 }
 
