@@ -2,30 +2,37 @@ import {
   buildActionCard,
   parseActionCard,
   type ActionCard as ActionCardModel,
-  type RunStoryStep
+  type RunStory,
 } from "@agentclutch/action-card";
+import {
+  generateRunStory,
+  generateRunStoryFromJsonl,
+  parseRecorderEventsJsonl,
+} from "@agentclutch/core";
 import {
   ActionCard,
   RunStoryTimeline,
-  type ActionCardDecisionType
+  type ActionCardDecisionType,
 } from "@agentclutch/react";
 import "@agentclutch/react/styles.css";
 import "./styles.css";
 import { renderElement } from "./renderElement.js";
-import { sampleActionCard, sampleRunSteps } from "./sample.js";
+import { sampleActionCard, sampleRecorderEventsJsonl } from "./sample.js";
 
 interface ViewerState {
-  rawJson: string;
+  rawInput: string;
   card: ActionCardModel | null;
+  story: RunStory | null;
   error: string | null;
   decisionLog: Array<{ decision: ActionCardDecisionType; timestamp: string }>;
 }
 
 const state: ViewerState = {
-  rawJson: JSON.stringify(sampleActionCard, null, 2),
+  rawInput: sampleRecorderEventsJsonl,
   card: sampleActionCard,
+  story: generateRunStoryFromJsonl(sampleRecorderEventsJsonl),
   error: null,
-  decisionLog: []
+  decisionLog: [],
 };
 
 const root = document.querySelector<HTMLDivElement>("#root");
@@ -45,7 +52,7 @@ function render(): void {
 function view(): HTMLElement {
   const shell = document.createElement("main");
   shell.className = "viewer-shell";
-  shell.append(header(), editorPanel(), previewPanel(), timelinePanel(sampleRunSteps));
+  shell.append(header(), editorPanel(), previewPanel(), timelinePanel());
   return shell;
 }
 
@@ -57,7 +64,7 @@ function header(): HTMLElement {
       <p class="viewer-eyebrow">AgentClutch</p>
       <h1>Action Card Viewer</h1>
     </div>
-    <p>Paste an AgentClutch Action Card JSON object and render it locally.</p>
+    <p>Paste an Action Card JSON object or recorder event JSONL and render it locally.</p>
   `;
   return element;
 }
@@ -67,14 +74,16 @@ function editorPanel(): HTMLElement {
   panel.className = "viewer-panel viewer-editor";
 
   const title = document.createElement("h2");
-  title.textContent = "Action Card JSON";
+  title.textContent = "Action Card JSON or Event JSONL";
 
   const textarea = document.createElement("textarea");
-  textarea.value = state.rawJson;
+  textarea.value = state.rawInput;
   textarea.spellcheck = false;
-  textarea.setAttribute("aria-label", "Action Card JSON");
+  textarea.placeholder =
+    "Paste .agentclutch/runs/<run_id>/events.jsonl contents or an Action Card JSON object";
+  textarea.setAttribute("aria-label", "Action Card JSON or event JSONL");
   textarea.addEventListener("input", () => {
-    state.rawJson = textarea.value;
+    state.rawInput = textarea.value;
   });
 
   const actions = document.createElement("div");
@@ -82,20 +91,32 @@ function editorPanel(): HTMLElement {
 
   const renderButton = document.createElement("button");
   renderButton.type = "button";
-  renderButton.textContent = "Render card";
-  renderButton.addEventListener("click", loadCardFromInput);
+  renderButton.textContent = "Render input";
+  renderButton.addEventListener("click", loadInput);
 
-  const resetButton = document.createElement("button");
-  resetButton.type = "button";
-  resetButton.textContent = "Load sample";
-  resetButton.addEventListener("click", () => {
-    state.rawJson = JSON.stringify(sampleActionCard, null, 2);
+  const sampleEventsButton = document.createElement("button");
+  sampleEventsButton.type = "button";
+  sampleEventsButton.textContent = "Load sample events";
+  sampleEventsButton.addEventListener("click", () => {
+    state.rawInput = sampleRecorderEventsJsonl;
     state.card = sampleActionCard;
+    state.story = generateRunStoryFromJsonl(sampleRecorderEventsJsonl);
     state.error = null;
     render();
   });
 
-  actions.append(renderButton, resetButton);
+  const sampleCardButton = document.createElement("button");
+  sampleCardButton.type = "button";
+  sampleCardButton.textContent = "Load sample card";
+  sampleCardButton.addEventListener("click", () => {
+    state.rawInput = JSON.stringify(sampleActionCard, null, 2);
+    state.card = sampleActionCard;
+    state.story = generateRunStory(sampleActionCard.run_id, [sampleActionCard]);
+    state.error = null;
+    render();
+  });
+
+  actions.append(renderButton, sampleEventsButton, sampleCardButton);
   panel.append(title, textarea, actions);
 
   if (state.error !== null) {
@@ -132,15 +153,15 @@ function previewPanel(): HTMLElement {
           state.decisionLog = [
             {
               decision,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
             },
-            ...state.decisionLog
+            ...state.decisionLog,
           ];
           render();
-        }
-      })
+        },
+      }),
     ),
-    decisionLog()
+    decisionLog(),
   );
 
   return panel;
@@ -172,48 +193,87 @@ function decisionLog(): HTMLElement {
   return section;
 }
 
-function timelinePanel(steps: RunStoryStep[]): HTMLElement {
+function timelinePanel(): HTMLElement {
   const panel = document.createElement("section");
   panel.className = "viewer-panel";
   panel.append(
     renderElement(
       RunStoryTimeline({
-        steps
-      })
-    )
+        ...(state.story === null ? {} : { story: state.story }),
+        emptyText: "Paste recorder JSONL to generate a run story.",
+      }),
+    ),
   );
   return panel;
 }
 
-function loadCardFromInput(): void {
+function loadInput(): void {
   try {
-    const parsed = parseActionCard(JSON.parse(state.rawJson));
+    const parsed = parseActionCard(JSON.parse(state.rawInput));
     state.card = parsed;
+    state.story = generateRunStory(parsed.run_id, [parsed]);
     state.error = null;
-  } catch (error) {
-    state.card = null;
-    state.error = validationMessage(error);
+  } catch (cardError) {
+    try {
+      const events = parseRecorderEventsJsonl(state.rawInput);
+      state.story = generateRunStoryFromJsonl(state.rawInput);
+      state.card = findFirstActionCard(events);
+      state.error = null;
+    } catch (eventsError) {
+      state.card = null;
+      state.story = null;
+      state.error = validationMessage(cardError, eventsError);
+    }
   }
 
   render();
 }
 
-function validationMessage(error: unknown): string {
-  if (error instanceof SyntaxError) {
-    return `Invalid JSON: ${error.message}`;
+function findFirstActionCard(events: unknown[]): ActionCardModel | null {
+  for (const event of events) {
+    const card = tryParseActionCard(event);
+
+    if (card !== null) {
+      return card;
+    }
+
+    if (isRecord(event)) {
+      const payloadCard = tryParseActionCard(event.payload);
+
+      if (payloadCard !== null) {
+        return payloadCard;
+      }
+    }
   }
 
-  if (error instanceof Error) {
-    return `Invalid Action Card: ${error.message}`;
-  }
+  return null;
+}
 
-  return `Invalid Action Card: ${String(error)}`;
+function tryParseActionCard(value: unknown): ActionCardModel | null {
+  try {
+    return parseActionCard(value);
+  } catch {
+    return null;
+  }
+}
+
+function validationMessage(cardError: unknown, eventsError: unknown): string {
+  const cardMessage =
+    cardError instanceof Error ? cardError.message : String(cardError);
+  const eventsMessage =
+    eventsError instanceof Error ? eventsError.message : String(eventsError);
+
+  return `Could not render as an Action Card or recorder JSONL.\n\nAction Card: ${cardMessage}\nRecorder JSONL: ${eventsMessage}`;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 export function createViewerSampleCard(): ActionCardModel {
   return buildActionCard({
     ...sampleActionCard,
     id: "acard_viewer_copy",
-    created_at: new Date().toISOString()
+    created_at: new Date().toISOString(),
   });
 }

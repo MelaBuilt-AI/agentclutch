@@ -1,20 +1,23 @@
 import {
   buildActionCard,
   type ActionCard,
-  type UserDecision
+  type UserDecision,
 } from "@agentclutch/action-card";
-import {
-  describe,
-  expect,
-  it,
-  vi
-} from "vitest";
+import type {
+  ActionProposal,
+  AgentLoopEvent,
+  ClutchDecision,
+  LoopResumeContext,
+} from "@agentclutch/loop";
+import { describe, expect, it, vi } from "vitest";
 import {
   ClutchSession,
   classifyConsequence,
   createClutch,
+  generateRunStoryFromJsonl,
   generateRunStory,
-  riskFromConsequence
+  parseRecorderEventsJsonl,
+  riskFromConsequence,
 } from "../src/index.js";
 
 const createdAt = "2026-06-22T04:00:00.000Z";
@@ -33,19 +36,19 @@ function testCard(): ActionCard {
       surface: "browser",
       target: {
         surface: "browser",
-        button_text: "Complete checkout"
-      }
+        button_text: "Complete checkout",
+      },
     },
     consequence: classifyConsequence({
       kind: "browser.checkout",
-      label: "Complete checkout"
+      label: "Complete checkout",
     }),
     risk: riskFromConsequence(
       classifyConsequence({
         kind: "browser.checkout",
-        label: "Complete checkout"
-      })
-    )
+        label: "Complete checkout",
+      }),
+    ),
   });
 }
 
@@ -56,7 +59,70 @@ function approveDecision(): UserDecision {
     action_card_id: "acard_test_1",
     run_id: "run_test_1",
     decided_at: decidedAt,
-    decision: "approve_once"
+    decision: "approve_once",
+  };
+}
+
+function actionProposal(): ActionProposal {
+  return {
+    type: "agentclutch.action_proposal.v0",
+    id: "aprop_test_1",
+    loopId: "loop_test_1",
+    stepId: "step_001",
+    createdAt: "2026-06-22T04:00:00.000Z",
+    sourceMode: "loop_native",
+    agent: { name: "test-agent", runtime: "custom" },
+    proposedAction: {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetSurface: "browser",
+      targetApp: "FakeStore",
+    },
+    loopContext: {
+      previousStepIds: [],
+      whyNow: "The cart is ready for checkout.",
+    },
+    evidence: [],
+  };
+}
+
+function clutchApproveDecision(): ClutchDecision {
+  return {
+    type: "approve_once",
+    approvedBy: "tester",
+    decidedAt,
+  };
+}
+
+function resumeContext(): LoopResumeContext {
+  return {
+    type: "agentclutch.loop_resume_context.v0",
+    loopId: "loop_test_1",
+    stepId: "step_001",
+    proposalId: "aprop_test_1",
+    sourceMode: "loop_native",
+    decision: clutchApproveDecision(),
+    continuePolicy: {
+      allowSameActionRetry: true,
+      requireApprovalForSimilarActions: false,
+      maxRetries: 1,
+    },
+  };
+}
+
+function loopEvent<TPayload>(
+  eventType: AgentLoopEvent<TPayload>["eventType"],
+  timestamp: string,
+  payload: TPayload,
+): AgentLoopEvent<TPayload> {
+  return {
+    type: "agentclutch.loop_event.v0",
+    id: `evt_${eventType.replaceAll(".", "_")}`,
+    loopId: "loop_test_1",
+    stepId: "step_001",
+    eventType,
+    timestamp,
+    payload,
   };
 }
 
@@ -64,7 +130,7 @@ describe("classifyConsequence", () => {
   it("classifies checkout consequence", () => {
     const consequence = classifyConsequence({
       kind: "browser.checkout",
-      label: "Complete checkout"
+      label: "Complete checkout",
     });
 
     expect(consequence.class).toBe("payment_or_purchase");
@@ -74,7 +140,7 @@ describe("classifyConsequence", () => {
   it("classifies email send consequence", () => {
     const consequence = classifyConsequence({
       kind: "email.send",
-      label: "Send email"
+      label: "Send email",
     });
 
     expect(consequence.class).toBe("external_message_send");
@@ -84,7 +150,7 @@ describe("classifyConsequence", () => {
   it("classifies submit form consequence", () => {
     const consequence = classifyConsequence({
       kind: "browser.form_submit",
-      label: "Submit expense report"
+      label: "Submit expense report",
     });
 
     expect(consequence.class).toBe("external_business_submission");
@@ -94,7 +160,7 @@ describe("classifyConsequence", () => {
   it("classifies delete consequence", () => {
     const consequence = classifyConsequence({
       kind: "file.delete",
-      label: "Delete file"
+      label: "Delete file",
     });
 
     expect(consequence.class).toBe("local_file_delete");
@@ -104,11 +170,11 @@ describe("classifyConsequence", () => {
   it("classifies deploy and merge consequence", () => {
     const deploy = classifyConsequence({
       kind: "shell.exec",
-      label: "Deploy to production"
+      label: "Deploy to production",
     });
     const merge = classifyConsequence({
       kind: "github.write",
-      label: "Merge pull request"
+      label: "Merge pull request",
     });
 
     expect(deploy.class).toBe("production_change");
@@ -118,7 +184,7 @@ describe("classifyConsequence", () => {
   it("classifies unknown consequence", () => {
     const consequence = classifyConsequence({
       kind: "custom",
-      label: "Do thing"
+      label: "Do thing",
     });
 
     expect(consequence.class).toBe("unknown");
@@ -133,7 +199,7 @@ describe("riskFromConsequence", () => {
       label: "Production change",
       reversibility: "irreversible",
       blast_radius: "production",
-      requires_confirmation: true
+      requires_confirmation: true,
     });
 
     expect(risk.score).toBe(100);
@@ -175,9 +241,9 @@ describe("createClutch", () => {
         decide: async () => ({
           type: "approve_once",
           approvedBy: "tester",
-          decidedAt
-        })
-      }
+          decidedAt,
+        }),
+      },
     });
 
     const result = await clutch.confirmAction({
@@ -187,8 +253,8 @@ describe("createClutch", () => {
       proposedAction: {
         kind: "email.send",
         label: "Send email",
-        targetSurface: "email"
-      }
+        targetSurface: "email",
+      },
     });
 
     expect(result.proposal.sourceMode).toBe("prompt_guard");
@@ -203,18 +269,18 @@ describe("createClutch", () => {
         decide: async () => ({
           type: "approve_once",
           approvedBy: "tester",
-          decidedAt
-        })
-      }
+          decidedAt,
+        }),
+      },
     });
     const guarded = clutch.wrapTool(tool, {
       kind: "email.send",
       label: "Send email",
-      targetSurface: "email"
+      targetSurface: "email",
     });
 
     await expect(guarded("client@example.com")).resolves.toBe(
-      "sent:client@example.com"
+      "sent:client@example.com",
     );
     expect(tool).toHaveBeenCalledWith("client@example.com");
   });
@@ -227,14 +293,14 @@ describe("createClutch", () => {
           type: "block",
           blockedBy: "tester",
           decidedAt,
-          reason: "No"
-        })
-      }
+          reason: "No",
+        }),
+      },
     });
     const guarded = clutch.wrapTool(tool, {
       kind: "file.delete",
       label: "Delete file",
-      targetSurface: "filesystem"
+      targetSurface: "filesystem",
     });
 
     await expect(guarded()).resolves.toBeUndefined();
@@ -247,9 +313,9 @@ describe("createClutch", () => {
         decide: async () => ({
           type: "approve_once",
           approvedBy: "tester",
-          decidedAt
-        })
-      }
+          decidedAt,
+        }),
+      },
     });
 
     const result = await clutch.onActionProposed({
@@ -262,12 +328,12 @@ describe("createClutch", () => {
       proposedAction: {
         kind: "browser.checkout",
         label: "Complete checkout",
-        targetSurface: "browser"
+        targetSurface: "browser",
       },
       loopContext: {
-        previousStepIds: ["step_006"]
+        previousStepIds: ["step_006"],
       },
-      evidence: []
+      evidence: [],
     });
 
     expect(result.proposal.sourceMode).toBe("loop_native");
@@ -278,17 +344,111 @@ describe("createClutch", () => {
 
 describe("generateRunStory", () => {
   it("generates a Run Story from action cards and decisions", () => {
-    const story = generateRunStory("run_test_1", [
-      testCard(),
-      approveDecision()
-    ]);
+    const story = generateRunStory(
+      "run_test_1",
+      [testCard(), approveDecision()],
+      {
+        createdAt: "2026-06-22T04:02:00.000Z",
+      },
+    );
 
     expect(story.type).toBe("agentclutch.run_story.v0");
-    expect(story.steps).toHaveLength(2);
+    expect(story.steps).toHaveLength(3);
     expect(story.steps[0]?.text).toContain("The agent proposed");
-    expect(story.steps[1]?.text).toBe("The user approved the action once.");
+    expect(story.steps[1]?.text).toContain("AgentClutch paused");
+    expect(story.steps[2]?.text).toBe("The user approved the action once.");
     expect(story.summary).toBe(
-      "The run included 1 proposed consequential action(s) and 1 user decision event(s)."
+      "The run included 1 proposed action(s), 1 AgentClutch pause(s), 1 user decision event(s).",
+    );
+  });
+
+  it("generates a full timeline from recorder loop events", () => {
+    const story = generateRunStory(
+      "run_test_1",
+      [
+        loopEvent(
+          "action.proposed",
+          "2026-06-22T04:00:00.000Z",
+          actionProposal(),
+        ),
+        testCard(),
+        loopEvent(
+          "user.decision",
+          "2026-06-22T04:01:00.000Z",
+          clutchApproveDecision(),
+        ),
+        loopEvent(
+          "resume_context.created",
+          "2026-06-22T04:01:01.000Z",
+          resumeContext(),
+        ),
+        loopEvent("action.executed", "2026-06-22T04:01:10.000Z", {
+          summary: "Checkout completed in the demo store",
+        }),
+      ],
+      {
+        createdAt: "2026-06-22T04:02:00.000Z",
+      },
+    );
+
+    expect(story.steps.map((step) => step.actor)).toEqual([
+      "agent",
+      "system",
+      "user",
+      "system",
+      "system",
+    ]);
+    expect(story.steps.map((step) => step.text)).toEqual([
+      "The agent proposed action: Complete checkout on FakeStore.",
+      "AgentClutch paused before Complete checkout because payment or purchase is compensable.",
+      "tester approved the action once.",
+      "AgentClutch returned resume context: the same action can continue; similar actions do not require extra approval.",
+      "Final result: Checkout completed in the demo store.",
+    ]);
+    expect(story.summary).toBe(
+      "The run included 1 proposed action(s), 1 AgentClutch pause(s), 1 user decision event(s) and 1 final result event(s).",
+    );
+  });
+
+  it("parses recorder JSONL and infers the run id", () => {
+    const jsonl = [
+      JSON.stringify(
+        loopEvent(
+          "action.proposed",
+          "2026-06-22T04:00:00.000Z",
+          actionProposal(),
+        ),
+      ),
+      JSON.stringify(testCard()),
+      JSON.stringify(
+        loopEvent(
+          "user.decision",
+          "2026-06-22T04:01:00.000Z",
+          clutchApproveDecision(),
+        ),
+      ),
+      JSON.stringify(
+        loopEvent(
+          "resume_context.created",
+          "2026-06-22T04:01:01.000Z",
+          resumeContext(),
+        ),
+      ),
+    ].join("\n");
+
+    expect(parseRecorderEventsJsonl(`${jsonl}\n`)).toHaveLength(4);
+
+    const story = generateRunStoryFromJsonl(jsonl, {
+      createdAt: "2026-06-22T04:02:00.000Z",
+    });
+
+    expect(story.run_id).toBe("run_test_1");
+    expect(story.steps).toHaveLength(4);
+  });
+
+  it("reports invalid recorder JSONL line numbers", () => {
+    expect(() => parseRecorderEventsJsonl("{}\nnot-json")).toThrow(
+      "Invalid recorder JSONL on line 2",
     );
   });
 });

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@agentclutch/action-card": "workspace:*",
+    "@agentclutch/core": "workspace:*",
     "@agentclutch/react": "workspace:*",
     "vite": "latest"
   }
