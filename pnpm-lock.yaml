@@ -46,7 +46,17 @@ importers:
         specifier: latest
         version: 4.4.3
 
-  packages/cli: {}
+  packages/cli:
+    dependencies:
+      '@agentclutch/playwright':
+        specifier: workspace:*
+        version: link:../playwright
+      '@agentclutch/recorder':
+        specifier: workspace:*
+        version: link:../recorder
+      playwright:
+        specifier: latest
+        version: 1.61.0
 
   packages/core: {}
 

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FakeStore Checkout Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        color: #172033;
+        background: #f5f7fb;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+      }
+
+      header {
+        background: #11182f;
+        color: white;
+        padding: 24px 40px;
+      }
+
+      header h1,
+      header p {
+        margin: 0;
+      }
+
+      header p {
+        margin-top: 6px;
+        color: #d9e2ff;
+      }
+
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 40px;
+      }
+
+      .search {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      input {
+        flex: 1;
+        min-width: 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 12px 14px;
+        font: inherit;
+      }
+
+      button {
+        border: 0;
+        border-radius: 8px;
+        padding: 12px 16px;
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: #2563eb;
+        color: white;
+      }
+
+      .checkout {
+        width: 100%;
+        margin-top: 18px;
+        background: #dc2626;
+        color: white;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
+        gap: 24px;
+      }
+
+      .panel {
+        background: white;
+        border: 1px solid #dbe3ef;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 12px 34px rgba(15, 23, 42, 0.07);
+      }
+
+      .product-media {
+        display: grid;
+        place-items: center;
+        min-height: 220px;
+        margin-bottom: 20px;
+        border-radius: 8px;
+        background:
+          radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.18), transparent 34%),
+          linear-gradient(135deg, #eff6ff, #f8fafc);
+      }
+
+      .product-media svg {
+        width: min(260px, 80%);
+        height: auto;
+      }
+
+      #product-title {
+        margin: 0;
+        font-size: 28px;
+        line-height: 1.2;
+        letter-spacing: 0;
+      }
+
+      .price {
+        margin: 18px 0;
+        font-size: 32px;
+        font-weight: 900;
+      }
+
+      .muted {
+        color: #64748b;
+      }
+
+      .cart-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .cart-line strong {
+        text-align: right;
+      }
+
+      #cart-summary {
+        margin-top: 18px;
+      }
+
+      #checkout-result {
+        display: none;
+        margin-top: 18px;
+        border: 1px solid #86efac;
+        border-radius: 8px;
+        background: #f0fdf4;
+        color: #14532d;
+        padding: 14px;
+        font-weight: 700;
+      }
+
+      #checkout-result.visible {
+        display: block;
+      }
+
+      @media (max-width: 760px) {
+        header,
+        main {
+          padding: 24px;
+        }
+
+        .search,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .search {
+          flex-direction: column;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>FakeStore</h1>
+      <p>AgentClutch checkout demo</p>
+    </header>
+
+    <main>
+      <div class="search" aria-label="Product search">
+        <input id="search" placeholder="Search products" />
+        <button id="search-button" class="primary" type="button">Search</button>
+      </div>
+
+      <section class="grid">
+        <article class="panel" aria-label="Product details">
+          <div class="product-media" aria-hidden="true">
+            <svg viewBox="0 0 320 210" role="img">
+              <path
+                d="M80 110c0-48 36-82 80-82s80 34 80 82"
+                fill="none"
+                stroke="#1d4ed8"
+                stroke-width="18"
+                stroke-linecap="round"
+              />
+              <rect x="48" y="104" width="58" height="76" rx="22" fill="#172033" />
+              <rect x="214" y="104" width="58" height="76" rx="22" fill="#172033" />
+              <rect x="64" y="118" width="26" height="48" rx="10" fill="#60a5fa" />
+              <rect x="230" y="118" width="26" height="48" rx="10" fill="#60a5fa" />
+            </svg>
+          </div>
+          <h2 id="product-title">Wireless Headphones Pro</h2>
+          <p class="muted">
+            Premium wireless noise-cancelling headphones with a travel case and
+            30-hour battery life.
+          </p>
+          <p id="product-price" class="price">$249.00</p>
+          <button id="select-product" class="primary" type="button">
+            Select product
+          </button>
+        </article>
+
+        <aside class="panel" aria-label="Cart summary">
+          <h2>Cart summary</h2>
+          <div id="cart-summary">
+            <div class="cart-line">
+              <span>Product</span>
+              <strong id="cart-product">Wireless Headphones Pro</strong>
+            </div>
+            <div class="cart-line">
+              <span>Quantity</span>
+              <strong id="cart-quantity">1</strong>
+            </div>
+            <div class="cart-line">
+              <span>Total</span>
+              <strong id="cart-total">$249.00</strong>
+            </div>
+          </div>
+          <button id="checkout" class="checkout" type="button">
+            Complete checkout
+          </button>
+          <div id="checkout-result" role="status">
+            Checkout completed. This page simulates an external purchase.
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <script>
+      const searchInput = document.getElementById("search");
+      const searchButton = document.getElementById("search-button");
+      const selectProduct = document.getElementById("select-product");
+      const checkout = document.getElementById("checkout");
+      const result = document.getElementById("checkout-result");
+
+      searchButton.addEventListener("click", () => {
+        searchInput.value = searchInput.value || "noise cancelling headphones";
+        selectProduct.focus();
+      });
+
+      selectProduct.addEventListener("click", () => {
+        document.getElementById("cart-product").textContent =
+          "Wireless Headphones Pro";
+        document.getElementById("cart-quantity").textContent = "1";
+        document.getElementById("cart-total").textContent = "$249.00";
+        checkout.focus();
+      });
+
+      checkout.addEventListener("click", () => {
+        result.classList.add("visible");
+      });
+    </script>
+  </body>
+</html>
