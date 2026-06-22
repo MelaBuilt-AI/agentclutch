@@ -1,7 +1,7 @@
 {
   "name": "@agentclutch/react",
   "version": "0.0.0",
-  "description": "AgentClutch React package scaffold.",
+  "description": "React components for AgentClutch Action Cards and takeover UX.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,12 +10,17 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    }
+    },
+    "./styles.css": "./src/styles.css"
   },
-  "files": ["dist"],
+  "files": ["dist", "src/styles.css"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentclutch/action-card": "workspace:*",
+    "@agentclutch/loop": "workspace:*"
   }
 }

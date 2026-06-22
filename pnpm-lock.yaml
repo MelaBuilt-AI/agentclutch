@@ -83,7 +83,14 @@ importers:
       playwright:
         specifier: '>=1.45.0'
 
-  packages/react: {}
+  packages/react:
+    dependencies:
+      '@agentclutch/action-card':
+        specifier: workspace:*
+        version: link:../action-card
+      '@agentclutch/loop':
+        specifier: workspace:*
+        version: link:../loop
 
   packages/recorder: {}
 
