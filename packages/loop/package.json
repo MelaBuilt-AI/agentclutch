@@ -1,7 +1,7 @@
 {
   "name": "@agentclutch/loop",
   "version": "0.0.0",
-  "description": "Loop-native AgentClutch package scaffold.",
+  "description": "Loop lifecycle contracts for AgentClutch action proposals, progressive integration modes, decisions, and resume context.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }

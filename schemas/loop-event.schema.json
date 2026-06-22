@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentclutch.dev/schemas/loop-event.schema.json",
+  "title": "AgentClutch Loop Event v0",
+  "type": "object",
+  "required": ["type", "id", "loopId", "eventType", "timestamp", "payload"],
+  "properties": {
+    "type": { "const": "agentclutch.loop_event.v0" },
+    "id": { "type": "string", "minLength": 1 },
+    "loopId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "eventType": {
+      "enum": [
+        "goal.received",
+        "perception.captured",
+        "state.updated",
+        "plan.created",
+        "action.proposed",
+        "clutch.required",
+        "action_card.created",
+        "user.decision",
+        "resume_context.created",
+        "action.executed",
+        "observation.received",
+        "loop.resumed",
+        "loop.stopped",
+        "loop.handoff",
+        "lesson.captured"
+      ]
+    },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "payload": true
+  },
+  "additionalProperties": false
+}

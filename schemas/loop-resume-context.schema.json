@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentclutch.dev/schemas/loop-resume-context.schema.json",
+  "title": "AgentClutch Loop Resume Context v0",
+  "type": "object",
+  "required": [
+    "type",
+    "loopId",
+    "stepId",
+    "proposalId",
+    "sourceMode",
+    "decision",
+    "continuePolicy"
+  ],
+  "properties": {
+    "type": { "const": "agentclutch.loop_resume_context.v0" },
+    "loopId": { "type": "string", "minLength": 1 },
+    "stepId": { "type": "string", "minLength": 1 },
+    "proposalId": { "type": "string", "minLength": 1 },
+    "sourceMode": {
+      "enum": ["prompt_guard", "tool_wrapper", "loop_native"]
+    },
+    "decision": {
+      "$ref": "https://agentclutch.dev/schemas/clutch-decision.schema.json"
+    },
+    "userCorrection": {
+      "type": "object",
+      "required": ["before", "after"],
+      "properties": {
+        "before": true,
+        "after": true,
+        "explanation": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "updatedConstraints": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "instructionForAgent": { "type": "string" },
+    "continuePolicy": {
+      "type": "object",
+      "required": [
+        "allowSameActionRetry",
+        "requireApprovalForSimilarActions"
+      ],
+      "properties": {
+        "allowSameActionRetry": { "type": "boolean" },
+        "requireApprovalForSimilarActions": { "type": "boolean" },
+        "maxRetries": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
