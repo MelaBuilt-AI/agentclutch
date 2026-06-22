@@ -60,6 +60,25 @@ describe("ActionCard", () => {
     expect(parsed.proposed_action.changed_fields?.[0]?.field).toBe("amount");
   });
 
+  it("accepts lesson decision options", () => {
+    const parsed = parseActionCard({
+      ...card,
+      user_options: [
+        "accept_lesson",
+        "reject_lesson",
+        "disable_lesson",
+        "block",
+      ],
+    });
+
+    expect(parsed.user_options).toEqual([
+      "accept_lesson",
+      "reject_lesson",
+      "disable_lesson",
+      "block",
+    ]);
+  });
+
   it("returns validation issues without throwing", () => {
     const result = validateActionCard({
       ...card,

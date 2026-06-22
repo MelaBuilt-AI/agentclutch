@@ -70,6 +70,52 @@ describe("ActionCard", () => {
       },
     ]);
   });
+
+  it("renders applied lessons and lesson decisions", () => {
+    const decisions: ActionCardDecisionType[] = [];
+    const tree = ActionCard({
+      card: cardFixture({
+        metadata: {
+          applied_lessons: [
+            {
+              id: "lesson_quantity",
+              action_kind: "browser.checkout",
+              target_app: "FakeStore",
+              field: "quantity",
+              original_value: 1,
+              corrected_value: 3,
+              confidence: 0.8,
+              source: "learned from prior correction",
+            },
+          ],
+        },
+        user_options: [
+          "accept_lesson",
+          "reject_lesson",
+          "disable_lesson",
+          "approve_once",
+          "block",
+        ],
+      }),
+      onDecision: (decision) => decisions.push(decision),
+    });
+
+    const text = textContent(tree);
+
+    expect(text).toContain("Applied Lesson");
+    expect(text).toContain("quantity: 1 -> 3");
+    expect(text).toContain("Source: learned from prior correction");
+
+    clickButton(tree, "Accept lesson");
+    clickButton(tree, "Reject lesson");
+    clickButton(tree, "Disable lesson");
+
+    expect(decisions).toEqual([
+      "accept_lesson",
+      "reject_lesson",
+      "disable_lesson",
+    ]);
+  });
 });
 
 describe("DecisionBar", () => {
@@ -77,10 +123,14 @@ describe("DecisionBar", () => {
     const decisions: ActionCardDecisionType[] = [];
     const tree = DecisionBar({
       onDecision: (decision) => decisions.push(decision),
+      allowLessonActions: true,
     });
 
     clickButton(tree, "Approve once");
     clickButton(tree, "Edit fields");
+    clickButton(tree, "Accept lesson");
+    clickButton(tree, "Reject lesson");
+    clickButton(tree, "Disable lesson");
     clickButton(tree, "Take wheel");
     clickButton(tree, "Block");
     clickButton(tree, "Create rule");
@@ -88,6 +138,9 @@ describe("DecisionBar", () => {
     expect(decisions).toEqual([
       "approve_once",
       "edit_fields",
+      "accept_lesson",
+      "reject_lesson",
+      "disable_lesson",
       "take_wheel",
       "block",
       "create_rule",
@@ -174,7 +227,9 @@ describe("RunStoryTimeline", () => {
   });
 });
 
-function cardFixture(): ActionCardModel {
+function cardFixture(
+  overrides: Partial<Parameters<typeof buildActionCard>[0]> = {},
+): ActionCardModel {
   return buildActionCard({
     id: "acard_test",
     run_id: "run_test",
@@ -237,10 +292,14 @@ function cardFixture(): ActionCardModel {
     user_options: [
       "approve_once",
       "edit_fields",
+      "accept_lesson",
+      "reject_lesson",
+      "disable_lesson",
       "take_wheel",
       "block",
       "create_rule",
     ],
+    ...overrides,
   });
 }
 

@@ -172,6 +172,33 @@ describe("checkout demo rules", () => {
       checkoutDemoRule("block", "2026-06-22T04:01:00.000Z"),
     ]);
   });
+
+  it("clears stale checkout demo rules without removing unrelated rules", async () => {
+    const rootDir = await tempRoot();
+    const unrelated = {
+      ...checkoutDemoRule("allow", "2026-06-22T04:00:00.000Z"),
+      id: "rule_unrelated",
+      match: {
+        action_kind: "email.send",
+        target_surface: "email",
+        target_app: "MailDemo",
+        consequence_class: "external_message_send" as const,
+      },
+    };
+
+    await saveRules(
+      [
+        checkoutDemoRule("allow", "2026-06-22T04:00:00.000Z"),
+        unrelated,
+      ],
+      rootDir,
+    );
+
+    await expect(
+      prepareCheckoutDemoRules({ clearCheckoutRules: true }, rootDir),
+    ).resolves.toEqual([unrelated]);
+    await expect(loadRules(rootDir)).resolves.toEqual([unrelated]);
+  });
 });
 
 interface EvaluatedCallback {

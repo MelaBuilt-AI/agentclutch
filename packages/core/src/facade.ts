@@ -9,6 +9,7 @@ import {
 } from "@agentclutch/action-card";
 import {
   buildResumeContext,
+  type AgentLoopEventType,
   normalizeActionProposal,
   type ActionProposal,
   type ActionProposalInput,
@@ -17,6 +18,18 @@ import {
 } from "@agentclutch/loop";
 import { classifyConsequence } from "./consequence.js";
 import { createId } from "./ids.js";
+import {
+  appliedLessonsFromActionCardMetadata,
+  applyLessonsToProposal,
+  captureLessonsFromEdit,
+  lessonSummary,
+  loadLessons,
+  saveLessons,
+  updateLessonsAfterDecision,
+  upsertLessons,
+  type AppliedLesson,
+  type Lesson,
+} from "./lessons.js";
 import { riskFromConsequence } from "./risk.js";
 
 export interface ClutchDecisionResult {
@@ -24,6 +37,7 @@ export interface ClutchDecisionResult {
   card: ActionCard;
   decision: ClutchDecision;
   resumeContext: LoopResumeContext;
+  appliedLessons: AppliedLesson[];
 }
 
 export interface DecisionRenderer {
@@ -41,6 +55,7 @@ export interface CreateClutchOptions {
   renderer: DecisionRenderer;
   recorder?: ClutchRecorderLike;
   runId?: string;
+  lessonsRootDir?: string;
 }
 
 export interface ConfirmActionInput
@@ -74,16 +89,33 @@ export function createClutch(options: CreateClutchOptions): ClutchFacade {
   const runId = options.runId ?? createId("run");
 
   async function decide(input: ActionProposalInput): Promise<ClutchDecisionResult> {
-    const proposal = normalizeActionProposal(input);
+    const lessonState = await applyStoredLessons(
+      normalizeActionProposal(input),
+      options,
+    );
+    const proposal = lessonState.proposal;
     const card = actionCardFromProposal(proposal, runId);
+    const appliedLessons = appliedLessonsFromActionCardMetadata(card.metadata);
 
     await recordLoopEvent(options, proposal, "action.proposed", proposal);
+    for (const lesson of appliedLessons) {
+      await recordLoopEvent(options, proposal, "lesson.applied", {
+        lesson,
+        summary: `Lesson applied: ${lessonSummary(lesson)}`,
+      });
+    }
     await options.recorder?.record(card);
 
     const decision = await options.renderer.decide(proposal, card);
-    const resumeContext = buildResumeContext(proposal, decision);
 
     await recordLoopEvent(options, proposal, "user.decision", decision);
+    await persistLessonDecision(options, proposal, lessonState.lessons, {
+      decision,
+      appliedLessons,
+    });
+
+    const resumeContext = buildResumeContext(proposal, decision);
+
     await recordLoopEvent(
       options,
       proposal,
@@ -91,7 +123,7 @@ export function createClutch(options: CreateClutchOptions): ClutchFacade {
       resumeContext
     );
 
-    return { proposal, card, decision, resumeContext };
+    return { proposal, card, decision, resumeContext, appliedLessons };
   }
 
   return {
@@ -188,7 +220,10 @@ function actionCardFromProposal(
       : { url: proposal.visibleContext.url })
   });
   const risk = riskFromConsequence(consequence);
-  const fields = proposal.visibleContext?.fields;
+  const fields = changedFieldsFromProposal(proposal);
+  const metadata = isJsonObject(proposal.metadata)
+    ? proposal.metadata
+    : undefined;
 
   return buildActionCard({
     id: createId("acard"),
@@ -226,15 +261,93 @@ function actionCardFromProposal(
           : { selector: proposal.visibleContext.highlightedSelector }),
         ...(buttonText === "" ? {} : { button_text: buttonText })
       },
-      ...(fields === undefined ? {} : { changed_fields: changedFields(fields) }),
+      ...(fields === undefined ? {} : { changed_fields: fields }),
       ...(isJsonObject(proposal.proposedAction.rawInput)
         ? { raw: proposal.proposedAction.rawInput }
         : {})
     },
     consequence,
     risk,
-    evidence: proposal.evidence.map(actionCardEvidence)
+    evidence: proposal.evidence.map(actionCardEvidence),
+    user_options: actionCardUserOptions(proposal),
+    ...(metadata === undefined ? {} : { metadata })
   });
+}
+
+async function applyStoredLessons(
+  proposal: ActionProposal,
+  options: CreateClutchOptions,
+): Promise<{ proposal: ActionProposal; lessons: Lesson[] }> {
+  const lessons = await loadLessons(options.lessonsRootDir);
+  const result = applyLessonsToProposal(proposal, lessons);
+
+  return {
+    proposal: result.proposal,
+    lessons,
+  };
+}
+
+async function persistLessonDecision(
+  options: CreateClutchOptions,
+  proposal: ActionProposal,
+  existingLessons: readonly Lesson[],
+  result: {
+    decision: ClutchDecision;
+    appliedLessons: readonly AppliedLesson[];
+  },
+): Promise<void> {
+  let lessons = [...existingLessons];
+
+  if (
+    result.appliedLessons.length > 0 &&
+    result.decision.type === "approve_once"
+  ) {
+    lessons = updateLessonsAfterDecision(
+      lessons,
+      result.appliedLessons,
+      "accepted",
+    );
+    await saveLessons(lessons, options.lessonsRootDir);
+
+    for (const lesson of result.appliedLessons) {
+      await recordLoopEvent(options, proposal, "lesson.reinforced", {
+        lesson,
+        summary: `Lesson reinforced: ${lessonSummary(lesson)}`,
+      });
+    }
+  }
+
+  if (result.decision.type === "edit") {
+    const candidates = captureLessonsFromEdit(proposal, result.decision);
+
+    if (candidates.length === 0) return;
+
+    lessons = upsertLessons(lessons, candidates);
+    await saveLessons(lessons, options.lessonsRootDir);
+
+    for (const lesson of candidates) {
+      await recordLoopEvent(options, proposal, "lesson.captured", {
+        lesson,
+        summary: `Lesson captured: ${lessonSummary(lesson)}`,
+      });
+    }
+  }
+}
+
+function actionCardUserOptions(proposal: ActionProposal): ActionCard["user_options"] {
+  const base: ActionCard["user_options"] = [
+    "approve_once",
+    "edit_fields",
+    "take_wheel",
+    "block",
+  ];
+  const appliedLessons = proposal.metadata?.["applied_lessons"];
+
+  if (!Array.isArray(appliedLessons) || appliedLessons.length === 0) {
+    return base;
+  }
+
+  return ["accept_lesson", "reject_lesson", "disable_lesson", ...base];
 }
 
 function changedFields(fields: Record<string, unknown>): ChangedField[] {
@@ -245,14 +358,51 @@ function changedFields(fields: Record<string, unknown>): ChangedField[] {
   }));
 }
 
+function changedFieldsFromProposal(
+  proposal: ActionProposal,
+): ChangedField[] | undefined {
+  const metadataFields = changedFieldsFromUnknown(
+    proposal.metadata?.["changedFields"],
+  );
+  if (metadataFields !== undefined) return metadataFields;
+
+  const rawInput = proposal.proposedAction.rawInput;
+  if (isRecord(rawInput)) {
+    const rawFields = changedFieldsFromUnknown(rawInput["changedFields"]);
+    if (rawFields !== undefined) return rawFields;
+  }
+
+  return proposal.visibleContext?.fields === undefined
+    ? undefined
+    : changedFields(proposal.visibleContext.fields);
+}
+
+function changedFieldsFromUnknown(value: unknown): ChangedField[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+
+  const fields = value.filter(isChangedField);
+  return fields.length === 0 ? undefined : fields;
+}
+
+function isChangedField(value: unknown): value is ChangedField {
+  return (
+    isJsonObject(value) &&
+    typeof value["field"] === "string" &&
+    "after" in value
+  );
+}
+
 function actionCardEvidence(
   item: ActionProposal["evidence"][number],
   index: number
 ): ActionCardEvidenceItem {
+  const isLessonEvidence =
+    item.label === "Applied Lesson" || item.source.startsWith("lesson:");
+
   return {
     id: `ev_${index + 1}`,
     label: item.label,
-    source_type: "tool_output",
+    source_type: isLessonEvidence ? "memory" : "tool_output",
     source_ref: item.source,
     ...(item.summary === undefined ? {} : { summary: item.summary }),
     ...(item.hash === undefined ? {} : { hash: item.hash })
@@ -262,7 +412,7 @@ function actionCardEvidence(
 function recordLoopEvent(
   options: CreateClutchOptions,
   proposal: ActionProposal,
-  eventType: "action.proposed" | "user.decision" | "resume_context.created",
+  eventType: AgentLoopEventType,
   payload: unknown
 ): Promise<void> | undefined {
   return options.recorder?.record({
@@ -322,6 +472,10 @@ function isJsonValue(value: unknown): value is JsonValue {
   }
 
   return isJsonObject(value);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function toJsonValue(value: unknown): ChangedField["after"] {

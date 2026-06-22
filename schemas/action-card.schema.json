@@ -150,7 +150,20 @@
     },
     "user_options": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": {
+        "enum": [
+          "approve_once",
+          "approve_always_for_this_target",
+          "edit_fields",
+          "accept_lesson",
+          "reject_lesson",
+          "disable_lesson",
+          "take_wheel",
+          "block",
+          "create_rule",
+          "request_more_context"
+        ]
+      }
     },
     "expires_at": { "type": "string", "format": "date-time" },
     "metadata": { "type": "object" }

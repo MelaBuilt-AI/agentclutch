@@ -1,6 +1,7 @@
 import type {
   ActionCard as ActionCardModel,
   ChangedField,
+  JsonObject,
   JsonValue,
 } from "@agentclutch/action-card";
 import { h, type ReactElement } from "../element.js";
@@ -25,6 +26,7 @@ export function ActionCard({
   const action = card.proposed_action;
   const target = action.target;
   const changedFields = action.changed_fields ?? [];
+  const appliedLessons = appliedLessonsFromMetadata(card.metadata);
   const allowEdit = changedFields.some((field) => field.editable);
   const editedDrafts = new Map(
     changedFields
@@ -145,6 +147,32 @@ export function ActionCard({
             ),
           ),
         ),
+    appliedLessons.length === 0
+      ? null
+      : h(
+          "section",
+          {
+            className: "ac-section ac-lesson-section",
+            "aria-label": "Applied lesson",
+          },
+          h("h3", {}, "Applied Lesson"),
+          h(
+            "ul",
+            { className: "ac-lesson-list" },
+            appliedLessons.map((lesson) =>
+              h(
+                "li",
+                { key: lesson.id },
+                h(
+                  "strong",
+                  {},
+                  `${lesson.field}: ${formatJsonValue(lesson.original_value)} -> ${formatJsonValue(lesson.corrected_value)}`,
+                ),
+                h("span", {}, "Source: learned from prior correction"),
+              ),
+            ),
+          ),
+        ),
     h(
       "section",
       { className: "ac-section", "aria-label": "Risk reasons" },
@@ -162,8 +190,16 @@ export function ActionCard({
       onDecision: decide,
       allowEdit,
       allowCreateRule: card.user_options.includes("create_rule"),
+      allowLessonActions: appliedLessons.length > 0,
     }),
   );
+}
+
+interface AppliedLessonMetadata {
+  id: string;
+  field: string;
+  original_value: JsonValue;
+  corrected_value: JsonValue;
 }
 
 function definitionList(rows: Array<[string, string]>): ReactElement {
@@ -185,6 +221,41 @@ function formatJsonValue(value: JsonValue | undefined): string {
   if (value === undefined || value === null) return "Not set";
   if (typeof value === "string") return value;
   return JSON.stringify(value);
+}
+
+function appliedLessonsFromMetadata(
+  metadata: JsonObject | undefined,
+): AppliedLessonMetadata[] {
+  const value = metadata?.["applied_lessons"];
+
+  if (!Array.isArray(value)) return [];
+
+  const lessons: AppliedLessonMetadata[] = [];
+
+  for (const item of value) {
+    if (isAppliedLessonMetadata(item)) lessons.push(item);
+  }
+
+  return lessons;
+}
+
+function isAppliedLessonMetadata(value: unknown): value is AppliedLessonMetadata {
+  if (
+    typeof value !== "object" ||
+    value === null ||
+    Array.isArray(value)
+  ) {
+    return false;
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return (
+    typeof record["id"] === "string" &&
+    typeof record["field"] === "string" &&
+    isJsonValue(record["original_value"]) &&
+    isJsonValue(record["corrected_value"])
+  );
 }
 
 function editableFieldInput(

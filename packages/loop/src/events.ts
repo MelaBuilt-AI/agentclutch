@@ -13,7 +13,11 @@ export type AgentLoopEventType =
   | "loop.resumed"
   | "loop.stopped"
   | "loop.handoff"
-  | "lesson.captured";
+  | "lesson.captured"
+  | "lesson.applied"
+  | "lesson.rejected"
+  | "lesson.reinforced"
+  | "lesson.disabled";
 
 export interface AgentLoopEvent<TPayload = unknown> {
   type: "agentclutch.loop_event.v0";

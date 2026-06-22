@@ -21,7 +21,13 @@ export interface GenerateRunStoryFromJsonlOptions extends GenerateRunStoryOption
   runId?: string;
 }
 
-type StoryStepKind = "proposal" | "pause" | "decision" | "resume" | "result";
+type StoryStepKind =
+  | "proposal"
+  | "pause"
+  | "decision"
+  | "resume"
+  | "result"
+  | "lesson";
 
 interface CollectedStep {
   step: RunStoryStep;
@@ -274,6 +280,15 @@ function collectLoopEventSteps(
     return;
   }
 
+  if (isLessonEvent(event.eventType)) {
+    collected.push({
+      order,
+      kind: "lesson",
+      step: lessonEventStep(event.eventType, event.timestamp, payload),
+    });
+    return;
+  }
+
   if (isFinalResultEvent(event.eventType)) {
     collected.push({
       order,
@@ -429,6 +444,12 @@ function userDecisionToText(decision: UserDecision, actor: string): string {
       return `${actor} approved the action once.`;
     case "edit_fields":
       return `${actor} edited fields before allowing the agent to continue.`;
+    case "accept_lesson":
+      return `${actor} accepted the applied lesson.`;
+    case "reject_lesson":
+      return `${actor} rejected the applied lesson.`;
+    case "disable_lesson":
+      return `${actor} disabled the applied lesson.`;
     case "take_wheel":
       return `${actor} took the wheel and continued manually.`;
     case "block":
@@ -462,10 +483,13 @@ function summarize(steps: readonly CollectedStep[]): string {
   const pauses = countKind(steps, "pause");
   const decisions = countKind(steps, "decision");
   const results = countKind(steps, "result");
+  const lessons = countKind(steps, "lesson");
   const resultText =
     results === 0 ? "" : ` and ${results} final result event(s)`;
+  const lessonText =
+    lessons === 0 ? "" : ` and ${lessons} lesson event(s)`;
 
-  return `The run included ${proposed} proposed action(s), ${pauses} AgentClutch pause(s), ${decisions} user decision event(s)${resultText}.`;
+  return `The run included ${proposed} proposed action(s), ${pauses} AgentClutch pause(s), ${decisions} user decision event(s)${resultText}${lessonText}.`;
 }
 
 function countKind(
@@ -543,6 +567,71 @@ function isFinalResultEvent(eventType: AgentLoopEvent["eventType"]): boolean {
     eventType === "loop.stopped" ||
     eventType === "loop.handoff"
   );
+}
+
+function isLessonEvent(eventType: AgentLoopEvent["eventType"]): boolean {
+  return (
+    eventType === "lesson.captured" ||
+    eventType === "lesson.applied" ||
+    eventType === "lesson.rejected" ||
+    eventType === "lesson.reinforced" ||
+    eventType === "lesson.disabled"
+  );
+}
+
+function lessonEventStep(
+  eventType: AgentLoopEvent["eventType"],
+  timestamp: string,
+  payload: unknown,
+): RunStoryStep {
+  const summary = payloadSummary(payload);
+
+  if (summary !== undefined) {
+    return {
+      timestamp,
+      actor: "system",
+      text: summary.endsWith(".") ? summary : `${summary}.`,
+    };
+  }
+
+  switch (eventType) {
+    case "lesson.applied":
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson applied to the proposed action.",
+      };
+    case "lesson.rejected":
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson rejected by the user.",
+      };
+    case "lesson.reinforced":
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson reinforced by the user.",
+      };
+    case "lesson.disabled":
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson disabled by the user.",
+      };
+    case "lesson.captured":
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson captured from a human correction.",
+      };
+    default:
+      return {
+        timestamp,
+        actor: "system",
+        text: "Lesson event recorded.",
+      };
+  }
 }
 
 function finalResultText(

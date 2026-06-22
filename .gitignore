@@ -1,7 +1,10 @@
 node_modules/
 dist/
 .turbo/
-.agentclutch/
+.agentclutch/*
+!.agentclutch/lessons/
+.agentclutch/lessons/*
+!.agentclutch/lessons/lessons.json
 .env
 .env.*
 !.env.example

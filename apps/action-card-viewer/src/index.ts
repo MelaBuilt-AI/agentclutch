@@ -24,6 +24,7 @@ interface ViewerState {
   rawInput: string;
   card: ActionCardModel | null;
   story: RunStory | null;
+  lessons: ViewerLesson[];
   error: string | null;
   decisionLog: Array<{
     decision: ActionCardDecisionType;
@@ -32,10 +33,20 @@ interface ViewerState {
   }>;
 }
 
+interface ViewerLesson {
+  id: string;
+  field: string;
+  original_value: unknown;
+  corrected_value: unknown;
+  source?: string;
+  event?: string;
+}
+
 const state: ViewerState = {
   rawInput: sampleRecorderEventsJsonl,
   card: sampleActionCard,
   story: generateRunStoryFromJsonl(sampleRecorderEventsJsonl),
+  lessons: lessonsFromEvents(parseRecorderEventsJsonl(sampleRecorderEventsJsonl)),
   error: null,
   decisionLog: [],
 };
@@ -57,7 +68,13 @@ function render(): void {
 function view(): HTMLElement {
   const shell = document.createElement("main");
   shell.className = "viewer-shell";
-  shell.append(header(), editorPanel(), previewPanel(), timelinePanel());
+  shell.append(
+    header(),
+    editorPanel(),
+    previewPanel(),
+    lessonsPanel(),
+    timelinePanel(),
+  );
   return shell;
 }
 
@@ -106,6 +123,9 @@ function editorPanel(): HTMLElement {
     state.rawInput = sampleRecorderEventsJsonl;
     state.card = sampleActionCard;
     state.story = generateRunStoryFromJsonl(sampleRecorderEventsJsonl);
+    state.lessons = lessonsFromEvents(
+      parseRecorderEventsJsonl(sampleRecorderEventsJsonl),
+    );
     state.error = null;
     render();
   });
@@ -117,6 +137,7 @@ function editorPanel(): HTMLElement {
     state.rawInput = JSON.stringify(sampleActionCard, null, 2);
     state.card = sampleActionCard;
     state.story = generateRunStory(sampleActionCard.run_id, [sampleActionCard]);
+    state.lessons = lessonsFromCard(sampleActionCard);
     state.error = null;
     render();
   });
@@ -131,6 +152,34 @@ function editorPanel(): HTMLElement {
     panel.append(error);
   }
 
+  return panel;
+}
+
+function lessonsPanel(): HTMLElement {
+  const panel = document.createElement("section");
+  panel.className = "viewer-panel viewer-lessons";
+
+  const title = document.createElement("h2");
+  title.textContent = "Lessons";
+  panel.append(title);
+
+  if (state.lessons.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "viewer-muted";
+    empty.textContent = "No lessons found in the current input.";
+    panel.append(empty);
+    return panel;
+  }
+
+  const list = document.createElement("ul");
+  for (const lesson of state.lessons) {
+    const item = document.createElement("li");
+    const source = lesson.source ?? lesson.event ?? "lesson";
+    item.textContent = `${lesson.field}: ${formatUnknownValue(lesson.original_value)} -> ${formatUnknownValue(lesson.corrected_value)} (${source})`;
+    list.append(item);
+  }
+
+  panel.append(list);
   return panel;
 }
 
@@ -237,16 +286,19 @@ function loadInput(): void {
     const parsed = parseActionCard(JSON.parse(state.rawInput));
     state.card = parsed;
     state.story = generateRunStory(parsed.run_id, [parsed]);
+    state.lessons = lessonsFromCard(parsed);
     state.error = null;
   } catch (cardError) {
     try {
       const events = parseRecorderEventsJsonl(state.rawInput);
       state.story = generateRunStoryFromJsonl(state.rawInput);
       state.card = findFirstActionCard(events);
+      state.lessons = lessonsFromEvents(events);
       state.error = null;
     } catch (eventsError) {
       state.card = null;
       state.story = null;
+      state.lessons = [];
       state.error = validationMessage(cardError, eventsError);
     }
   }
@@ -293,6 +345,96 @@ function validationMessage(cardError: unknown, eventsError: unknown): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function lessonsFromEvents(events: unknown[]): ViewerLesson[] {
+  const lessons: ViewerLesson[] = [];
+
+  for (const event of events) {
+    if (isRecord(event)) {
+      const payload = event["payload"];
+      const lesson = lessonFromPayload(payload, String(event["eventType"] ?? ""));
+
+      if (lesson !== null) {
+        lessons.push(lesson);
+      }
+
+      const card = tryParseActionCard(event);
+      if (card !== null) {
+        lessons.push(...lessonsFromCard(card));
+      }
+
+      if (isRecord(payload)) {
+        const payloadCard = tryParseActionCard(payload);
+        if (payloadCard !== null) {
+          lessons.push(...lessonsFromCard(payloadCard));
+        }
+      }
+    }
+  }
+
+  return dedupeLessons(lessons);
+}
+
+function lessonsFromCard(card: ActionCardModel): ViewerLesson[] {
+  const value = card.metadata?.["applied_lessons"];
+
+  if (!Array.isArray(value)) return [];
+
+  const lessons: ViewerLesson[] = [];
+
+  for (const item of value) {
+    const lesson = lessonFromPayload({ lesson: item }, "applied_lesson");
+    if (lesson !== null) lessons.push(lesson);
+  }
+
+  return lessons;
+}
+
+function lessonFromPayload(payload: unknown, event: string): ViewerLesson | null {
+  if (!isRecord(payload)) return null;
+
+  const lesson = payload["lesson"];
+  if (!isRecord(lesson)) return null;
+
+  if (
+    typeof lesson["id"] !== "string" ||
+    typeof lesson["field"] !== "string" ||
+    !("original_value" in lesson) ||
+    !("corrected_value" in lesson)
+  ) {
+    return null;
+  }
+
+  return {
+    id: lesson["id"],
+    field: lesson["field"],
+    original_value: lesson["original_value"],
+    corrected_value: lesson["corrected_value"],
+    ...(typeof lesson["source"] === "string"
+      ? { source: lesson["source"] }
+      : {}),
+    ...(event.length === 0 ? {} : { event }),
+  };
+}
+
+function dedupeLessons(lessons: ViewerLesson[]): ViewerLesson[] {
+  const seen = new Set<string>();
+  const deduped: ViewerLesson[] = [];
+
+  for (const lesson of lessons) {
+    const key = `${lesson.id}:${lesson.event ?? ""}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(lesson);
+  }
+
+  return deduped;
+}
+
+function formatUnknownValue(value: unknown): string {
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
 }
 
 export function createViewerSampleCard(): ActionCardModel {

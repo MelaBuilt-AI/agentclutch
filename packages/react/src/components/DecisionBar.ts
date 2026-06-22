@@ -3,13 +3,21 @@ import { h, type ReactElement } from "../element.js";
 
 export type ActionCardDecisionType = Extract<
   UserDecisionType,
-  "approve_once" | "edit_fields" | "take_wheel" | "block" | "create_rule"
+  | "approve_once"
+  | "edit_fields"
+  | "accept_lesson"
+  | "reject_lesson"
+  | "disable_lesson"
+  | "take_wheel"
+  | "block"
+  | "create_rule"
 >;
 
 export interface DecisionBarProps {
   onDecision: (decision: ActionCardDecisionType) => void;
   allowEdit?: boolean;
   allowCreateRule?: boolean;
+  allowLessonActions?: boolean;
   disabled?: boolean;
 }
 
@@ -17,11 +25,30 @@ export function DecisionBar({
   onDecision,
   allowEdit = true,
   allowCreateRule = true,
+  allowLessonActions = false,
   disabled = false
 }: DecisionBarProps): ReactElement {
   return h(
     "div",
     { className: "ac-decision-bar", role: "group", "aria-label": "Action decision" },
+    allowLessonActions
+      ? decisionButton("Accept lesson", "accept_lesson", onDecision, {
+          className: "ac-btn ac-btn-primary",
+          disabled
+        })
+      : null,
+    allowLessonActions
+      ? decisionButton("Reject lesson", "reject_lesson", onDecision, {
+          className: "ac-btn",
+          disabled
+        })
+      : null,
+    allowLessonActions
+      ? decisionButton("Disable lesson", "disable_lesson", onDecision, {
+          className: "ac-btn",
+          disabled
+        })
+      : null,
     decisionButton("Approve once", "approve_once", onDecision, {
       className: "ac-btn ac-btn-primary",
       disabled

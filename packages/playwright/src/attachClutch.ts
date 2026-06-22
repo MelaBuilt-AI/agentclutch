@@ -11,11 +11,23 @@ import type {
 import { buildActionCard } from "@agentclutch/action-card";
 import {
   buildActionPatchesFromEditedFields,
+  appliedLessonsFromActionCardMetadata,
+  applyAutoApplyLessonsToProposal,
+  applyLessonsToProposal,
+  captureLessonsFromEdit,
   classifyConsequence,
   createId,
+  lessonSummary,
+  loadLessons,
   riskFromConsequence,
+  saveLessons,
+  updateLessonsAfterDecision,
+  upsertLessons,
+  type AppliedLesson,
+  type Lesson,
 } from "@agentclutch/core";
 import type {
+  AgentLoopEventType,
   ActionProposal,
   ActionProposalInput,
   ClutchDecision,
@@ -44,6 +56,7 @@ export interface AttachClutchOptions {
   agentModel?: string;
   recorder?: ClutchRecorder | Pick<JsonlRecorder, "record">;
   rulesRootDir?: string;
+  lessonsRootDir?: string;
 }
 
 export interface BrowserActionOptions {
@@ -68,6 +81,7 @@ export interface ProposedDecisionResult {
   decision: ClutchDecision;
   resumeContext: LoopResumeContext;
   executed: boolean;
+  appliedLessons: AppliedLesson[];
 }
 
 export interface ClutchPlaywright {
@@ -95,22 +109,28 @@ export async function attachClutch(
   async function propose(
     input: ActionProposalInput,
   ): Promise<ProposedDecisionResult> {
-    const proposal = normalizeActionProposal(input);
+    const originalProposal = normalizeActionProposal(input);
 
     await record(
       options.recorder,
-      loopEvent(proposal, "action.proposed", proposal),
+      loopEvent(originalProposal, "action.proposed", originalProposal),
     );
-
-    const card = actionCardFromProposal(proposal, runId);
-    await record(options.recorder, card);
-
+    const lessons = await loadLessons(options.lessonsRootDir);
     const ruleEvaluation = evaluateRules(
       await loadRules(options.rulesRootDir),
-      card,
+      actionCardFromProposal(originalProposal, runId),
     );
 
     if (ruleEvaluation.matched && ruleEvaluation.decision !== "require_clutch") {
+      const lessonState =
+        ruleEvaluation.decision === "allow"
+          ? applyAutoApplyLessonsToProposal(originalProposal, lessons)
+          : { proposal: originalProposal, appliedLessons: [] };
+      const proposal = lessonState.proposal;
+      const card = actionCardFromProposal(proposal, runId);
+      await recordAppliedLessons(options, proposal, lessonState.appliedLessons);
+      await record(options.recorder, card);
+      const appliedLessons = appliedLessonsFromActionCardMetadata(card.metadata);
       const userDecision = userDecisionFromRule(card, ruleEvaluation.rule);
       await record(options.recorder, userDecision);
 
@@ -129,9 +149,17 @@ export async function attachClutch(
         decision,
         resumeContext,
         executed: false,
+        appliedLessons,
       };
     }
 
+    const lessonState = applyLessonsToProposal(originalProposal, lessons);
+    const proposal = lessonState.proposal;
+    await recordAppliedLessons(options, proposal, lessonState.appliedLessons);
+
+    const card = actionCardFromProposal(proposal, runId);
+    await record(options.recorder, card);
+    const appliedLessons = appliedLessonsFromActionCardMetadata(card.metadata);
     const userDecision = await showActionCard(page, card);
     await record(options.recorder, userDecision);
 
@@ -141,20 +169,28 @@ export async function attachClutch(
       userDecision,
       userDecisionToClutchDecision(userDecision),
     );
-    const resumeContext = buildResumeContext(proposal, decision);
+    const effectiveProposal =
+      userDecision.decision === "reject_lesson" ? originalProposal : proposal;
+    await persistLessonDecision(options, effectiveProposal, lessons, {
+      userDecision,
+      decision,
+      appliedLessons,
+    });
+    const resumeContext = buildResumeContext(effectiveProposal, decision);
 
     await record(
       options.recorder,
-      loopEvent(proposal, "resume_context.created", resumeContext),
+      loopEvent(effectiveProposal, "resume_context.created", resumeContext),
     );
 
     return {
-      proposal,
+      proposal: effectiveProposal,
       card,
       userDecision,
       decision,
       resumeContext,
       executed: false,
+      appliedLessons,
     };
   }
 
@@ -369,6 +405,7 @@ function actionCardFromProposal(
   );
   const raw = toJsonObject(proposal.proposedAction.rawInput);
   const changedFields = getChangedFields(proposal.metadata);
+  const metadata = toJsonObject(proposal.metadata);
   const consequence = classifyConsequence({
     kind: proposal.proposedAction.kind,
     label: proposal.proposedAction.label,
@@ -428,18 +465,16 @@ function actionCardFromProposal(
     evidence: proposal.evidence.map((item) => ({
       id: createId("ev"),
       label: item.label,
-      source_type: "tool_output",
+      source_type:
+        item.label === "Applied Lesson" || item.source.startsWith("lesson:")
+          ? "memory"
+          : "tool_output",
       source_ref: item.source,
       ...(item.summary === undefined ? {} : { summary: item.summary }),
       ...(item.hash === undefined ? {} : { hash: item.hash }),
     })),
-    user_options: [
-      "approve_once",
-      "edit_fields",
-      "take_wheel",
-      "block",
-      "create_rule",
-    ],
+    user_options: actionCardUserOptions(proposal),
+    ...(metadata === undefined ? {} : { metadata }),
   });
 }
 
@@ -448,10 +483,14 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
 
   switch (decision.decision) {
     case "approve_once":
+    case "accept_lesson":
       return {
         type: "approve_once",
         approvedBy: actor,
         decidedAt: decision.decided_at,
+        ...(decision.decision === "accept_lesson"
+          ? { note: "User accepted an applied lesson." }
+          : {}),
       };
     case "edit_fields":
       return {
@@ -474,6 +513,20 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
         blockedBy: actor,
         decidedAt: decision.decided_at,
         reason: decision.reason ?? "User blocked the browser action.",
+      };
+    case "reject_lesson":
+      return {
+        type: "approve_once",
+        approvedBy: actor,
+        decidedAt: decision.decided_at,
+        note: "User rejected the applied lesson and used the original value.",
+      };
+    case "disable_lesson":
+      return {
+        type: "block",
+        blockedBy: actor,
+        decidedAt: decision.decided_at,
+        reason: decision.reason ?? "User disabled the applied lesson.",
       };
     case "create_rule":
       return {
@@ -516,6 +569,105 @@ async function persistCreateRuleDecision(
     ...decision,
     rule,
   };
+}
+
+async function persistLessonDecision(
+  options: AttachClutchOptions,
+  proposal: ActionProposal,
+  existingLessons: readonly Lesson[],
+  result: {
+    userDecision: UserDecision;
+    decision: ClutchDecision;
+    appliedLessons: readonly AppliedLesson[];
+  },
+): Promise<void> {
+  let lessons = [...existingLessons];
+
+  if (result.appliedLessons.length > 0) {
+    const lessonDecision = lessonDecisionFromUserDecision(result.userDecision);
+
+    if (lessonDecision !== undefined) {
+      lessons = updateLessonsAfterDecision(
+        lessons,
+        result.appliedLessons,
+        lessonDecision,
+      );
+      await saveLessons(lessons, options.lessonsRootDir);
+
+      for (const lesson of result.appliedLessons) {
+        await record(
+          options.recorder,
+          loopEvent(proposal, lessonEventType(lessonDecision), {
+            lesson,
+            summary: `Lesson ${lessonDecision}: ${lessonSummary(lesson)}`,
+          }),
+        );
+      }
+    }
+  }
+
+  if (result.decision.type === "edit") {
+    const candidates = captureLessonsFromEdit(proposal, result.decision);
+
+    if (candidates.length === 0) return;
+
+    lessons = upsertLessons(lessons, candidates);
+    await saveLessons(lessons, options.lessonsRootDir);
+
+    for (const lesson of candidates) {
+      await record(
+        options.recorder,
+        loopEvent(proposal, "lesson.captured", {
+          lesson,
+          summary: `Lesson captured: ${lessonSummary(lesson)}`,
+        }),
+      );
+    }
+  }
+}
+
+async function recordAppliedLessons(
+  options: AttachClutchOptions,
+  proposal: ActionProposal,
+  appliedLessons: readonly AppliedLesson[],
+): Promise<void> {
+  for (const lesson of appliedLessons) {
+    await record(
+      options.recorder,
+      loopEvent(proposal, "lesson.applied", {
+        lesson,
+        summary: `Lesson applied: ${lessonSummary(lesson)}`,
+      }),
+    );
+  }
+}
+
+function lessonDecisionFromUserDecision(
+  decision: UserDecision,
+): "accepted" | "rejected" | "disabled" | undefined {
+  switch (decision.decision) {
+    case "accept_lesson":
+      return "accepted";
+    case "reject_lesson":
+      return "rejected";
+    case "disable_lesson":
+      return "disabled";
+    default:
+      return undefined;
+  }
+}
+
+function lessonEventType(
+  decision: "accepted" | "rejected" | "disabled",
+): AgentLoopEventType {
+  switch (decision) {
+    case "accepted":
+      return "lesson.reinforced";
+    case "rejected":
+      return "lesson.rejected";
+    case "disabled":
+      return "lesson.disabled";
+  }
 }
 
 function userDecisionFromRule(card: ActionCard, rule: LocalRule): UserDecision {
@@ -584,6 +736,23 @@ function ruleToJsonObject(rule: LocalRule): JsonObject {
   };
 }
 
+function actionCardUserOptions(proposal: ActionProposal): ActionCard["user_options"] {
+  const base: ActionCard["user_options"] = [
+    "approve_once",
+    "edit_fields",
+    "take_wheel",
+    "block",
+    "create_rule",
+  ];
+  const appliedLessons = proposal.metadata?.["applied_lessons"];
+
+  if (!Array.isArray(appliedLessons) || appliedLessons.length === 0) {
+    return base;
+  }
+
+  return ["accept_lesson", "reject_lesson", "disable_lesson", ...base];
+}
+
 async function submitElement(locator: Locator): Promise<void> {
   await locator.evaluate((element) => {
     if (element instanceof HTMLFormElement) {
@@ -622,7 +791,7 @@ function inferKindFromText(text: string): string {
 
 function loopEvent(
   proposal: ActionProposal,
-  eventType: "action.proposed" | "resume_context.created",
+  eventType: AgentLoopEventType,
   payload: unknown,
 ) {
   return {

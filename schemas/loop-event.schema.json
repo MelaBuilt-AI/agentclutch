@@ -25,7 +25,11 @@
         "loop.resumed",
         "loop.stopped",
         "loop.handoff",
-        "lesson.captured"
+        "lesson.captured",
+        "lesson.applied",
+        "lesson.rejected",
+        "lesson.reinforced",
+        "lesson.disabled"
       ]
     },
     "timestamp": { "type": "string", "format": "date-time" },

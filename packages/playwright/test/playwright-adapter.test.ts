@@ -5,6 +5,11 @@ import type {
   UserDecision,
 } from "@agentclutch/action-card";
 import type { Page } from "playwright";
+import {
+  loadLessons,
+  saveLessons,
+  type Lesson,
+} from "@agentclutch/core";
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -93,6 +98,7 @@ describe("attachClutch", () => {
   });
 
   it("returns edit patch and resume correction for edited fields", async () => {
+    const rootDir = await tempRoot();
     const page = createFakePage("edit_fields", [
       {
         field: "quantity",
@@ -104,6 +110,7 @@ describe("attachClutch", () => {
     const clutch = await attachClutch(page, {
       runId: "run_test",
       recorder: new MemoryRecorder(),
+      lessonsRootDir: rootDir,
     });
 
     const result = await clutch.click("#checkout", {
@@ -160,7 +167,18 @@ describe("attachClutch", () => {
         },
       ],
     });
-    expect(events[3]).toMatchObject({
+    expect(events.find((event) => eventType(event) === "lesson.captured")).toMatchObject({
+      type: "agentclutch.loop_event.v0",
+      eventType: "lesson.captured",
+      payload: {
+        lesson: {
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+        },
+      },
+    });
+    expect(events.find((event) => eventType(event) === "resume_context.created")).toMatchObject({
       type: "agentclutch.loop_event.v0",
       eventType: "resume_context.created",
       payload: {
@@ -183,6 +201,13 @@ describe("attachClutch", () => {
         },
       },
     });
+    await expect(loadLessons(rootDir)).resolves.toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
   });
 
   it("uses tool_wrapper source mode for browser actions", async () => {
@@ -419,6 +444,266 @@ describe("attachClutch", () => {
     expect(page.clicked).toBe(true);
     expect(page.shownActionCards).toBe(1);
   });
+
+  it("applies matching lessons before showing the Action Card and reinforces accepted lessons", async () => {
+    const rootDir = await tempRoot();
+    await saveLessons([checkoutLesson()], rootDir);
+    const page = createFakePage("accept_lesson");
+    const clutch = await attachClutch(page, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: rootDir,
+    });
+
+    const result = await clutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(result.decision).toMatchObject({
+      type: "approve_once",
+      approvedBy: "tester",
+      note: "User accepted an applied lesson.",
+    });
+    expect(result.executed).toBe(true);
+    expect(page.clicked).toBe(true);
+    expect(page.shownActionCards).toBe(1);
+    expect(result.appliedLessons).toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
+    expect(result.card.proposed_action.changed_fields?.[0]).toMatchObject({
+      field: "quantity",
+      before: 1,
+      after: 3,
+    });
+    expect(page.lastActionCard?.metadata?.["applied_lessons"]).toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
+    expect(result.card.metadata?.["applied_lessons"]).toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
+    expect(events.map(eventType)).toContain("lesson.applied");
+    expect(events.map(eventType)).toContain("lesson.reinforced");
+
+    await expect(loadLessons(rootDir)).resolves.toEqual([
+      expect.objectContaining({
+        confidence: 0.85,
+        usage_count: 1,
+      }),
+    ]);
+  });
+
+  it("shows the Action Card for matching lessons and require_clutch rules", async () => {
+    const rootDir = await tempRoot();
+    await saveLessons([checkoutLesson()], rootDir);
+    await saveRules([checkoutRule("require_clutch")], rootDir);
+    const page = createFakePage("accept_lesson");
+    const clutch = await attachClutch(page, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: rootDir,
+      rulesRootDir: rootDir,
+    });
+
+    const result = await clutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(result.decision.type).toBe("approve_once");
+    expect(page.shownActionCards).toBe(1);
+    expect(result.card.metadata?.["applied_lessons"]).toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
+  });
+
+  it("lets allow rules skip the Action Card without auto-applying untrusted lessons", async () => {
+    const rootDir = await tempRoot();
+    await saveLessons([checkoutLesson()], rootDir);
+    await saveRules([checkoutRule("allow")], rootDir);
+    const page = createFakePage("block");
+    const clutch = await attachClutch(page, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: rootDir,
+      rulesRootDir: rootDir,
+    });
+
+    const result = await clutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(result.decision).toMatchObject({
+      type: "approve_once",
+      approvedBy: "AgentClutch rule",
+    });
+    expect(result.executed).toBe(true);
+    expect(page.clicked).toBe(true);
+    expect(page.shownActionCards).toBe(0);
+    expect(result.appliedLessons).toEqual([]);
+    expect(result.card.metadata?.["applied_lessons"]).toBeUndefined();
+    expect(result.card.proposed_action.changed_fields?.[0]).toMatchObject({
+      field: "quantity",
+      after: 1,
+    });
+  });
+
+  it("auto-applies trusted lessons only when an allow rule skips the Action Card", async () => {
+    const rootDir = await tempRoot();
+    await saveLessons([checkoutLesson({ auto_apply: true })], rootDir);
+    await saveRules([checkoutRule("allow")], rootDir);
+    const page = createFakePage("block");
+    const clutch = await attachClutch(page, {
+      runId: "run_test",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: rootDir,
+      rulesRootDir: rootDir,
+    });
+
+    const result = await clutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(result.decision.type).toBe("approve_once");
+    expect(page.shownActionCards).toBe(0);
+    expect(result.appliedLessons).toEqual([
+      expect.objectContaining({
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+      }),
+    ]);
+    expect(result.card.proposed_action.changed_fields?.[0]).toMatchObject({
+      field: "quantity",
+      before: 1,
+      after: 3,
+    });
+  });
+
+  it("rejects and disables applied lessons", async () => {
+    const rejectRoot = await tempRoot();
+    await saveLessons([checkoutLesson()], rejectRoot);
+    const rejectPage = createFakePage("reject_lesson");
+    const rejectClutch = await attachClutch(rejectPage, {
+      runId: "run_reject",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: rejectRoot,
+    });
+
+    const rejected = await rejectClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(rejected.decision).toMatchObject({
+      type: "approve_once",
+      note: "User rejected the applied lesson and used the original value.",
+    });
+    expect(rejected.executed).toBe(true);
+    expect(rejectPage.clicked).toBe(true);
+    expect(rejected.proposal.metadata?.["applied_lessons"]).toBeUndefined();
+    expect(
+      (rejected.proposal.metadata?.["changedFields"] as ChangedField[])[0],
+    ).toMatchObject({
+      field: "quantity",
+      after: 1,
+    });
+    await expect(loadLessons(rejectRoot)).resolves.toEqual([
+      expect.objectContaining({
+        confidence: 0.6,
+      }),
+    ]);
+
+    const disableRoot = await tempRoot();
+    await saveLessons([checkoutLesson()], disableRoot);
+    const disablePage = createFakePage("disable_lesson");
+    const disableClutch = await attachClutch(disablePage, {
+      runId: "run_disable",
+      recorder: new MemoryRecorder(),
+      lessonsRootDir: disableRoot,
+    });
+
+    const disabled = await disableClutch.click("#checkout", {
+      kind: "browser.checkout",
+      label: "Complete checkout",
+      targetApp: "FakeStore",
+      changedFields: [
+        {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+      ],
+    });
+
+    expect(disabled.decision).toMatchObject({
+      type: "block",
+      reason: "User disabled the applied lesson.",
+    });
+    await expect(loadLessons(disableRoot)).resolves.toEqual([
+      expect.objectContaining({
+        confidence: 0,
+      }),
+    ]);
+  });
 });
 
 describe("local rules", () => {
@@ -559,6 +844,7 @@ interface FakePage extends Page {
   clicked: boolean;
   installedScripts: string[];
   shownActionCards: number;
+  lastActionCard?: ActionCard;
 }
 
 function createFakePage(
@@ -570,6 +856,7 @@ function createFakePage(
     clicked: false,
     installedScripts: [] as string[],
     shownActionCards: 0,
+    lastActionCard: undefined as ActionCard | undefined,
   };
 
   const page = {
@@ -581,6 +868,9 @@ function createFakePage(
     },
     get shownActionCards() {
       return state.shownActionCards;
+    },
+    get lastActionCard() {
+      return state.lastActionCard;
     },
     async addInitScript(script: string) {
       state.installedScripts.push(script);
@@ -596,6 +886,7 @@ function createFakePage(
 
       const previousWindow = globalThis.window;
       state.shownActionCards += 1;
+      state.lastActionCard = payload as ActionCard;
       globalThis.window = {
         __agentclutchShowActionCard: async (card: ActionCard) =>
           userDecision(card, decision, editedFields, rule),
@@ -673,9 +964,24 @@ function eventType(event: unknown): string | undefined {
 }
 
 async function tempRoot(): Promise<string> {
-  const dir = await mkdtemp(join(tmpdir(), "agentclutch-rules-"));
+  const dir = await mkdtemp(join(tmpdir(), "agentclutch-local-"));
   tempDirs.push(dir);
   return dir;
+}
+
+function checkoutLesson(overrides: Partial<Lesson> = {}): Lesson {
+  return {
+    id: "lesson_checkout_quantity",
+    action_kind: "browser.checkout",
+    target_app: "FakeStore",
+    field: "quantity",
+    original_value: 1,
+    corrected_value: 3,
+    confidence: 0.8,
+    created_at: "2026-06-22T04:00:00.000Z",
+    usage_count: 0,
+    ...overrides,
+  };
 }
 
 function checkoutRule(decision: LocalRule["decision"]): LocalRule {

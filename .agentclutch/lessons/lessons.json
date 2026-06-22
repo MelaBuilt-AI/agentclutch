@@ -1,0 +1,13 @@
+[
+  {
+    "id": "lesson_a4910af3",
+    "action_kind": "browser.checkout",
+    "target_app": "FakeStore",
+    "field": "quantity",
+    "original_value": 1,
+    "corrected_value": 3,
+    "confidence": 0.8,
+    "created_at": "2026-06-22T22:58:19.399Z",
+    "usage_count": 0
+  }
+]

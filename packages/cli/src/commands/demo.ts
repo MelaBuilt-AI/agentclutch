@@ -35,6 +35,7 @@ export interface CheckoutEditDecision {
 
 export interface CheckoutDemoOptions {
   clearRules?: boolean;
+  clearCheckoutRules?: boolean;
   seedRuleDecision?: RuleDecision;
 }
 
@@ -72,6 +73,10 @@ export async function prepareCheckoutDemoRules(
 ): Promise<LocalRule[]> {
   let rules = options.clearRules ? [] : await loadRules(rootDir);
 
+  if (options.clearCheckoutRules === true) {
+    rules = rules.filter((rule) => !isCheckoutDemoRule(rule));
+  }
+
   if (options.seedRuleDecision !== undefined) {
     rules = upsertRule(
       rules,
@@ -79,7 +84,11 @@ export async function prepareCheckoutDemoRules(
     );
   }
 
-  if (options.clearRules === true || options.seedRuleDecision !== undefined) {
+  if (
+    options.clearRules === true ||
+    options.clearCheckoutRules === true ||
+    options.seedRuleDecision !== undefined
+  ) {
     await saveRules(rules, rootDir);
   }
 
@@ -107,7 +116,10 @@ export function checkoutDemoRule(
 export async function runCheckoutDemo(
   options: CheckoutDemoOptions = {},
 ): Promise<void> {
-  await prepareCheckoutDemoRules(options, RULES_ROOT_DIR);
+  await prepareCheckoutDemoRules(
+    defaultCheckoutDemoRuleOptions(options),
+    RULES_ROOT_DIR,
+  );
 
   const runId = createRunId();
   const store = new RunStore(RULES_ROOT_DIR);
@@ -203,6 +215,19 @@ export async function runCheckoutDemo(
   }
 }
 
+function defaultCheckoutDemoRuleOptions(
+  options: CheckoutDemoOptions,
+): CheckoutDemoOptions {
+  if (options.clearRules === true || options.seedRuleDecision !== undefined) {
+    return options;
+  }
+
+  return {
+    ...options,
+    clearCheckoutRules: true,
+  };
+}
+
 function checkoutRuleDescription(decision: RuleDecision): string {
   switch (decision) {
     case "allow":
@@ -212,6 +237,15 @@ function checkoutRuleDescription(decision: RuleDecision): string {
     case "require_clutch":
       return "Require AgentClutch approval for FakeStore checkout.";
   }
+}
+
+function isCheckoutDemoRule(rule: LocalRule): boolean {
+  return (
+    rule.match.action_kind === "browser.checkout" &&
+    rule.match.target_surface === "browser" &&
+    rule.match.target_app === "FakeStore" &&
+    rule.match.consequence_class === "payment_or_purchase"
+  );
 }
 
 export async function completeEditedCheckout(

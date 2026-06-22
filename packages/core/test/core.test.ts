@@ -1,6 +1,7 @@
 import {
   buildActionCard,
   type ActionCard,
+  type ChangedField,
   type UserDecision,
 } from "@agentclutch/action-card";
 import type {
@@ -9,16 +10,25 @@ import type {
   ClutchDecision,
   LoopResumeContext,
 } from "@agentclutch/loop";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   ClutchSession,
+  applyLessonsToProposal,
   buildActionPatchesFromEditedFields,
+  captureLessonsFromEdit,
   classifyConsequence,
   createClutch,
   generateRunStoryFromJsonl,
   generateRunStory,
+  lessonsFilePath,
+  loadLessons,
   parseRecorderEventsJsonl,
   riskFromConsequence,
+  saveLessons,
+  updateLessonsAfterDecision,
 } from "../src/index.js";
 
 const createdAt = "2026-06-22T04:00:00.000Z";
@@ -270,6 +280,92 @@ describe("buildActionPatchesFromEditedFields", () => {
   });
 });
 
+describe("lessons", () => {
+  it("captures lessons from edit decisions and applies matching lessons", async () => {
+    const rootDir = await tempRoot("agentclutch-lessons-core-");
+
+    try {
+      const editDecision: ClutchDecision = {
+        type: "edit",
+        approvedBy: "tester",
+        decidedAt,
+        patch: [
+          {
+            op: "replace",
+            path: "/changed_fields/quantity/after",
+            from: 1,
+            value: 3,
+            reason: "User edited quantity.",
+          },
+        ],
+      };
+
+      const proposalWithQuantity = actionProposalWithQuantity(1);
+      const candidates = captureLessonsFromEdit(
+        proposalWithQuantity,
+        editDecision,
+        "2026-06-22T04:02:00.000Z",
+      );
+
+      expect(candidates).toEqual([
+        expect.objectContaining({
+          action_kind: "browser.checkout",
+          target_app: "FakeStore",
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+          confidence: 0.8,
+          usage_count: 0,
+        }),
+      ]);
+
+      await saveLessons(candidates, rootDir);
+      await expect(loadLessons(rootDir)).resolves.toEqual(candidates);
+
+      const applied = applyLessonsToProposal(
+        actionProposalWithQuantity(1),
+        await loadLessons(rootDir),
+      );
+
+      expect(applied.appliedLessons).toEqual([
+        expect.objectContaining({
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+          source: "learned from prior correction",
+        }),
+      ]);
+      expect(
+        (applied.proposal.metadata?.["changedFields"] as ChangedField[])[0],
+      ).toMatchObject({
+        field: "quantity",
+        before: 1,
+        after: 3,
+      });
+      expect(applied.proposal.metadata?.["applied_lessons"]).toEqual([
+        expect.objectContaining({
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+        }),
+      ]);
+
+      const reinforced = updateLessonsAfterDecision(
+        candidates,
+        applied.appliedLessons,
+        "accepted",
+      );
+
+      expect(reinforced[0]).toMatchObject({
+        confidence: 0.85,
+        usage_count: 1,
+      });
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("createClutch", () => {
   it("supports confirmAction prompt_guard path", async () => {
     const clutch = createClutch({
@@ -377,6 +473,87 @@ describe("createClutch", () => {
     expect(result.proposal.loopId).toBe("loop_native_1");
     expect(result.card.consequence.class).toBe("payment_or_purchase");
   });
+
+  it("records edit lessons and applies them to future matching actions", async () => {
+    const rootDir = await tempRoot("agentclutch-lessons-facade-");
+    const records: unknown[] = [];
+
+    try {
+      const clutch = createClutch({
+        runId: "run_lessons_1",
+        lessonsRootDir: rootDir,
+        recorder: {
+          async record(event) {
+            records.push(event);
+          },
+        },
+        renderer: {
+          decide: async (_proposal, card) => {
+            const appliedLessons = card?.metadata?.["applied_lessons"];
+
+            if (Array.isArray(appliedLessons) && appliedLessons.length > 0) {
+              return {
+                type: "approve_once",
+                approvedBy: "tester",
+                decidedAt,
+              };
+            }
+
+            return {
+              type: "edit",
+              approvedBy: "tester",
+              decidedAt,
+              patch: [
+                {
+                  op: "replace",
+                  path: "/changed_fields/quantity/after",
+                  from: 1,
+                  value: 3,
+                },
+              ],
+            };
+          },
+        },
+      });
+
+      const first = await clutch.onActionProposed(actionProposalWithQuantity(1));
+      expect(first.decision.type).toBe("edit");
+
+      const stored = JSON.parse(
+        await readFile(lessonsFilePath(rootDir), "utf8"),
+      ) as unknown;
+      expect(stored).toEqual([
+        expect.objectContaining({
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+        }),
+      ]);
+
+      const second = await clutch.onActionProposed(
+        actionProposalWithQuantity(1, "aprop_lessons_2"),
+      );
+
+      expect(second.appliedLessons).toHaveLength(1);
+      expect(second.card.metadata?.["applied_lessons"]).toEqual([
+        expect.objectContaining({
+          field: "quantity",
+          original_value: 1,
+          corrected_value: 3,
+        }),
+      ]);
+      expect(second.card.proposed_action.changed_fields?.[0]).toMatchObject({
+        field: "quantity",
+        before: 1,
+        after: 3,
+      });
+      expect(records.map(eventType)).toContain("lesson.captured");
+      expect(records.map(eventType)).toContain("lesson.applied");
+      expect(records.map(eventType)).toContain("lesson.reinforced");
+    } finally {
+      await rm(rootDir, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("generateRunStory", () => {
@@ -447,6 +624,33 @@ describe("generateRunStory", () => {
     );
   });
 
+  it("records lesson events in Run Story output", () => {
+    const story = generateRunStory(
+      "run_test_1",
+      [
+        loopEvent("lesson.applied", "2026-06-22T04:00:01.000Z", {
+          summary: "Lesson applied: quantity: 1 -> 3",
+        }),
+        loopEvent("lesson.rejected", "2026-06-22T04:00:02.000Z", {
+          summary: "Lesson rejected: quantity: 1 -> 3",
+        }),
+        loopEvent("lesson.reinforced", "2026-06-22T04:00:03.000Z", {
+          summary: "Lesson reinforced: quantity: 1 -> 3",
+        }),
+      ],
+      {
+        createdAt: "2026-06-22T04:02:00.000Z",
+      },
+    );
+
+    expect(story.steps.map((step) => step.text)).toEqual([
+      "Lesson applied: quantity: 1 -> 3.",
+      "Lesson rejected: quantity: 1 -> 3.",
+      "Lesson reinforced: quantity: 1 -> 3.",
+    ]);
+    expect(story.summary).toContain("3 lesson event(s)");
+  });
+
   it("parses recorder JSONL and infers the run id", () => {
     const jsonl = [
       JSON.stringify(
@@ -489,3 +693,55 @@ describe("generateRunStory", () => {
     );
   });
 });
+
+function actionProposalWithQuantity(
+  quantity: number,
+  id = "aprop_lessons_1",
+): ActionProposal {
+  return {
+    ...actionProposal(),
+    id,
+    proposedAction: {
+      ...actionProposal().proposedAction,
+      rawInput: {
+        selector: "#checkout",
+        changedFields: [
+          {
+            field: "quantity",
+            after: quantity,
+            editable: true,
+          },
+        ],
+      },
+    },
+    visibleContext: {
+      fields: {
+        quantity,
+      },
+    },
+    metadata: {
+      changedFields: [
+        {
+          field: "quantity",
+          after: quantity,
+          editable: true,
+        },
+      ],
+    },
+  };
+}
+
+async function tempRoot(prefix: string): Promise<string> {
+  return mkdtemp(join(tmpdir(), prefix));
+}
+
+function eventType(event: unknown): string | undefined {
+  if (typeof event !== "object" || event === null) return undefined;
+
+  const record = event as Record<string, unknown>;
+
+  if (typeof record["eventType"] === "string") return record["eventType"];
+  if (typeof record["type"] === "string") return record["type"];
+
+  return undefined;
+}

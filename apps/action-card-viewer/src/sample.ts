@@ -30,7 +30,8 @@ export const sampleActionCard: ActionCard = buildActionCard({
       },
       {
         field: "quantity",
-        after: 1,
+        before: 1,
+        after: 3,
         editable: true,
       },
       {
@@ -64,6 +65,14 @@ export const sampleActionCard: ActionCard = buildActionCard({
   },
   evidence: [
     {
+      id: "ev_applied_lesson_quantity",
+      label: "Applied Lesson",
+      source_type: "memory",
+      source_ref: "lesson_quantity_checkout",
+      summary: "quantity: 1 -> 3; Source: learned from prior correction",
+      confidence: 0.85,
+    },
+    {
       id: "ev_product_page",
       label: "Selected product",
       source_type: "dom",
@@ -84,7 +93,24 @@ export const sampleActionCard: ActionCard = buildActionCard({
     "take_wheel",
     "block",
     "create_rule",
+    "accept_lesson",
+    "reject_lesson",
+    "disable_lesson",
   ],
+  metadata: {
+    applied_lessons: [
+      {
+        id: "lesson_quantity_checkout",
+        action_kind: "browser.checkout",
+        target_app: "FakeStore",
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+        confidence: 0.85,
+        source: "learned from prior correction",
+      },
+    ],
+  },
 });
 
 const sampleProposal = {
@@ -114,10 +140,24 @@ const sampleProposal = {
     highlightedSelector: "#checkout",
     fields: {
       product: "Wireless Headphones Pro",
-      quantity: 1,
+      quantity: 3,
       total: "$249.00",
       buttonText: "Complete checkout",
     },
+  },
+  metadata: {
+    applied_lessons: [
+      {
+        id: "lesson_quantity_checkout",
+        action_kind: "browser.checkout",
+        target_app: "FakeStore",
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+        confidence: 0.85,
+        source: "learned from prior correction",
+      },
+    ],
   },
   loopContext: {
     previousStepIds: ["step_cart_review"],
@@ -134,19 +174,10 @@ const sampleProposal = {
 };
 
 const sampleDecision = {
-  type: "edit",
+  type: "approve_once",
   approvedBy: "Demo User",
   decidedAt: "2026-06-22T04:00:20.000Z",
-  patch: [
-    {
-      op: "replace",
-      path: "/changed_fields/quantity/after",
-      from: 1,
-      value: 2,
-      reason: "User edited quantity.",
-    },
-  ],
-  note: "Quantity changed before approval.",
+  note: "User accepted an applied lesson.",
 };
 
 export const sampleRecorderEvents = [
@@ -162,12 +193,54 @@ export const sampleRecorderEvents = [
   sampleActionCard,
   {
     type: "agentclutch.loop_event.v0",
+    id: "evt_sample_lesson_applied",
+    loopId: "loop_sample_checkout",
+    stepId: "step_checkout",
+    eventType: "lesson.applied",
+    timestamp: "2026-06-22T04:00:01.000Z",
+    payload: {
+      lesson: {
+        id: "lesson_quantity_checkout",
+        action_kind: "browser.checkout",
+        target_app: "FakeStore",
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+        confidence: 0.85,
+        source: "learned from prior correction",
+      },
+      summary: "Lesson applied: quantity: 1 -> 3",
+    },
+  },
+  {
+    type: "agentclutch.loop_event.v0",
     id: "evt_sample_user_decision",
     loopId: "loop_sample_checkout",
     stepId: "step_checkout",
     eventType: "user.decision",
     timestamp: "2026-06-22T04:00:20.000Z",
     payload: sampleDecision,
+  },
+  {
+    type: "agentclutch.loop_event.v0",
+    id: "evt_sample_lesson_reinforced",
+    loopId: "loop_sample_checkout",
+    stepId: "step_checkout",
+    eventType: "lesson.reinforced",
+    timestamp: "2026-06-22T04:00:20.500Z",
+    payload: {
+      lesson: {
+        id: "lesson_quantity_checkout",
+        action_kind: "browser.checkout",
+        target_app: "FakeStore",
+        field: "quantity",
+        original_value: 1,
+        corrected_value: 3,
+        confidence: 0.9,
+        source: "learned from prior correction",
+      },
+      summary: "Lesson reinforced: quantity: 1 -> 3",
+    },
   },
   {
     type: "agentclutch.loop_event.v0",
@@ -183,18 +256,9 @@ export const sampleRecorderEvents = [
       proposalId: "sample_checkout",
       sourceMode: "loop_native",
       decision: sampleDecision,
-      userCorrection: {
-        before: {
-          changed_fields: sampleActionCard.proposed_action.changed_fields,
-        },
-        after: sampleDecision.patch,
-        explanation: sampleDecision.note,
-      },
-      instructionForAgent:
-        "Continue from the corrected action. Do not repeat the original unedited action unless the user explicitly approves it.",
       continuePolicy: {
         allowSameActionRetry: true,
-        requireApprovalForSimilarActions: true,
+        requireApprovalForSimilarActions: false,
         maxRetries: 1,
       },
     },
