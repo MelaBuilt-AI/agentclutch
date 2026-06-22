@@ -1,3 +1,16 @@
 {
-  "rules": []
+  "rules": [
+    {
+      "id": "email-send-requires-approval",
+      "match": {
+        "kind": "email.send"
+      },
+      "decision": "require_clutch",
+      "reason": "Sending email can expose information outside the app."
+    }
+  ],
+  "redaction": {
+    "omitFields": ["password", "token", "authorization"],
+    "summarizeFields": ["body"]
+  }
 }

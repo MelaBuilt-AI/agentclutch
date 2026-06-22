@@ -1,3 +1,15 @@
 {
-  "rules": []
+  "rules": [
+    {
+      "id": "file-delete-requires-approval",
+      "match": {
+        "kind": "file.delete"
+      },
+      "decision": "require_clutch",
+      "reason": "Deleting files may not be reversible."
+    }
+  ],
+  "redaction": {
+    "omitFileContents": true
+  }
 }

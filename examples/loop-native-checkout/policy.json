@@ -1,3 +1,16 @@
 {
-  "rules": []
+  "rules": [
+    {
+      "id": "checkout-requires-approval",
+      "match": {
+        "kind": "browser.checkout"
+      },
+      "decision": "require_clutch",
+      "reason": "Checkout may create orders or payment records."
+    }
+  ],
+  "resume": {
+    "block": "replan_without_checkout",
+    "takeover": "observe_current_state_before_continue"
+  }
 }

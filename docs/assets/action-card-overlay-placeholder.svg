@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-labelledby="title desc">
+  <title id="title">Action Card overlay screenshot placeholder</title>
+  <desc id="desc">Placeholder for the AgentClutch browser overlay Action Card screenshot.</desc>
+  <rect width="960" height="540" fill="#111827"/>
+  <rect x="70" y="70" width="820" height="400" rx="10" fill="#ffffff" stroke="#d0d5dd"/>
+  <text x="110" y="125" fill="#475467" font-family="Arial, sans-serif" font-size="14" font-weight="700">AGENTCLUTCH ACTION CARD</text>
+  <text x="110" y="166" fill="#101828" font-family="Arial, sans-serif" font-size="34" font-weight="700">Complete checkout</text>
+  <rect x="680" y="105" width="120" height="32" rx="16" fill="#fff7ed" stroke="#dc6803"/>
+  <text x="704" y="127" fill="#b54708" font-family="Arial, sans-serif" font-size="14" font-weight="700">HIGH 72/100</text>
+  <rect x="110" y="210" width="330" height="120" rx="8" fill="#f8fafc" stroke="#e4e7ec"/>
+  <rect x="480" y="210" width="330" height="120" rx="8" fill="#f8fafc" stroke="#e4e7ec"/>
+  <text x="135" y="250" fill="#344054" font-family="Arial, sans-serif" font-size="18" font-weight="700">Target</text>
+  <text x="505" y="250" fill="#344054" font-family="Arial, sans-serif" font-size="18" font-weight="700">Consequence</text>
+  <rect x="110" y="385" width="130" height="42" rx="6" fill="#1570ef"/>
+  <text x="132" y="412" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="700">Approve once</text>
+  <rect x="560" y="385" width="90" height="42" rx="6" fill="#d92d20"/>
+  <text x="588" y="412" fill="#ffffff" font-family="Arial, sans-serif" font-size="15" font-weight="700">Block</text>
+</svg>
