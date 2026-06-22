@@ -1,7 +1,7 @@
 {
   "name": "@agentclutch/recorder",
   "version": "0.0.0",
-  "description": "AgentClutch recorder package scaffold.",
+  "description": "Local JSONL recorder for AgentClutch runs.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,7 +15,7 @@
   "files": ["dist"],
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
