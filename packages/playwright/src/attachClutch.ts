@@ -6,19 +6,20 @@ import type {
   JsonObject,
   JsonValue,
   ProposedAction,
-  UserDecision
+  UserDecision,
 } from "@agentclutch/action-card";
 import { buildActionCard } from "@agentclutch/action-card";
 import {
+  buildActionPatchesFromEditedFields,
   classifyConsequence,
   createId,
-  riskFromConsequence
+  riskFromConsequence,
 } from "@agentclutch/core";
 import type {
   ActionProposal,
   ActionProposalInput,
   ClutchDecision,
-  LoopResumeContext
+  LoopResumeContext,
 } from "@agentclutch/loop";
 import { buildResumeContext, normalizeActionProposal } from "@agentclutch/loop";
 import type { JsonlRecorder } from "@agentclutch/recorder";
@@ -63,18 +64,18 @@ export interface ProposedDecisionResult {
 export interface ClutchPlaywright {
   click(
     selector: string,
-    options?: BrowserActionOptions
+    options?: BrowserActionOptions,
   ): Promise<ProposedDecisionResult>;
   submit(
     selector: string,
-    options?: BrowserActionOptions
+    options?: BrowserActionOptions,
   ): Promise<ProposedDecisionResult>;
   propose(input: ActionProposalInput): Promise<ProposedDecisionResult>;
 }
 
 export async function attachClutch(
   page: Page,
-  options: AttachClutchOptions = {}
+  options: AttachClutchOptions = {},
 ): Promise<ClutchPlaywright> {
   const runId = options.runId ?? createId("run");
   const overlayScript = browserOverlayScript();
@@ -83,11 +84,14 @@ export async function attachClutch(
   await page.evaluate(overlayScript);
 
   async function propose(
-    input: ActionProposalInput
+    input: ActionProposalInput,
   ): Promise<ProposedDecisionResult> {
     const proposal = normalizeActionProposal(input);
 
-    await record(options.recorder, loopEvent(proposal, "action.proposed", proposal));
+    await record(
+      options.recorder,
+      loopEvent(proposal, "action.proposed", proposal),
+    );
 
     const card = actionCardFromProposal(proposal, runId);
     await record(options.recorder, card);
@@ -100,7 +104,7 @@ export async function attachClutch(
 
     await record(
       options.recorder,
-      loopEvent(proposal, "resume_context.created", resumeContext)
+      loopEvent(proposal, "resume_context.created", resumeContext),
     );
 
     return {
@@ -109,14 +113,20 @@ export async function attachClutch(
       userDecision,
       decision,
       resumeContext,
-      executed: false
+      executed: false,
     };
   }
 
   return {
     async click(selector, actionOptions) {
       const result = await propose(
-        await browserActionProposalInput(page, selector, "click", options, actionOptions)
+        await browserActionProposalInput(
+          page,
+          selector,
+          "click",
+          options,
+          actionOptions,
+        ),
       );
 
       if (result.decision.type === "approve_once") {
@@ -131,8 +141,8 @@ export async function attachClutch(
       const result = await propose(
         await browserActionProposalInput(page, selector, "submit", options, {
           ...actionOptions,
-          kind: actionOptions?.kind ?? "browser.form_submit"
-        })
+          kind: actionOptions?.kind ?? "browser.form_submit",
+        }),
       );
 
       if (result.decision.type === "approve_once") {
@@ -143,13 +153,13 @@ export async function attachClutch(
       return result;
     },
 
-    propose
+    propose,
   };
 }
 
 async function showActionCard(
   page: Page,
-  card: ActionCard
+  card: ActionCard,
 ): Promise<UserDecision> {
   const decision = await page.evaluate(async (actionCard: unknown) => {
     if (!window.__agentclutchShowActionCard) {
@@ -167,14 +177,16 @@ async function browserActionProposalInput(
   selector: string,
   action: "click" | "submit",
   attachOptions: AttachClutchOptions,
-  actionOptions: BrowserActionOptions = {}
+  actionOptions: BrowserActionOptions = {},
 ): Promise<ActionProposalInput> {
   const locator = page.locator(selector).first();
   const target = await inspectTarget(page, locator);
   const visibleLabel = target.buttonText ?? target.ariaLabel ?? selector;
   const kind =
     actionOptions.kind ??
-    (action === "submit" ? "browser.form_submit" : inferKindFromText(visibleLabel));
+    (action === "submit"
+      ? "browser.form_submit"
+      : inferKindFromText(visibleLabel));
   const label =
     actionOptions.label ??
     (action === "submit" && visibleLabel === selector
@@ -185,14 +197,18 @@ async function browserActionProposalInput(
 
   const input: ActionProposalInput = {
     sourceMode: "tool_wrapper",
-    ...(actionOptions.loopId === undefined ? {} : { loopId: actionOptions.loopId }),
-    ...(actionOptions.stepId === undefined ? {} : { stepId: actionOptions.stepId }),
+    ...(actionOptions.loopId === undefined
+      ? {}
+      : { loopId: actionOptions.loopId }),
+    ...(actionOptions.stepId === undefined
+      ? {}
+      : { stepId: actionOptions.stepId }),
     agent: {
       name: attachOptions.agentName ?? "playwright-agent",
       runtime: "playwright",
       ...(attachOptions.agentModel === undefined
         ? {}
-        : { model: attachOptions.agentModel })
+        : { model: attachOptions.agentModel }),
     },
     ...(actionOptions.userGoal === undefined
       ? {}
@@ -209,8 +225,11 @@ async function browserActionProposalInput(
         selector,
         action,
         kind,
-        label
-      }
+        label,
+        ...(actionOptions.changedFields === undefined
+          ? {}
+          : { changedFields: actionOptions.changedFields }),
+      },
     },
     visibleContext: {
       pageTitle: target.pageTitle,
@@ -222,18 +241,18 @@ async function browserActionProposalInput(
         tagName: target.tagName,
         buttonText: target.buttonText,
         ariaLabel: target.ariaLabel,
-        boundingBox: target.boundingBox
-      }
+        boundingBox: target.boundingBox,
+      },
     },
     loopContext: {
       ...actionOptions.loopContext,
       ...(actionOptions.description === undefined
         ? {}
-        : { whyNow: actionOptions.description })
+        : { whyNow: actionOptions.description }),
     },
     riskHints: {
       requiresApproval: true,
-      ...actionOptions.riskHints
+      ...actionOptions.riskHints,
     },
     ...(actionOptions.evidence === undefined
       ? {}
@@ -242,10 +261,10 @@ async function browserActionProposalInput(
             label: item.label,
             source: item.source_ref ?? item.source_type,
             ...(item.summary === undefined ? {} : { summary: item.summary }),
-            ...(item.hash === undefined ? {} : { hash: item.hash })
-          }))
+            ...(item.hash === undefined ? {} : { hash: item.hash }),
+          })),
         }),
-    ...(metadata === undefined ? {} : { metadata })
+    ...(metadata === undefined ? {} : { metadata }),
   };
 
   return input;
@@ -262,7 +281,7 @@ interface TargetInspection {
 
 async function inspectTarget(
   page: Page,
-  locator: Locator
+  locator: Locator,
 ): Promise<TargetInspection> {
   const [pageTitle, url, tagName, buttonText, ariaLabel, boundingBox] =
     await Promise.all([
@@ -276,34 +295,36 @@ async function inspectTarget(
         .then((text) => text.trim())
         .catch(() => undefined),
       locator.getAttribute("aria-label").catch(() => undefined),
-      locator.boundingBox().catch(() => undefined)
+      locator.boundingBox().catch(() => undefined),
     ]);
 
   return {
     pageTitle,
     url,
     ...(tagName === undefined ? {} : { tagName }),
-    ...(buttonText === undefined || buttonText === ""
-      ? {}
-      : { buttonText }),
-    ...(ariaLabel === undefined || ariaLabel === null
-      ? {}
-      : { ariaLabel }),
+    ...(buttonText === undefined || buttonText === "" ? {} : { buttonText }),
+    ...(ariaLabel === undefined || ariaLabel === null ? {} : { ariaLabel }),
     ...(boundingBox === undefined || boundingBox === null
       ? {}
-      : { boundingBox })
+      : { boundingBox }),
   };
 }
 
 function actionCardFromProposal(
   proposal: ActionProposal,
-  runId: string
+  runId: string,
 ): ActionCard {
-  const buttonText = getStringField(proposal.visibleContext?.fields, "buttonText");
-  const ariaLabel = getStringField(proposal.visibleContext?.fields, "ariaLabel");
+  const buttonText = getStringField(
+    proposal.visibleContext?.fields,
+    "buttonText",
+  );
+  const ariaLabel = getStringField(
+    proposal.visibleContext?.fields,
+    "ariaLabel",
+  );
   const boundingBox = getBoundingBoxField(
     proposal.visibleContext?.fields,
-    "boundingBox"
+    "boundingBox",
   );
   const raw = toJsonObject(proposal.proposedAction.rawInput);
   const changedFields = getChangedFields(proposal.metadata);
@@ -313,7 +334,7 @@ function actionCardFromProposal(
     ...(buttonText === undefined ? {} : { buttonText }),
     ...(proposal.visibleContext?.url === undefined
       ? {}
-      : { url: proposal.visibleContext.url })
+      : { url: proposal.visibleContext.url }),
   });
   const proposedAction: ProposedAction = {
     id: createId("act"),
@@ -340,10 +361,10 @@ function actionCardFromProposal(
         : { selector: proposal.visibleContext.highlightedSelector }),
       ...(buttonText === undefined ? {} : { button_text: buttonText }),
       ...(ariaLabel === undefined ? {} : { aria_label: ariaLabel }),
-      ...(boundingBox === undefined ? {} : { bounding_box: boundingBox })
+      ...(boundingBox === undefined ? {} : { bounding_box: boundingBox }),
     },
     ...(changedFields === undefined ? {} : { changed_fields: changedFields }),
-    ...(raw === undefined ? {} : { raw })
+    ...(raw === undefined ? {} : { raw }),
   };
 
   return buildActionCard({
@@ -356,7 +377,9 @@ function actionCardFromProposal(
       ...(proposal.agent.version === undefined
         ? {}
         : { version: proposal.agent.version }),
-      ...(proposal.agent.model === undefined ? {} : { model: proposal.agent.model })
+      ...(proposal.agent.model === undefined
+        ? {}
+        : { model: proposal.agent.model }),
     },
     proposed_action: proposedAction,
     consequence,
@@ -367,15 +390,15 @@ function actionCardFromProposal(
       source_type: "tool_output",
       source_ref: item.source,
       ...(item.summary === undefined ? {} : { summary: item.summary }),
-      ...(item.hash === undefined ? {} : { hash: item.hash })
+      ...(item.hash === undefined ? {} : { hash: item.hash }),
     })),
     user_options: [
       "approve_once",
       "edit_fields",
       "take_wheel",
       "block",
-      "create_rule"
-    ]
+      "create_rule",
+    ],
   });
 }
 
@@ -387,34 +410,29 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
       return {
         type: "approve_once",
         approvedBy: actor,
-        decidedAt: decision.decided_at
+        decidedAt: decision.decided_at,
       };
     case "edit_fields":
       return {
         type: "edit",
         approvedBy: actor,
         decidedAt: decision.decided_at,
-        patch:
-          decision.edited_fields?.map((field) => ({
-            op: "replace",
-            path: `/fields/${field.field}`,
-            value: field.after
-          })) ?? [],
-        note: "User chose to edit fields before execution."
+        patch: buildActionPatchesFromEditedFields(decision.edited_fields ?? []),
+        note: "User chose to edit fields before execution.",
       };
     case "take_wheel":
       return {
         type: "takeover",
         operator: actor,
         decidedAt: decision.decided_at,
-        resumeMode: "resume_from_current_state"
+        resumeMode: "resume_from_current_state",
       };
     case "block":
       return {
         type: "block",
         blockedBy: actor,
         decidedAt: decision.decided_at,
-        reason: decision.reason ?? "User blocked the browser action."
+        reason: decision.reason ?? "User blocked the browser action.",
       };
     case "create_rule":
       return {
@@ -425,11 +443,11 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
           id: createId("rule"),
           description: "Rule created from AgentClutch browser overlay.",
           match: {
-            actionCardId: decision.action_card_id
+            actionCardId: decision.action_card_id,
           },
-          decision: "require_clutch"
+          decision: "require_clutch",
         },
-        note: "User requested a rule for similar future actions."
+        note: "User requested a rule for similar future actions.",
       };
     case "request_more_context":
     case "timeout":
@@ -437,7 +455,7 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
         type: "block",
         blockedBy: actor,
         decidedAt: decision.decided_at,
-        reason: `Browser action was not approved: ${decision.decision}.`
+        reason: `Browser action was not approved: ${decision.decision}.`,
       };
   }
 }
@@ -471,7 +489,8 @@ function inferKindFromText(text: string): string {
 
   if (lower.includes("submit")) return "browser.form_submit";
   if (lower.includes("send")) return "email.send";
-  if (lower.includes("delete") || lower.includes("remove")) return "file.delete";
+  if (lower.includes("delete") || lower.includes("remove"))
+    return "file.delete";
   if (lower.includes("approve")) return "browser.click";
 
   return "browser.click";
@@ -480,7 +499,7 @@ function inferKindFromText(text: string): string {
 function loopEvent(
   proposal: ActionProposal,
   eventType: "action.proposed" | "resume_context.created",
-  payload: unknown
+  payload: unknown,
 ) {
   return {
     type: "agentclutch.loop_event.v0",
@@ -489,20 +508,20 @@ function loopEvent(
     stepId: proposal.stepId,
     eventType,
     timestamp: new Date().toISOString(),
-    payload
+    payload,
   };
 }
 
 async function record(
   recorder: AttachClutchOptions["recorder"] | undefined,
-  event: unknown
+  event: unknown,
 ): Promise<void> {
   await recorder?.record(event);
 }
 
 function getStringField(
   fields: Record<string, unknown> | undefined,
-  key: string
+  key: string,
 ): string | undefined {
   const value = fields?.[key];
 
@@ -511,7 +530,7 @@ function getStringField(
 
 function getBoundingBoxField(
   fields: Record<string, unknown> | undefined,
-  key: string
+  key: string,
 ): BoundingBox | undefined {
   const value = fields?.[key];
 
@@ -535,7 +554,7 @@ function getBoundingBoxField(
         x: box["x"],
         y: box["y"],
         width: box["width"],
-        height: box["height"]
+        height: box["height"],
       };
     }
   }
@@ -544,10 +563,10 @@ function getBoundingBoxField(
 }
 
 function browserActionMetadata(
-  options: BrowserActionOptions
+  options: BrowserActionOptions,
 ): Record<string, unknown> | undefined {
   const metadata: Record<string, unknown> = {
-    ...(options.metadata ?? {})
+    ...(options.metadata ?? {}),
   };
 
   if (options.changedFields !== undefined) {
@@ -558,7 +577,7 @@ function browserActionMetadata(
 }
 
 function getChangedFields(
-  metadata: Record<string, unknown> | undefined
+  metadata: Record<string, unknown> | undefined,
 ): ChangedField[] | undefined {
   const value = metadata?.["changedFields"];
 

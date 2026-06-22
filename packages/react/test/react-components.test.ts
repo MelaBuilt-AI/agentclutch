@@ -1,4 +1,7 @@
-import { buildActionCard, type ActionCard as ActionCardModel } from "@agentclutch/action-card";
+import {
+  buildActionCard,
+  type ActionCard as ActionCardModel,
+} from "@agentclutch/action-card";
 import { describe, expect, it } from "vitest";
 import {
   ActionCard,
@@ -10,7 +13,7 @@ import {
   type ActionCardDecisionType,
   type ReactElement,
   type ReactNode,
-  type TakeoverChoice
+  type TakeoverChoice,
 } from "../src/index.js";
 
 const createdAt = "2026-06-22T04:00:00.000Z";
@@ -20,7 +23,7 @@ describe("ActionCard", () => {
     const decisions: ActionCardDecisionType[] = [];
     const tree = ActionCard({
       card: cardFixture(),
-      onDecision: (decision) => decisions.push(decision)
+      onDecision: (decision) => decisions.push(decision),
     });
 
     const text = textContent(tree);
@@ -38,12 +41,43 @@ describe("ActionCard", () => {
     clickButton(tree, "Approve once");
     expect(decisions).toEqual(["approve_once"]);
   });
+
+  it("turns approval into an edit decision when editable fields changed", () => {
+    const decisions: Array<{
+      decision: ActionCardDecisionType;
+      editedFields: unknown;
+    }> = [];
+    const tree = ActionCard({
+      card: cardFixture(),
+      onDecision: (decision, editedFields) =>
+        decisions.push({ decision, editedFields }),
+    });
+
+    inputValue(tree, "Edit quantity", "3");
+    clickButton(tree, "Approve once");
+
+    expect(decisions).toEqual([
+      {
+        decision: "edit_fields",
+        editedFields: [
+          {
+            field: "quantity",
+            before: 1,
+            after: 3,
+            editable: true,
+          },
+        ],
+      },
+    ]);
+  });
 });
 
 describe("DecisionBar", () => {
   it("calls typed decision callbacks", () => {
     const decisions: ActionCardDecisionType[] = [];
-    const tree = DecisionBar({ onDecision: (decision) => decisions.push(decision) });
+    const tree = DecisionBar({
+      onDecision: (decision) => decisions.push(decision),
+    });
 
     clickButton(tree, "Approve once");
     clickButton(tree, "Edit fields");
@@ -56,17 +90,25 @@ describe("DecisionBar", () => {
       "edit_fields",
       "take_wheel",
       "block",
-      "create_rule"
+      "create_rule",
     ]);
   });
 });
 
 describe("RiskBadge", () => {
   it("visually differentiates risk levels", () => {
-    expect(RiskBadge({ level: "low" }).props["className"]).toContain("ac-risk-low");
-    expect(RiskBadge({ level: "medium" }).props["className"]).toContain("ac-risk-medium");
-    expect(RiskBadge({ level: "high" }).props["className"]).toContain("ac-risk-high");
-    expect(RiskBadge({ level: "critical" }).props["className"]).toContain("ac-risk-critical");
+    expect(RiskBadge({ level: "low" }).props["className"]).toContain(
+      "ac-risk-low",
+    );
+    expect(RiskBadge({ level: "medium" }).props["className"]).toContain(
+      "ac-risk-medium",
+    );
+    expect(RiskBadge({ level: "high" }).props["className"]).toContain(
+      "ac-risk-high",
+    );
+    expect(RiskBadge({ level: "critical" }).props["className"]).toContain(
+      "ac-risk-critical",
+    );
   });
 });
 
@@ -87,7 +129,7 @@ describe("TakeoverModal", () => {
       onClose: () => {
         closed = true;
       },
-      onSubmit: (choice) => choices.push(choice)
+      onSubmit: (choice) => choices.push(choice),
     });
 
     expect(tree).not.toBeNull();
@@ -98,7 +140,13 @@ describe("TakeoverModal", () => {
 
     expect(closed).toBe(true);
     expect(choices).toEqual([{ resumeMode: "resume_from_current_state" }]);
-    expect(TakeoverModal({ open: false, onClose: () => undefined, onSubmit: () => undefined })).toBeNull();
+    expect(
+      TakeoverModal({
+        open: false,
+        onClose: () => undefined,
+        onSubmit: () => undefined,
+      }),
+    ).toBeNull();
   });
 });
 
@@ -109,19 +157,19 @@ describe("RunStoryTimeline", () => {
         {
           timestamp: "2026-06-22T04:02:00.000Z",
           actor: "user",
-          text: "The user approved checkout."
+          text: "The user approved checkout.",
         },
         {
           timestamp: "2026-06-22T04:01:00.000Z",
           actor: "agent",
-          text: "The agent proposed checkout."
-        }
-      ]
+          text: "The agent proposed checkout.",
+        },
+      ],
     });
     const listText = textContent(tree);
 
     expect(listText.indexOf("The agent proposed checkout.")).toBeLessThan(
-      listText.indexOf("The user approved checkout.")
+      listText.indexOf("The user approved checkout."),
     );
   });
 });
@@ -133,7 +181,7 @@ function cardFixture(): ActionCardModel {
     created_at: createdAt,
     agent: {
       name: "demo-agent",
-      runtime: "playwright"
+      runtime: "playwright",
     },
     proposed_action: {
       id: "act_test",
@@ -147,30 +195,35 @@ function cardFixture(): ActionCardModel {
         selector: "#checkout",
         button_text: "Complete checkout",
         page_title: "FakeStore Checkout Demo",
-        url: "file:///fake-store.html"
+        url: "file:///fake-store.html",
       },
       changed_fields: [
         {
+          field: "quantity",
+          after: 1,
+          editable: true,
+        },
+        {
           field: "total",
           after: "$249.00",
-          editable: false
-        }
+          editable: false,
+        },
       ],
       raw: {
-        selector: "#checkout"
-      }
+        selector: "#checkout",
+      },
     },
     consequence: {
       class: "payment_or_purchase",
       label: "Payment or purchase",
       reversibility: "compensable",
       blast_radius: "single_user",
-      requires_confirmation: true
+      requires_confirmation: true,
     },
     risk: {
       level: "high",
       score: 72,
-      reasons: ["This action may spend money."]
+      reasons: ["This action may spend money."],
     },
     evidence: [
       {
@@ -178,15 +231,22 @@ function cardFixture(): ActionCardModel {
         label: "Selected product",
         source_type: "dom",
         source_ref: "#product-title",
-        summary: "Wireless Headphones Pro is selected."
-      }
+        summary: "Wireless Headphones Pro is selected.",
+      },
     ],
-    user_options: ["approve_once", "edit_fields", "take_wheel", "block", "create_rule"]
+    user_options: [
+      "approve_once",
+      "edit_fields",
+      "take_wheel",
+      "block",
+      "create_rule",
+    ],
   });
 }
 
 function textContent(node: ReactNode): string {
-  if (node === null || node === undefined || typeof node === "boolean") return "";
+  if (node === null || node === undefined || typeof node === "boolean")
+    return "";
   if (typeof node === "string" || typeof node === "number") return String(node);
   if (Array.isArray(node)) return node.map(textContent).join(" ");
   return textContent(node.props.children);
@@ -209,7 +269,8 @@ function clickButton(tree: ReactElement, label: string): void {
 }
 
 function findButton(node: ReactNode, label: string): ReactElement | undefined {
-  if (node === null || node === undefined || typeof node !== "object") return undefined;
+  if (node === null || node === undefined || typeof node !== "object")
+    return undefined;
 
   if (Array.isArray(node)) {
     for (const child of node) {
@@ -225,4 +286,44 @@ function findButton(node: ReactNode, label: string): ReactElement | undefined {
   }
 
   return findButton(node.props.children, label);
+}
+
+function inputValue(tree: ReactElement, label: string, value: string): void {
+  const input = findInput(tree, label);
+
+  if (input === undefined) {
+    throw new Error(`Input not found: ${label}`);
+  }
+
+  const onInput = input.props["onInput"];
+
+  if (typeof onInput !== "function") {
+    throw new Error(`Input has no onInput handler: ${label}`);
+  }
+
+  onInput({
+    currentTarget: {
+      value,
+    },
+  });
+}
+
+function findInput(node: ReactNode, label: string): ReactElement | undefined {
+  if (node === null || node === undefined || typeof node !== "object")
+    return undefined;
+
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findInput(child, label);
+      if (found !== undefined) return found;
+    }
+
+    return undefined;
+  }
+
+  if (node.type === "input" && node.props["aria-label"] === label) {
+    return node;
+  }
+
+  return findInput(node.props.children, label);
 }

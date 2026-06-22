@@ -20,6 +20,16 @@ export function browserOverlayScript(): string {
     }
   }
 
+  function inputValue(value) {
+    if (value === undefined || value === null) return "";
+    if (typeof value === "string") return value;
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return String(value);
+    }
+  }
+
   function removeExisting() {
     document.querySelectorAll("[data-agentclutch-root]").forEach((element) => element.remove());
     document.querySelectorAll("[data-agentclutch-highlight]").forEach((element) => element.remove());
@@ -63,6 +73,15 @@ export function browserOverlayScript(): string {
       const target = card.proposed_action.target || {};
       const consequence = card.consequence || {};
       const risk = card.risk || {};
+      const changedFields = card.proposed_action.changed_fields || [];
+      const canEdit = changedFields.some((field) => field.editable);
+      const changedRows = changedFields.map((field, index) => {
+        const afterCell = field.editable
+          ? "<input class=\\"ac-field-input\\" data-edit-field-index=\\"" + index + "\\" aria-label=\\"Edit " + escapeHtml(field.field) + "\\" value=\\"" + escapeHtml(inputValue(field.after)) + "\\" />"
+          : escapeHtml(formatValue(field.after));
+
+        return "<tr><td>" + escapeHtml(field.field) + "</td><td>" + escapeHtml(formatValue(field.before)) + "</td><td>" + afterCell + "</td></tr>";
+      }).join("");
       const evidenceRows = (card.evidence || []).map((item) =>
         "<li><strong>" + escapeHtml(item.label) + "</strong>" +
         (item.summary ? "<span>" + escapeHtml(item.summary) + "</span>" : "") +
@@ -85,11 +104,12 @@ export function browserOverlayScript(): string {
             "<dt>URL</dt><dd>" + escapeHtml(formatValue(target.url || location.href)) + "</dd>" +
           "</dl></div>" +
           "<div class=\\"ac-section\\"><h3>Consequence</h3><p>" + escapeHtml(formatValue(consequence.label)) + "</p><p class=\\"ac-muted\\">" + escapeHtml(formatValue(consequence.description)) + "</p></div>" +
+          (changedRows ? "<div class=\\"ac-section\\"><h3>What will change</h3><table class=\\"ac-table\\"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>" + changedRows + "</tbody></table></div>" : "") +
           "<div class=\\"ac-section\\"><h3>Risk</h3><p>" + escapeHtml(formatValue(risk.level)) + "</p><ul>" + riskReasons + "</ul></div>" +
           "<div class=\\"ac-section\\"><h3>Evidence</h3><ul>" + (evidenceRows || "<li>No evidence attached.</li>") + "</ul></div>" +
           "<div class=\\"ac-actions\\">" +
             "<button type=\\"button\\" data-decision=\\"approve_once\\" class=\\"ac-btn ac-primary\\">Approve once</button>" +
-            "<button type=\\"button\\" data-decision=\\"edit_fields\\" class=\\"ac-btn\\">Edit fields</button>" +
+            (canEdit ? "<button type=\\"button\\" data-decision=\\"edit_fields\\" class=\\"ac-btn\\">Edit fields</button>" : "") +
             "<button type=\\"button\\" data-decision=\\"take_wheel\\" class=\\"ac-btn\\">Take wheel</button>" +
             "<button type=\\"button\\" data-decision=\\"block\\" class=\\"ac-btn ac-danger\\">Block</button>" +
             "<button type=\\"button\\" data-decision=\\"create_rule\\" class=\\"ac-btn\\">Create rule</button>" +
@@ -103,18 +123,28 @@ export function browserOverlayScript(): string {
         if (!button) return;
 
         const decision = button.getAttribute("data-decision");
-        removeExisting();
-        resolve({
+        const editedFields = collectEditedFields(root, changedFields);
+        const finalDecision = decision === "approve_once" && editedFields.length > 0
+          ? "edit_fields"
+          : decision;
+        const userDecision = {
           type: "agentclutch.user_decision.v0",
           id: createBrowserId("decision"),
           action_card_id: card.id,
           run_id: card.run_id,
           decided_at: new Date().toISOString(),
-          decision,
+          decision: finalDecision,
           actor: {
             display_name: "local-user"
           }
-        });
+        };
+
+        if (finalDecision === "edit_fields" && editedFields.length > 0) {
+          userDecision.edited_fields = editedFields;
+        }
+
+        removeExisting();
+        resolve(userDecision);
       });
 
       document.body.appendChild(root);
@@ -128,6 +158,81 @@ export function browserOverlayScript(): string {
       return prefix + "_" + globalThis.crypto.randomUUID();
     }
     return prefix + "_" + Math.random().toString(16).slice(2) + Date.now().toString(16);
+  }
+
+  function collectEditedFields(root, changedFields) {
+    const editedFields = [];
+
+    changedFields.forEach((field, index) => {
+      if (!field.editable) return;
+
+      const input = root.querySelector("[data-edit-field-index=\\"" + index + "\\"]");
+      if (!input) return;
+
+      const nextValue = parseEditedValue(input.value, field.after);
+      if (jsonValueEquals(nextValue, field.after)) return;
+
+      const editedField = {
+        field: field.field,
+        before: field.after,
+        after: nextValue,
+        editable: true
+      };
+
+      if (field.evidence_ids !== undefined) {
+        editedField.evidence_ids = field.evidence_ids;
+      }
+
+      editedFields.push(editedField);
+    });
+
+    return editedFields;
+  }
+
+  function parseEditedValue(rawValue, original) {
+    const trimmed = String(rawValue).trim();
+
+    if (typeof original === "number") {
+      const parsed = Number(trimmed);
+      return trimmed.length > 0 && Number.isFinite(parsed) ? parsed : rawValue;
+    }
+
+    if (typeof original === "boolean") {
+      if (trimmed.toLowerCase() === "true") return true;
+      if (trimmed.toLowerCase() === "false") return false;
+      return rawValue;
+    }
+
+    if (original === null || typeof original === "object") {
+      try {
+        const parsed = JSON.parse(rawValue);
+        return isJsonValue(parsed) ? parsed : rawValue;
+      } catch {
+        return rawValue;
+      }
+    }
+
+    return rawValue;
+  }
+
+  function isJsonValue(value) {
+    if (
+      value === null ||
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
+      return true;
+    }
+
+    if (Array.isArray(value)) return value.every(isJsonValue);
+
+    return typeof value === "object" && value !== null &&
+      Object.values(value).every(isJsonValue);
+  }
+
+  function jsonValueEquals(left, right) {
+    return JSON.stringify(left) === JSON.stringify(right);
   }
 
   function escapeHtml(value) {
@@ -144,7 +249,7 @@ export function browserOverlayScript(): string {
 
 function inlineCss(): string {
   return `
-.ac-modal-backdrop{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:rgba(4,8,16,.42);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#101828}.ac-modal{width:min(760px,calc(100vw - 32px));max-height:min(820px,calc(100vh - 32px));overflow:auto;background:#fff;border:1px solid #d0d5dd;border-radius:8px;box-shadow:0 24px 72px rgba(16,24,40,.28);padding:20px}.ac-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #eaecf0;padding-bottom:14px}.ac-eyebrow{margin:0;color:#475467;font-size:12px;font-weight:700;text-transform:uppercase}.ac-header h2{margin:4px 0 0;font-size:22px;line-height:1.25;letter-spacing:0}.ac-risk-badge{white-space:nowrap;border:1px solid #fedf89;background:#fffaeb;color:#93370d;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}.ac-section{margin-top:14px}.ac-section h3{margin:0 0 8px;color:#344054;font-size:13px;letter-spacing:0}.ac-section p{margin:0 0 6px}.ac-muted{color:#667085}.ac-section dl{display:grid;grid-template-columns:92px minmax(0,1fr);gap:6px 10px;margin:0}.ac-section dt{color:#667085}.ac-section dd{margin:0;overflow-wrap:anywhere}.ac-section ul{margin:0;padding-left:18px}.ac-section li{margin:4px 0}.ac-section li span{display:block;color:#667085}.ac-actions{position:sticky;bottom:-20px;display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;background:linear-gradient(rgba(255,255,255,0),#fff 28%)}.ac-btn{border:1px solid #d0d5dd;border-radius:6px;background:#fff;color:#101828;font-weight:700;font-size:14px;line-height:20px;padding:9px 12px;cursor:pointer}.ac-btn:focus{outline:3px solid rgba(21,112,239,.18);outline-offset:1px}.ac-primary{background:#1570ef;border-color:#1570ef;color:#fff}.ac-danger{background:#d92d20;border-color:#d92d20;color:#fff}.ac-dom-highlight{position:absolute;z-index:2147483645;pointer-events:none;border:3px solid #f79009;border-radius:6px;box-shadow:0 0 0 5px rgba(247,144,9,.22),0 8px 24px rgba(247,144,9,.28)}@media(max-width:640px){.ac-modal{padding:16px}.ac-header{display:block}.ac-risk-badge{display:inline-block;margin-top:10px}.ac-section dl{grid-template-columns:1fr}.ac-btn{flex:1 1 calc(50% - 8px);min-width:120px}}
+.ac-modal-backdrop{position:fixed;inset:0;z-index:2147483646;display:grid;place-items:center;background:rgba(4,8,16,.42);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#101828}.ac-modal{width:min(760px,calc(100vw - 32px));max-height:min(820px,calc(100vh - 32px));overflow:auto;background:#fff;border:1px solid #d0d5dd;border-radius:8px;box-shadow:0 24px 72px rgba(16,24,40,.28);padding:20px}.ac-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;border-bottom:1px solid #eaecf0;padding-bottom:14px}.ac-eyebrow{margin:0;color:#475467;font-size:12px;font-weight:700;text-transform:uppercase}.ac-header h2{margin:4px 0 0;font-size:22px;line-height:1.25;letter-spacing:0}.ac-risk-badge{white-space:nowrap;border:1px solid #fedf89;background:#fffaeb;color:#93370d;border-radius:999px;padding:6px 10px;font-size:12px;font-weight:700}.ac-section{margin-top:14px}.ac-section h3{margin:0 0 8px;color:#344054;font-size:13px;letter-spacing:0}.ac-section p{margin:0 0 6px}.ac-muted{color:#667085}.ac-section dl{display:grid;grid-template-columns:92px minmax(0,1fr);gap:6px 10px;margin:0}.ac-section dt{color:#667085}.ac-section dd{margin:0;overflow-wrap:anywhere}.ac-section ul{margin:0;padding-left:18px}.ac-section li{margin:4px 0}.ac-section li span{display:block;color:#667085}.ac-table{width:100%;border-collapse:collapse;font-size:14px}.ac-table th,.ac-table td{border-bottom:1px solid #eaecf0;padding:8px;text-align:left}.ac-field-input{width:min(220px,100%);min-height:34px;border:1px solid #d0d5dd;border-radius:6px;padding:7px 9px;color:#101828;background:#fff;font:inherit}.ac-field-input:focus{outline:3px solid rgba(21,112,239,.16);outline-offset:1px}.ac-actions{position:sticky;bottom:-20px;display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;padding-top:14px;background:linear-gradient(rgba(255,255,255,0),#fff 28%)}.ac-btn{border:1px solid #d0d5dd;border-radius:6px;background:#fff;color:#101828;font-weight:700;font-size:14px;line-height:20px;padding:9px 12px;cursor:pointer}.ac-btn:focus{outline:3px solid rgba(21,112,239,.18);outline-offset:1px}.ac-primary{background:#1570ef;border-color:#1570ef;color:#fff}.ac-danger{background:#d92d20;border-color:#d92d20;color:#fff}.ac-dom-highlight{position:absolute;z-index:2147483645;pointer-events:none;border:3px solid #f79009;border-radius:6px;box-shadow:0 0 0 5px rgba(247,144,9,.22),0 8px 24px rgba(247,144,9,.28)}@media(max-width:640px){.ac-modal{padding:16px}.ac-header{display:block}.ac-risk-badge{display:inline-block;margin-top:10px}.ac-section dl{grid-template-columns:1fr}.ac-btn{flex:1 1 calc(50% - 8px);min-width:120px}}
 `;
 }
 

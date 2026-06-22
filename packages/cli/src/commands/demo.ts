@@ -14,7 +14,7 @@ export async function runCheckoutDemo(): Promise<void> {
 
   try {
     const page = await browser.newPage({
-      viewport: { width: 1280, height: 900 }
+      viewport: { width: 1280, height: 900 },
     });
     const demoUrl = pathToFileURL(fakeStorePath()).toString();
 
@@ -26,7 +26,7 @@ export async function runCheckoutDemo(): Promise<void> {
     const clutch = await attachClutch(page, {
       runId,
       agentName: "demo-shopping-agent",
-      recorder
+      recorder,
     });
 
     const result = await clutch.click("#checkout", {
@@ -38,18 +38,18 @@ export async function runCheckoutDemo(): Promise<void> {
         {
           field: "product",
           after: "Wireless Headphones Pro",
-          editable: false
+          editable: false,
         },
         {
           field: "quantity",
           after: 1,
-          editable: true
+          editable: true,
         },
         {
           field: "total",
           after: "$249.00",
-          editable: false
-        }
+          editable: false,
+        },
       ],
       evidence: [
         {
@@ -57,16 +57,16 @@ export async function runCheckoutDemo(): Promise<void> {
           label: "Selected product",
           source_type: "dom",
           source_ref: "#product-title",
-          summary: "Wireless Headphones Pro is selected in the fake store."
+          summary: "Wireless Headphones Pro is selected in the fake store.",
         },
         {
           id: "ev_cart_total",
           label: "Cart total",
           source_type: "dom",
           source_ref: "#cart-total",
-          summary: "The cart total shown before checkout is $249.00."
-        }
-      ]
+          summary: "The cart total shown before checkout is $249.00.",
+        },
+      ],
     });
 
     const runPath = resolve(recorder.eventsPath);
@@ -76,6 +76,9 @@ export async function runCheckoutDemo(): Promise<void> {
     if (result.decision.type === "approve_once") {
       await page.locator("#checkout-result").waitFor({ state: "visible" });
       console.log("Checkout completed in the fake store.");
+    } else if (result.decision.type === "edit") {
+      console.log("Checkout was paused with user edits:");
+      console.log(JSON.stringify(result.decision.patch, null, 2));
     } else {
       console.log("Checkout was not executed.");
     }
@@ -109,7 +112,7 @@ async function waitForBrowserReview(): Promise<void> {
 
   const readline = createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   try {

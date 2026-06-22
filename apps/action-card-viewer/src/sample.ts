@@ -134,10 +134,19 @@ const sampleProposal = {
 };
 
 const sampleDecision = {
-  type: "approve_once",
+  type: "edit",
   approvedBy: "Demo User",
   decidedAt: "2026-06-22T04:00:20.000Z",
-  note: "Looks correct for the demo.",
+  patch: [
+    {
+      op: "replace",
+      path: "/changed_fields/quantity/after",
+      from: 1,
+      value: 2,
+      reason: "User edited quantity.",
+    },
+  ],
+  note: "Quantity changed before approval.",
 };
 
 export const sampleRecorderEvents = [
@@ -174,9 +183,18 @@ export const sampleRecorderEvents = [
       proposalId: "sample_checkout",
       sourceMode: "loop_native",
       decision: sampleDecision,
+      userCorrection: {
+        before: {
+          changed_fields: sampleActionCard.proposed_action.changed_fields,
+        },
+        after: sampleDecision.patch,
+        explanation: sampleDecision.note,
+      },
+      instructionForAgent:
+        "Continue from the corrected action. Do not repeat the original unedited action unless the user explicitly approves it.",
       continuePolicy: {
         allowSameActionRetry: true,
-        requireApprovalForSimilarActions: false,
+        requireApprovalForSimilarActions: true,
         maxRetries: 1,
       },
     },
@@ -186,10 +204,10 @@ export const sampleRecorderEvents = [
     id: "evt_sample_action_executed",
     loopId: "loop_sample_checkout",
     stepId: "step_checkout",
-    eventType: "action.executed",
+    eventType: "observation.received",
     timestamp: "2026-06-22T04:00:30.000Z",
     payload: {
-      summary: "Checkout completed in the demo store",
+      summary: "Agent received the corrected quantity and resumed planning",
     },
   },
 ];

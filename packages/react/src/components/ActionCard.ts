@@ -1,4 +1,8 @@
-import type { ActionCard as ActionCardModel, JsonValue } from "@agentclutch/action-card";
+import type {
+  ActionCard as ActionCardModel,
+  ChangedField,
+  JsonValue,
+} from "@agentclutch/action-card";
 import { h, type ReactElement } from "../element.js";
 import { DecisionBar, type ActionCardDecisionType } from "./DecisionBar.js";
 import { EvidencePanel } from "./EvidencePanel.js";
@@ -6,27 +10,50 @@ import { RiskBadge } from "./RiskBadge.js";
 
 export interface ActionCardProps {
   card: ActionCardModel;
-  onDecision: (decision: ActionCardDecisionType) => void;
+  onDecision: (
+    decision: ActionCardDecisionType,
+    editedFields?: ChangedField[],
+  ) => void;
   title?: string;
 }
 
 export function ActionCard({
   card,
   onDecision,
-  title = "AgentClutch Action Card"
+  title = "AgentClutch Action Card",
 }: ActionCardProps): ReactElement {
   const action = card.proposed_action;
   const target = action.target;
   const changedFields = action.changed_fields ?? [];
-  const allowEdit =
-    changedFields.length === 0 || changedFields.some((field) => field.editable);
+  const allowEdit = changedFields.some((field) => field.editable);
+  const editedDrafts = new Map(
+    changedFields
+      .filter((field) => field.editable)
+      .map((field) => [field.field, inputValue(field.after)]),
+  );
+
+  function decide(decision: ActionCardDecisionType): void {
+    const editedFields = collectEditedFields(changedFields, editedDrafts);
+
+    if (decision === "approve_once" && editedFields.length > 0) {
+      onDecision("edit_fields", editedFields);
+      return;
+    }
+
+    if (decision === "edit_fields") {
+      onDecision(decision, editedFields);
+      return;
+    }
+
+    onDecision(decision);
+  }
 
   return h(
     "section",
     {
       className: "ac-action-card",
       role: "dialog",
-      "aria-labelledby": "ac-action-card-title"
+      "aria-labelledby": "ac-action-card-title",
     },
     h(
       "header",
@@ -36,18 +63,18 @@ export function ActionCard({
         {},
         h("p", { className: "ac-eyebrow" }, title),
         h("h2", { id: "ac-action-card-title" }, action.label),
-        h("p", { className: "ac-muted" }, action.kind)
+        h("p", { className: "ac-muted" }, action.kind),
       ),
       RiskBadge({
         level: card.risk.level,
-        ...(card.risk.score === undefined ? {} : { score: card.risk.score })
-      })
+        ...(card.risk.score === undefined ? {} : { score: card.risk.score }),
+      }),
     ),
     h(
       "div",
       { className: "ac-section" },
       h("h3", {}, "The agent wants to"),
-      h("p", { className: "ac-large" }, action.description ?? action.label)
+      h("p", { className: "ac-large" }, action.description ?? action.label),
     ),
     h(
       "div",
@@ -62,8 +89,8 @@ export function ActionCard({
           ["Selector", target.selector ?? "Unknown"],
           ["Button", target.button_text ?? target.aria_label ?? "Unknown"],
           ["Page", target.page_title ?? "Unknown"],
-          ["URL", target.url ?? "Unknown"]
-        ])
+          ["URL", target.url ?? "Unknown"],
+        ]),
       ),
       h(
         "section",
@@ -73,9 +100,9 @@ export function ActionCard({
           ["Consequence", card.consequence.label],
           ["Risk", card.risk.level],
           ["Reversibility", formatToken(card.consequence.reversibility)],
-          ["Blast radius", formatToken(card.consequence.blast_radius)]
-        ])
-      )
+          ["Blast radius", formatToken(card.consequence.blast_radius)],
+        ]),
+      ),
     ),
     changedFields.length === 0
       ? null
@@ -89,7 +116,13 @@ export function ActionCard({
             h(
               "thead",
               {},
-              h("tr", {}, h("th", {}, "Field"), h("th", {}, "Before"), h("th", {}, "After"))
+              h(
+                "tr",
+                {},
+                h("th", {}, "Field"),
+                h("th", {}, "Before"),
+                h("th", {}, "After"),
+              ),
             ),
             h(
               "tbody",
@@ -100,11 +133,17 @@ export function ActionCard({
                   { key: field.field },
                   h("td", {}, field.field),
                   h("td", {}, formatJsonValue(field.before)),
-                  h("td", {}, formatJsonValue(field.after))
-                )
-              )
-            )
-          )
+                  h(
+                    "td",
+                    {},
+                    field.editable
+                      ? editableFieldInput(field, editedDrafts)
+                      : formatJsonValue(field.after),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
     h(
       "section",
@@ -115,15 +154,15 @@ export function ActionCard({
         : h(
             "ul",
             {},
-            card.risk.reasons.map((reason) => h("li", { key: reason }, reason))
-          )
+            card.risk.reasons.map((reason) => h("li", { key: reason }, reason)),
+          ),
     ),
     EvidencePanel({ evidence: card.evidence }),
     DecisionBar({
-      onDecision,
+      onDecision: decide,
       allowEdit,
-      allowCreateRule: card.user_options.includes("create_rule")
-    })
+      allowCreateRule: card.user_options.includes("create_rule"),
+    }),
   );
 }
 
@@ -133,8 +172,8 @@ function definitionList(rows: Array<[string, string]>): ReactElement {
     { className: "ac-dl" },
     rows.flatMap(([label, value]) => [
       h("dt", { key: `${label}-term` }, label),
-      h("dd", { key: `${label}-value` }, value)
-    ])
+      h("dd", { key: `${label}-value` }, value),
+    ]),
   );
 }
 
@@ -146,4 +185,103 @@ function formatJsonValue(value: JsonValue | undefined): string {
   if (value === undefined || value === null) return "Not set";
   if (typeof value === "string") return value;
   return JSON.stringify(value);
+}
+
+function editableFieldInput(
+  field: ChangedField,
+  editedDrafts: Map<string, string>,
+): ReactElement {
+  return h("input", {
+    className: "ac-field-input",
+    name: `field-${field.field}`,
+    "aria-label": `Edit ${field.field}`,
+    value: inputValue(field.after),
+    onInput: (event: Event) => {
+      const input = event.currentTarget as HTMLInputElement | null;
+      editedDrafts.set(field.field, input?.value ?? "");
+    },
+  });
+}
+
+function collectEditedFields(
+  fields: readonly ChangedField[],
+  editedDrafts: Map<string, string>,
+): ChangedField[] {
+  const editedFields: ChangedField[] = [];
+
+  for (const field of fields) {
+    if (!field.editable) continue;
+
+    const rawValue = editedDrafts.get(field.field) ?? inputValue(field.after);
+    const nextValue = parseEditedValue(rawValue, field.after);
+
+    if (jsonValueEquals(nextValue, field.after)) continue;
+
+    editedFields.push({
+      field: field.field,
+      before: field.after,
+      after: nextValue,
+      ...(field.evidence_ids === undefined
+        ? {}
+        : { evidence_ids: field.evidence_ids }),
+      editable: true,
+    });
+  }
+
+  return editedFields;
+}
+
+function inputValue(value: JsonValue | undefined): string {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
+}
+
+function parseEditedValue(rawValue: string, original: JsonValue): JsonValue {
+  const trimmed = rawValue.trim();
+
+  if (typeof original === "number") {
+    const parsed = Number(trimmed);
+    return trimmed.length > 0 && Number.isFinite(parsed) ? parsed : rawValue;
+  }
+
+  if (typeof original === "boolean") {
+    if (trimmed.toLowerCase() === "true") return true;
+    if (trimmed.toLowerCase() === "false") return false;
+    return rawValue;
+  }
+
+  if (original === null || typeof original === "object") {
+    try {
+      const parsed = JSON.parse(rawValue) as unknown;
+      return isJsonValue(parsed) ? parsed : rawValue;
+    } catch {
+      return rawValue;
+    }
+  }
+
+  return rawValue;
+}
+
+function isJsonValue(value: unknown): value is JsonValue {
+  if (
+    value === null ||
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return true;
+  }
+
+  if (Array.isArray(value)) return value.every(isJsonValue);
+
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Object.values(value).every(isJsonValue)
+  );
+}
+
+function jsonValueEquals(left: JsonValue, right: JsonValue): boolean {
+  return JSON.stringify(left) === JSON.stringify(right);
 }

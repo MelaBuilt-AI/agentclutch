@@ -12,6 +12,7 @@ import type {
 import { describe, expect, it, vi } from "vitest";
 import {
   ClutchSession,
+  buildActionPatchesFromEditedFields,
   classifyConsequence,
   createClutch,
   generateRunStoryFromJsonl,
@@ -230,6 +231,42 @@ describe("ClutchSession", () => {
     expect(session.snapshot().state).toBe("running");
     session.complete();
     expect(session.snapshot().state).toBe("completed");
+  });
+});
+
+describe("buildActionPatchesFromEditedFields", () => {
+  it("builds replace patches from edited Action Card fields", () => {
+    expect(
+      buildActionPatchesFromEditedFields([
+        {
+          field: "quantity",
+          before: 1,
+          after: 3,
+          editable: true,
+        },
+        {
+          field: "shipping/address",
+          before: "Old",
+          after: "New",
+          editable: true,
+        },
+      ]),
+    ).toEqual([
+      {
+        op: "replace",
+        path: "/changed_fields/quantity/after",
+        from: 1,
+        value: 3,
+        reason: "User edited quantity.",
+      },
+      {
+        op: "replace",
+        path: "/changed_fields/shipping~1address/after",
+        from: "Old",
+        value: "New",
+        reason: "User edited shipping/address.",
+      },
+    ]);
   });
 });
 

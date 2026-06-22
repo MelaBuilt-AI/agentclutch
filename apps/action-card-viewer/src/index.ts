@@ -2,6 +2,7 @@ import {
   buildActionCard,
   parseActionCard,
   type ActionCard as ActionCardModel,
+  type ChangedField,
   type RunStory,
 } from "@agentclutch/action-card";
 import {
@@ -24,7 +25,11 @@ interface ViewerState {
   card: ActionCardModel | null;
   story: RunStory | null;
   error: string | null;
-  decisionLog: Array<{ decision: ActionCardDecisionType; timestamp: string }>;
+  decisionLog: Array<{
+    decision: ActionCardDecisionType;
+    editedFields?: ChangedField[];
+    timestamp: string;
+  }>;
 }
 
 const state: ViewerState = {
@@ -149,10 +154,11 @@ function previewPanel(): HTMLElement {
     renderElement(
       ActionCard({
         card: state.card,
-        onDecision: (decision) => {
+        onDecision: (decision, editedFields) => {
           state.decisionLog = [
             {
               decision,
+              ...(editedFields === undefined ? {} : { editedFields }),
               timestamp: new Date().toISOString(),
             },
             ...state.decisionLog,
@@ -186,11 +192,30 @@ function decisionLog(): HTMLElement {
   const list = document.createElement("ol");
   for (const item of state.decisionLog) {
     const row = document.createElement("li");
-    row.textContent = `${item.decision} at ${new Date(item.timestamp).toLocaleString()}`;
+    row.textContent = `${item.decision} at ${new Date(item.timestamp).toLocaleString()}${formatEditedFields(item.editedFields)}`;
     list.append(row);
   }
   section.append(list);
   return section;
+}
+
+function formatEditedFields(fields: ChangedField[] | undefined): string {
+  if (fields === undefined || fields.length === 0) return "";
+
+  return `; edits: ${fields
+    .map(
+      (field) =>
+        `${field.field} ${formatFieldValue(field.before)} -> ${formatFieldValue(field.after)}`,
+    )
+    .join(", ")}`;
+}
+
+function formatFieldValue(
+  value: ChangedField["after"] | ChangedField["before"],
+): string {
+  if (value === undefined) return "unset";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value);
 }
 
 function timelinePanel(): HTMLElement {
