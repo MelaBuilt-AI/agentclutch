@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.turbo/
+.agentclutch/
+.env
+.env.*
+!.env.example
+.DS_Store
+coverage/
+playwright-report/
+test-results/
+*:Zone.Identifier

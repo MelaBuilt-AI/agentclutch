@@ -1,0 +1,37 @@
+{
+  "name": "agentclutch-monorepo",
+  "private": true,
+  "version": "0.0.0",
+  "description": "AgentClutch: the open Action Card and takeover UX for consequential AI agent actions.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "packageManager": "pnpm@11.1.2",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "dev": "turbo run dev --parallel",
+    "demo:checkout": "pnpm --filter @agentclutch/cli start demo checkout",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,css}\""
+  },
+  "devDependencies": {
+    "@playwright/test": "latest",
+    "@types/node": "latest",
+    "eslint": "latest",
+    "playwright": "latest",
+    "prettier": "latest",
+    "tsx": "latest",
+    "turbo": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}
