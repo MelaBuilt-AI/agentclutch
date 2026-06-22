@@ -9,7 +9,7 @@ The agent loop has already observed the page, selected a product, and prepared c
 ## Shape
 
 ```ts
-import { buildResumeContext, normalizeActionProposal } from "@agentclutch/loop";
+import { normalizeActionProposal } from "@agentclutch/loop";
 
 const proposal = normalizeActionProposal({
   sourceMode: "loop_native",
@@ -47,8 +47,7 @@ const proposal = normalizeActionProposal({
   }
 });
 
-const decision = await clutch.onActionProposed(proposal);
-const resumeContext = buildResumeContext(proposal, decision);
+const { decision, resumeContext } = await clutch.onActionProposed(proposal);
 
 await agentLoop.resume(resumeContext);
 ```
