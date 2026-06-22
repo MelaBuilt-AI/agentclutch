@@ -127,6 +127,41 @@ describe("attachClutch", () => {
     });
     expect(result.executed).toBe(false);
     expect(page.clicked).toBe(false);
+
+    expect(events[2]).toMatchObject({
+      type: "agentclutch.user_decision.v0",
+      decision: "edit_fields",
+      edited_fields: [
+        {
+          field: "quantity",
+          before: 1,
+          after: 3,
+        },
+      ],
+    });
+    expect(events[3]).toMatchObject({
+      type: "agentclutch.loop_event.v0",
+      eventType: "resume_context.created",
+      payload: {
+        decision: {
+          type: "edit",
+          patch: [
+            {
+              path: "/changed_fields/quantity/after",
+              value: 3,
+            },
+          ],
+        },
+        userCorrection: {
+          after: [
+            {
+              path: "/changed_fields/quantity/after",
+              value: 3,
+            },
+          ],
+        },
+      },
+    });
   });
 
   it("uses tool_wrapper source mode for browser actions", async () => {

@@ -6,6 +6,25 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium, type Page } from "playwright";
 
+const CHECKOUT_UNIT_PRICE_CENTS = 24_900;
+
+export interface CheckoutEditApplication {
+  quantity: number;
+  total: string;
+}
+
+export interface CheckoutEditDecision {
+  type: "edit";
+  approvedBy?: string;
+  decidedAt?: string;
+  patch: Array<{
+    op: string;
+    path: string;
+    from?: unknown;
+    value?: unknown;
+  }>;
+}
+
 export async function runCheckoutDemo(): Promise<void> {
   const runId = createRunId();
   const store = new RunStore(".agentclutch");
@@ -77,8 +96,19 @@ export async function runCheckoutDemo(): Promise<void> {
       await page.locator("#checkout-result").waitFor({ state: "visible" });
       console.log("Checkout completed in the fake store.");
     } else if (result.decision.type === "edit") {
-      console.log("Checkout was paused with user edits:");
+      const applied = await completeEditedCheckout(page, result.decision);
+
       console.log(JSON.stringify(result.decision.patch, null, 2));
+
+      if (applied === undefined) {
+        console.log(
+          "Checkout was paused with edits that this demo cannot apply.",
+        );
+      } else {
+        console.log(
+          `Checkout completed with edited quantity ${applied.quantity} and total ${applied.total}.`,
+        );
+      }
     } else {
       console.log("Checkout was not executed.");
     }
@@ -87,6 +117,69 @@ export async function runCheckoutDemo(): Promise<void> {
   } finally {
     await browser.close();
   }
+}
+
+export async function completeEditedCheckout(
+  page: Pick<Page, "locator">,
+  decision: CheckoutEditDecision,
+): Promise<CheckoutEditApplication | undefined> {
+  const applied = await applyCheckoutEditPatch(page, decision);
+
+  if (applied === undefined) {
+    return undefined;
+  }
+
+  await page.locator("#checkout").first().click();
+  await page.locator("#checkout-result").waitFor({ state: "visible" });
+
+  return applied;
+}
+
+export async function applyCheckoutEditPatch(
+  page: Pick<Page, "locator">,
+  decision: CheckoutEditDecision,
+): Promise<CheckoutEditApplication | undefined> {
+  const quantity = editedCheckoutQuantity(decision);
+
+  if (quantity === undefined) {
+    return undefined;
+  }
+
+  const total = `$${((CHECKOUT_UNIT_PRICE_CENTS * quantity) / 100).toFixed(2)}`;
+
+  await page.locator("#cart-quantity").evaluate((element, nextQuantity) => {
+    element.textContent = String(nextQuantity);
+  }, quantity);
+  await page.locator("#cart-total").evaluate((element, nextTotal) => {
+    element.textContent = nextTotal;
+  }, total);
+
+  return {
+    quantity,
+    total,
+  };
+}
+
+function editedCheckoutQuantity(
+  decision: CheckoutEditDecision,
+): number | undefined {
+  const patch = decision.patch.find(
+    (item) =>
+      item.op === "replace" &&
+      item.path === "/changed_fields/quantity/after" &&
+      (typeof item.value === "number" || typeof item.value === "string"),
+  );
+
+  if (patch === undefined) return undefined;
+
+  const quantity =
+    typeof patch.value === "number" ? patch.value : Number(patch.value);
+
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    throw new Error(`Invalid edited checkout quantity: ${String(patch.value)}`);
+  }
+
+  return quantity;
 }
 
 async function simulateAgentPreparation(page: Page): Promise<void> {

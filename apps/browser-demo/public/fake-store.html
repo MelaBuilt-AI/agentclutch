@@ -262,6 +262,9 @@
       });
 
       checkout.addEventListener("click", () => {
+        const quantity = document.getElementById("cart-quantity").textContent;
+        const total = document.getElementById("cart-total").textContent;
+        result.textContent = `Checkout completed for ${quantity} item(s). Total ${total}.`;
         result.classList.add("visible");
       });
     </script>
