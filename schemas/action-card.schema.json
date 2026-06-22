@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentclutch.dev/schemas/action-card.schema.json",
+  "title": "AgentClutch Action Card v0",
+  "type": "object",
+  "required": [
+    "type",
+    "id",
+    "run_id",
+    "created_at",
+    "agent",
+    "proposed_action",
+    "consequence",
+    "risk",
+    "evidence",
+    "user_options"
+  ],
+  "properties": {
+    "type": { "const": "agentclutch.action_card.v0" },
+    "id": { "type": "string", "minLength": 1 },
+    "run_id": { "type": "string", "minLength": 1 },
+    "created_at": { "type": "string", "format": "date-time" },
+    "agent": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "runtime": { "type": "string" },
+        "version": { "type": "string" },
+        "model": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "proposed_action": {
+      "type": "object",
+      "required": ["id", "kind", "label", "surface", "target"],
+      "properties": {
+        "id": { "type": "string" },
+        "kind": { "type": "string" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "surface": { "type": "string" },
+        "target": {
+          "type": "object",
+          "required": ["surface"],
+          "properties": {
+            "surface": { "type": "string" },
+            "target_app": { "type": "string" },
+            "url": { "type": "string" },
+            "page_title": { "type": "string" },
+            "selector": { "type": "string" },
+            "selector_hash": { "type": "string" },
+            "button_text": { "type": "string" },
+            "aria_label": { "type": "string" },
+            "bounding_box": {
+              "type": "object",
+              "required": ["x", "y", "width", "height"],
+              "properties": {
+                "x": { "type": "number" },
+                "y": { "type": "number" },
+                "width": { "type": "number" },
+                "height": { "type": "number" }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "changed_fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["field", "after"],
+            "properties": {
+              "field": { "type": "string" },
+              "before": true,
+              "after": true,
+              "evidence_ids": {
+                "type": "array",
+                "items": { "type": "string" }
+              },
+              "editable": { "type": "boolean" }
+            },
+            "additionalProperties": false
+          }
+        },
+        "raw": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "consequence": {
+      "type": "object",
+      "required": [
+        "class",
+        "label",
+        "reversibility",
+        "blast_radius",
+        "requires_confirmation"
+      ],
+      "properties": {
+        "class": { "type": "string" },
+        "label": { "type": "string" },
+        "description": { "type": "string" },
+        "reversibility": { "type": "string" },
+        "blast_radius": { "type": "string" },
+        "requires_confirmation": { "type": "boolean" },
+        "possible_residue": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "compensation_hint": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "risk": {
+      "type": "object",
+      "required": ["level", "reasons"],
+      "properties": {
+        "level": { "type": "string" },
+        "score": { "type": "number", "minimum": 0, "maximum": 100 },
+        "reasons": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "policy_ids": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      },
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "source_type"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "source_type": { "type": "string" },
+          "source_ref": { "type": "string" },
+          "summary": { "type": "string" },
+          "quote": { "type": "string" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "hash": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "user_options": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expires_at": { "type": "string", "format": "date-time" },
+    "metadata": { "type": "object" }
+  },
+  "additionalProperties": false
+}
