@@ -2,9 +2,9 @@
 
 **Approve, edit, or take the wheel before agents touch the real world.**
 
-AgentClutch is an open Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
+AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-![Demo GIF placeholder](docs/assets/browser-demo-placeholder.svg)
+Current milestone: `v0.6.0-alpha`. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, and Run Story playback.
 
 ## 30-Second Explanation
 
@@ -21,24 +21,47 @@ AgentClutch owns that moment:
 
 It is loop-native internally and prompt-compatible at the SDK edge. It is not a generic agent framework, chat UI, browser agent, observability dashboard, or hosted approval product.
 
-## Demo
+## FakeStore Interactive Demo
+
+FakeStore is a local interactive demo. It opens a browser, loads a local fake store page, simulates an agent preparing to buy headphones, and pauses before the checkout button can create the side effect.
+
+Install once:
 
 ```bash
 pnpm install
 pnpm build
 pnpm exec playwright install chromium
-pnpm demo:checkout --clear-rules
 ```
 
-The checkout demo opens a local fake store, simulates an agent preparing to buy headphones, freezes before `#checkout`, highlights the target button, and displays an Action Card.
+Run the demo:
+
+```bash
+pnpm demo:checkout
+```
+
+Demo flow:
+
+1. A browser opens FakeStore from the local repo.
+2. The demo agent searches, selects `Wireless Headphones Pro`, and proposes checkout.
+3. AgentClutch pauses before clicking `#checkout`.
+4. The Action Card shows the target, product, quantity, total, evidence, consequence, and risk.
+5. The user can approve once, edit quantity, block, take wheel, or create a rule.
+6. If the user edits quantity from `1` to `3`, Teach Mode can capture that correction as a lesson.
+7. On future matching runs, the Action Card can show the learned lesson before the user decides.
+
+The demo is intentionally local. It uses a fake store page, local rules, local lessons, and local JSONL run recording under `.agentclutch/`.
+
+**Screenshot:** FakeStore checkout Action Card overlay.
+
+![Screenshot: FakeStore checkout Action Card overlay](docs/assets/action-card-overlay-placeholder.svg)
+
+**Future GIF/video placeholder:** `docs/assets/fakestore-demo.gif`
 
 After publishing, the intended public command is:
 
 ```bash
 npx agentclutch demo checkout
 ```
-
-![Action Card overlay placeholder](docs/assets/action-card-overlay-placeholder.svg)
 
 ## Quick Start
 
@@ -177,7 +200,20 @@ Local rules control whether matching actions are allowed, blocked, or forced thr
 - `block`: skip the overlay and prevent the matching action.
 - `require_clutch`: show the Action Card for the matching action.
 
-Rules live in `.agentclutch/rules/rules.json` for the local demo. They are explicit control policy. Future Teach Mode is separate: it will remember user corrections and preferences, but it is not part of this launch task or current product behavior.
+Rules live in `.agentclutch/rules/rules.json` for the local demo. They are explicit control policy, separate from correction memory.
+
+## Teach Mode / Lessons
+
+Rules and lessons are separate:
+
+- Rules decide whether matching actions are allowed, blocked, or forced through an Action Card.
+- Lessons remember user corrections, such as quantity `1` -> `3`.
+- Lessons do not silently approve actions.
+- The Action Card still appears for matching lessons unless an explicit `allow` rule exists.
+
+When a user edits a proposed action, the Lesson Engine can capture that correction as a local lesson, apply it to similar future proposals, and let the user accept, reject, or disable the applied lesson.
+
+Lessons live in `.agentclutch/lessons/lessons.json` in the local-first setup. Rules still decide whether an action is allowed, blocked, or forced through a clutch point; lessons only help shape the proposed action shown at that point.
 
 ## Viewer
 
@@ -201,7 +237,7 @@ http://127.0.0.1:5173/
 | --- | --- |
 | `@agentclutch/action-card` | Action Card types, schema, builders, and validation. |
 | `@agentclutch/loop` | Action Proposal, Clutch Decision, loop events, and Resume Context. |
-| `@agentclutch/core` | Consequence classification, risk scoring, sessions, facade APIs, and Run Story helpers. |
+| `@agentclutch/core` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
 | `@agentclutch/recorder` | Local JSONL run recording. |
 | `@agentclutch/playwright` | Explicit browser action wrapper and local rule evaluation. |
 | `@agentclutch/react` | Reusable Action Card and Run Story UI components. |
@@ -251,19 +287,22 @@ pnpm demo:checkout --clear-rules
 
 ## Roadmap
 
-Now:
+Current alpha:
 
 - Keep the checkout demo simple, visual, and local.
-- Make approve, edit quantity, block, create rule, and seeded local rules easy to demo.
+- Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Next:
+Next: `v0.7 Consequence Engine`
 
-- Add more example code around `prompt_guard`, `tool_wrapper`, and `loop_native`.
-- Expand tests around rule decisions and recorder-to-story flows.
-- Improve screenshot and GIF assets for launch.
+- Add a consequence registry.
+- Add reversibility, compensation, and residue metadata.
+- Show consequence details in Action Cards, the viewer, and Run Story summaries.
 
-Later:
+Out of scope for the current milestone:
 
-- Add more adapters only after the Action Proposal, Action Card, Decision, Resume Context, and Run Story chain is stable.
-- Keep the open-source core local-first, testable, and small.
+- MCP
+- AG-UI
+- CHAP
+- Cloud sync
+- Desktop overlay
