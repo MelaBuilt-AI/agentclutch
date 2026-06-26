@@ -37,6 +37,14 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Install Playwright Chromium with Linux dependencies
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright Chromium
+        if: runner.os != 'Linux'
+        run: pnpm exec playwright install chromium
+
       - name: Test
         run: pnpm test
 
