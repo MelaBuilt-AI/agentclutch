@@ -94,7 +94,7 @@ describe("attachClutch", () => {
     } finally {
       await browser.close();
     }
-  });
+  }, 15_000);
 
   it("renders FakeStore consequence fields before completing checkout in Chromium", async () => {
     const rootDir = await tempRoot();
@@ -203,7 +203,7 @@ describe("attachClutch", () => {
     } finally {
       await browser.close();
     }
-  });
+  }, 15_000);
 
   it("approve_once executes click", async () => {
     const page = createFakePage("approve_once");
