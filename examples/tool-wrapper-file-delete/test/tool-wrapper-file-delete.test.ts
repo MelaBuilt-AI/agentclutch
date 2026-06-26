@@ -1,5 +1,5 @@
 import { access } from "node:fs/promises";
-import { dirname } from "node:path";
+import { dirname, isAbsolute, relative } from "node:path";
 import { describe, expect, it } from "vitest";
 import { runToolWrapperFileDeleteExample } from "../src/index.js";
 
@@ -17,7 +17,14 @@ describe("tool-wrapper-file-delete runnable example", () => {
     const result = await runToolWrapperFileDeleteExample();
     const tempDir = dirname(result.filePath);
 
-    expect(result.deleteResult?.path.startsWith(`${tempDir}/`)).toBe(true);
+    const relativeDeletedPath = relative(
+      tempDir,
+      result.deleteResult?.path ?? "",
+    );
+
+    expect(relativeDeletedPath).toBe("stale-report.csv");
+    expect(relativeDeletedPath.startsWith("..")).toBe(false);
+    expect(isAbsolute(relativeDeletedPath)).toBe(false);
     expect(result.card.proposed_action.changed_fields).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
