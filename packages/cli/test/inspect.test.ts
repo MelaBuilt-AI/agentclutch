@@ -37,6 +37,26 @@ describe("inspect command", () => {
     expect(output).toContain("Resume status: approved");
   });
 
+  it("formats resume status from loop event payloads used by demo recordings", () => {
+    const output = formatInspectRun({
+      runId: "run_demo_wrapped_resume",
+      events: [
+        {
+          type: "agentclutch.loop_event.v0",
+          eventType: "resume_context.created",
+          payload: {
+            type: "agentclutch.loop_resume_context.v0",
+            decision: {
+              type: "edit",
+            },
+          },
+        },
+      ],
+    });
+
+    expect(output).toContain("Resume status: edit");
+  });
+
   it("resolves latest to the newest run id", async () => {
     const rootDir = await tempRoot();
     const store = new RunStore(rootDir);

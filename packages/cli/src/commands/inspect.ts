@@ -31,7 +31,7 @@ export async function resolveInspectTarget(
 export function formatInspectRun(run: LatestRun): string {
   const latestCard = findLastObject(run.events, isActionCardEvent);
   const latestDecision = findLastObject(run.events, isUserDecisionEvent);
-  const latestResume = findLastObject(run.events, isResumeContextEvent);
+  const latestResume = findLastResumeContext(run.events);
   const lines = [`Run: ${run.runId}`, `Events: ${run.events.length}`];
 
   if (latestCard !== undefined) {
@@ -46,7 +46,7 @@ export function formatInspectRun(run: LatestRun): string {
   }
 
   if (latestResume !== undefined) {
-    lines.push(`Resume status: ${stringValue(latestResume.status)}`);
+    lines.push(`Resume status: ${stringValue(resumeStatus(latestResume))}`);
   }
 
   return lines.join("\n");
@@ -87,8 +87,55 @@ function isUserDecisionEvent(value: unknown): value is {
 function isResumeContextEvent(value: unknown): value is {
   type: "agentclutch.loop_resume_context.v0";
   status?: unknown;
+  decision?: unknown;
 } {
   return isRecord(value) && value.type === "agentclutch.loop_resume_context.v0";
+}
+
+function findLastResumeContext(values: unknown[]):
+  | {
+      type: "agentclutch.loop_resume_context.v0";
+      status?: unknown;
+      decision?: unknown;
+    }
+  | undefined {
+  for (let index = values.length - 1; index >= 0; index -= 1) {
+    const resumeContext = resumeContextFromEvent(values[index]);
+    if (resumeContext !== undefined) return resumeContext;
+  }
+
+  return undefined;
+}
+
+function resumeContextFromEvent(value: unknown):
+  | {
+      type: "agentclutch.loop_resume_context.v0";
+      status?: unknown;
+      decision?: unknown;
+    }
+  | undefined {
+  if (isResumeContextEvent(value)) return value;
+
+  if (
+    isRecord(value) &&
+    value.type === "agentclutch.loop_event.v0" &&
+    value.eventType === "resume_context.created" &&
+    isResumeContextEvent(value.payload)
+  ) {
+    return value.payload;
+  }
+
+  return undefined;
+}
+
+function resumeStatus(resumeContext: { status?: unknown; decision?: unknown }): unknown {
+  if (resumeContext.status !== undefined) return resumeContext.status;
+
+  if (isRecord(resumeContext.decision)) {
+    return resumeContext.decision.type;
+  }
+
+  return undefined;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
