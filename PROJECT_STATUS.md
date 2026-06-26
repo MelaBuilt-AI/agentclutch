@@ -81,11 +81,23 @@ Completed v0.7 Goals:
 - Viewer consequence display
 - Run Story consequence summaries
 
-Next Planned Work:
+Next Planned Work / TODO:
 
-- monitor public feedback/issues
-- keep future public releases and npm publishes behind explicit approval
-- evaluate MCP / AG-UI / CHAP only after the core alpha loop is stable
+- [ ] User should revoke the temporary granular npm publish token created for the `0.7.3-alpha.1` publish.
+- [ ] Run a stranger test of the public project: fresh clone, follow README only, run quickstart, install from npm `@alpha`, run CLI smoke, and try one minimal integration path.
+- [ ] Convert stranger-test friction into small public GitHub issues.
+- [ ] Seed the next public roadmap issue batch:
+  - improve CLI npm UX and consider `agentclutch doctor`;
+  - improve npm CLI demo experience and decide whether FakeStore demo assets should ship in the CLI package or be fetched/generated;
+  - add a minimal React/Vite consumer example using public npm packages;
+  - add docs for integrating AgentClutch into an existing agent loop;
+  - manually run and verify the new Alpha Release Prep workflow artifacts;
+  - add security/data redaction examples for Action Cards, JSONL, Run Stories, screenshots, and logs.
+- [ ] Draft and post a small public-alpha launch/update post linking the quickstart, limitations, npm packages, and feedback/issues.
+- [ ] Make the next product milestone: make AgentClutch easy to try from npm without cloning the repo.
+- [ ] Keep monitoring public feedback/issues.
+- [ ] Keep future public releases and npm publishes behind explicit user approval.
+- [ ] Keep MCP, AG-UI, CHAP, hosted approval dashboards, Python/Rust adapters, cloud sync, and desktop overlays parked until the core public-alpha onboarding loop is stable.
 
 Do NOT build yet:
 
