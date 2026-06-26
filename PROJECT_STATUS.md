@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.2-alpha Private Prerelease Checkpoint
+v0.7.3-alpha Private Prerelease Checkpoint
 
 Completed:
 
@@ -54,7 +54,7 @@ ActionProposal
 
 Current Milestone Status:
 
-v0.7.2-alpha is cut, pushed, and verified on the private repo. It adds runnable consequential-action examples, GitHub PR consequence classification, safer example isolation/cleanup, and a friendlier local CLI invocation while keeping AgentClutch private and pre-launch.
+v0.7.3-alpha is the current private launch-readiness checkpoint on the private repo. It includes the v0.7.2 runnable consequential-action examples plus design-doc/status sync, privacy-safe email Action Card docs/tests, safer example isolation/cleanup, a real viewer screenshot, cross-platform file-delete regression coverage, narrowed GitHub consequence classification, and `pnpm agentclutch --help` polish while keeping AgentClutch private and pre-launch.
 
 Completed v0.7 Goals:
 
@@ -83,4 +83,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-v0.7.2-alpha private annotated tag cut from verified `main` (`fe66b615f079127c9c55460a2d085fe3a873449a`)
+v0.7.3-alpha private annotated tag cut from verified `main` (`c4fb7fb521a6e3715aa3454a868c95cf5cea95d5`)
