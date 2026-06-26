@@ -5,7 +5,15 @@ import { inspectRun } from "./commands/inspect.js";
 async function main(args: string[]): Promise<void> {
   const [command, subcommand] = args;
 
-  if (command === "demo" && (subcommand === undefined || subcommand === "checkout")) {
+  if (command === "--help" || command === "-h") {
+    printHelp();
+    return;
+  }
+
+  if (
+    command === "demo" &&
+    (subcommand === undefined || subcommand === "checkout")
+  ) {
     await runCheckoutDemo(parseCheckoutDemoArgs(args.slice(2)));
     return;
   }

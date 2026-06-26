@@ -19,121 +19,137 @@ export interface ConsequenceRegistryEntry {
   consequence: ConsequenceDescriptor;
 }
 
-export const DEFAULT_CONSEQUENCE_REGISTRY: readonly ConsequenceRegistryEntry[] = [
-  {
-    id: "payment_or_purchase",
-    description: "Browser checkout, buying, and purchase actions.",
-    match: {
-      includesAny: ["checkout", "buy", "purchase"]
+export const DEFAULT_CONSEQUENCE_REGISTRY: readonly ConsequenceRegistryEntry[] =
+  [
+    {
+      id: "payment_or_purchase",
+      description: "Browser checkout, buying, and purchase actions.",
+      match: {
+        includesAny: ["checkout", "buy", "purchase"],
+      },
+      consequence: {
+        class: "payment_or_purchase",
+        label: "Payment or purchase",
+        description: "This action may spend money or place an order.",
+        reversibility: "compensable",
+        blast_radius: "single_user",
+        requires_confirmation: true,
+        possible_residue: [
+          "Order record may be created",
+          "Payment authorization may be captured",
+        ],
+        compensation_hint: "Cancel order or request refund if available.",
+      },
     },
-    consequence: {
-      class: "payment_or_purchase",
-      label: "Payment or purchase",
-      description: "This action may spend money or place an order.",
-      reversibility: "compensable",
-      blast_radius: "single_user",
-      requires_confirmation: true,
-      possible_residue: [
-        "Order record may be created",
-        "Payment authorization may be captured"
-      ],
-      compensation_hint: "Cancel order or request refund if available."
-    }
-  },
-  {
-    id: "external_message_send",
-    description: "Email or message sends to another person or channel.",
-    match: {
-      includesAll: ["send"],
-      includesAny: ["email", "message"]
+    {
+      id: "external_message_send",
+      description: "Email or message sends to another person or channel.",
+      match: {
+        includesAll: ["send"],
+        includesAny: ["email", "message"],
+      },
+      consequence: {
+        class: "external_message_send",
+        label: "External message send",
+        description:
+          "This action may send content to another person or channel.",
+        reversibility: "residue_remains",
+        blast_radius: "team",
+        requires_confirmation: true,
+        possible_residue: ["Recipient may read or forward the message"],
+        compensation_hint: "Send a follow-up correction if needed.",
+      },
     },
-    consequence: {
-      class: "external_message_send",
-      label: "External message send",
-      description: "This action may send content to another person or channel.",
-      reversibility: "residue_remains",
-      blast_radius: "team",
-      requires_confirmation: true,
-      possible_residue: ["Recipient may read or forward the message"],
-      compensation_hint: "Send a follow-up correction if needed."
-    }
-  },
-  {
-    id: "external_business_submission",
-    description: "Form submits and business record submissions.",
-    match: {
-      includesAny: ["submit"]
+    {
+      id: "external_business_submission",
+      description: "Form submits and business record submissions.",
+      match: {
+        includesAny: ["submit"],
+      },
+      consequence: {
+        class: "external_business_submission",
+        label: "External business submission",
+        description:
+          "This action may submit information to an external or business system.",
+        reversibility: "not_cleanly_reversible",
+        blast_radius: "single_user",
+        requires_confirmation: true,
+        possible_residue: [
+          "A submitted record may remain in the target system",
+        ],
+      },
     },
-    consequence: {
-      class: "external_business_submission",
-      label: "External business submission",
+    {
+      id: "local_file_delete",
+      description: "Delete and remove actions that may destroy data.",
+      match: {
+        includesAny: ["delete", "remove"],
+      },
+      consequence: {
+        class: "local_file_delete",
+        label: "Delete or remove",
+        description: "This action may delete information or remove an object.",
+        reversibility: "unknown",
+        blast_radius: "workspace",
+        requires_confirmation: true,
+        possible_residue: ["Deleted data may not be recoverable"],
+      },
+    },
+    {
+      id: "production_change",
+      description: "Repository, deployment, and production state changes.",
+      match: {
+        includesAny: ["merge", "deploy", "production"],
+      },
+      consequence: {
+        class: "production_change",
+        label: "Production or repository change",
+        description:
+          "This action may alter code, deployment, or production state.",
+        reversibility: "compensable",
+        blast_radius: "production",
+        requires_confirmation: true,
+        compensation_hint:
+          "Revert commit, rollback deployment, or restore previous config.",
+      },
+    },
+    {
+      id: "code_repository_change",
       description:
-        "This action may submit information to an external or business system.",
-      reversibility: "not_cleanly_reversible",
-      blast_radius: "single_user",
-      requires_confirmation: true,
-      possible_residue: ["A submitted record may remain in the target system"]
-    }
-  },
-  {
-    id: "local_file_delete",
-    description: "Delete and remove actions that may destroy data.",
-    match: {
-      includesAny: ["delete", "remove"]
+        "Explicit GitHub and repository write actions such as pull request creation.",
+      match: {
+        includesAny: [
+          "pr_create",
+          "create pull request",
+          "open pull request",
+          "update pull request",
+          "repository write",
+          "push commit",
+          "create branch",
+          "create release",
+        ],
+      },
+      consequence: {
+        class: "code_repository_change",
+        label: "Code repository change",
+        description:
+          "This action may create, update, or expose repository state for collaborators.",
+        reversibility: "compensable",
+        blast_radius: "team",
+        requires_confirmation: true,
+        possible_residue: [
+          "Repository notifications may be sent",
+          "Reviewers may see proposed code or metadata",
+        ],
+        compensation_hint:
+          "Close the pull request, revert commits, or update the branch if needed.",
+      },
     },
-    consequence: {
-      class: "local_file_delete",
-      label: "Delete or remove",
-      description: "This action may delete information or remove an object.",
-      reversibility: "unknown",
-      blast_radius: "workspace",
-      requires_confirmation: true,
-      possible_residue: ["Deleted data may not be recoverable"]
-    }
-  },
-  {
-    id: "production_change",
-    description: "Repository, deployment, and production state changes.",
-    match: {
-      includesAny: ["merge", "deploy", "production"]
-    },
-    consequence: {
-      class: "production_change",
-      label: "Production or repository change",
-      description: "This action may alter code, deployment, or production state.",
-      reversibility: "compensable",
-      blast_radius: "production",
-      requires_confirmation: true,
-      compensation_hint:
-        "Revert commit, rollback deployment, or restore previous config."
-    }
-  },
-  {
-    id: "code_repository_change",
-    description: "GitHub and repository write actions such as pull request creation.",
-    match: {
-      includesAny: ["github", "pull request", "pr_create", "repository"]
-    },
-    consequence: {
-      class: "code_repository_change",
-      label: "Code repository change",
-      description:
-        "This action may create, update, or expose repository state for collaborators.",
-      reversibility: "compensable",
-      blast_radius: "team",
-      requires_confirmation: true,
-      possible_residue: [
-        "Repository notifications may be sent",
-        "Reviewers may see proposed code or metadata"
-      ],
-      compensation_hint: "Close the pull request, revert commits, or update the branch if needed."
-    }
-  }
-];
+  ];
 
 export function classifyConsequence(
   input: ConsequenceInput,
-  registry: readonly ConsequenceRegistryEntry[] = DEFAULT_CONSEQUENCE_REGISTRY
+  registry: readonly ConsequenceRegistryEntry[] = DEFAULT_CONSEQUENCE_REGISTRY,
 ): ConsequenceDescriptor {
   const entry = findConsequenceRegistryEntry(input, registry);
 
@@ -144,13 +160,13 @@ export function classifyConsequence(
 
 export function findConsequenceRegistryEntry(
   input: ConsequenceInput,
-  registry: readonly ConsequenceRegistryEntry[] = DEFAULT_CONSEQUENCE_REGISTRY
+  registry: readonly ConsequenceRegistryEntry[] = DEFAULT_CONSEQUENCE_REGISTRY,
 ): ConsequenceRegistryEntry | undefined {
   const haystack = [
     input.kind,
     input.label ?? "",
     input.buttonText ?? "",
-    input.url ?? ""
+    input.url ?? "",
   ]
     .join(" ")
     .toLowerCase();
@@ -160,12 +176,14 @@ export function findConsequenceRegistryEntry(
 
 function registryEntryMatches(
   entry: ConsequenceRegistryEntry,
-  haystack: string
+  haystack: string,
 ): boolean {
   const includesAll = entry.match.includesAll ?? [];
   const includesAny = entry.match.includesAny ?? [];
 
-  if (!includesAll.every((keyword) => haystack.includes(keyword.toLowerCase()))) {
+  if (
+    !includesAll.every((keyword) => haystack.includes(keyword.toLowerCase()))
+  ) {
     return false;
   }
 
@@ -180,13 +198,13 @@ function registryEntryMatches(
 }
 
 function cloneConsequence(
-  consequence: ConsequenceDescriptor
+  consequence: ConsequenceDescriptor,
 ): ConsequenceDescriptor {
   return {
     ...consequence,
     ...(consequence.possible_residue === undefined
       ? {}
-      : { possible_residue: [...consequence.possible_residue] })
+      : { possible_residue: [...consequence.possible_residue] }),
   };
 }
 
@@ -197,6 +215,6 @@ function unknownConsequence(): ConsequenceDescriptor {
     description: "AgentClutch could not confidently classify this action.",
     reversibility: "unknown",
     blast_radius: "unknown",
-    requires_confirmation: true
+    requires_confirmation: true,
   };
 }

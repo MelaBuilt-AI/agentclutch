@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import { runGitHubPrCreateExample } from "../src/index.js";
 
@@ -8,7 +10,18 @@ describe("github-pr-create runnable example", () => {
     expect(result.card.proposed_action.kind).toBe("github.pr_create");
     expect(result.card.consequence.class).toBe("code_repository_change");
     expect(result.decision.type).toBe("approve_once");
-    expect(result.createdPullRequest?.url).toBe("https://github.com/MelaBuilt-AI/agentclutch/pull/42");
-    expect(result.resumeContext.continuePolicy.requireApprovalForSimilarActions).toBe(false);
+    expect(result.createdPullRequest?.url).toBe(
+      "https://github.com/MelaBuilt-AI/agentclutch/pull/42",
+    );
+    expect(
+      result.resumeContext.continuePolicy.requireApprovalForSimilarActions,
+    ).toBe(false);
+  });
+
+  it("uses an isolated temporary lessons root", async () => {
+    const result = await runGitHubPrCreateExample();
+
+    expect(result.lessonsRootDir.startsWith(tmpdir())).toBe(true);
+    await expect(access(result.lessonsRootDir)).rejects.toThrow();
   });
 });

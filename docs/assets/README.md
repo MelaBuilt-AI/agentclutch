@@ -7,7 +7,8 @@ Store README and documentation media in this directory.
 - `browser-demo-placeholder.svg`: broad FakeStore demo placeholder.
 - `fakestore-action-card-overlay.png`: real local FakeStore Action Card overlay capture used as the README screenshot.
 - `fakestore-demo.gif`: real local FakeStore demo GIF showing search, clutch point, approval, and fake checkout completion.
-- `action-card-viewer-placeholder.svg`: static Action Card viewer placeholder.
+- `action-card-viewer-screenshot.png`: real local Action Card viewer screenshot rendering sample checkout event JSONL.
+- `action-card-viewer-placeholder.svg`: superseded static Action Card viewer placeholder retained for reference.
 
 Use media that shows the actual local demo flow:
 

@@ -4,7 +4,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.2-alpha` candidate on `main` until the prerelease tag is cut. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, and Run Story playback.
+Current milestone: `v0.7.2-alpha` is cut, pushed, and verified as a private prerelease checkpoint. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and a local `pnpm agentclutch` CLI script.
 
 ## 30-Second Explanation
 
@@ -79,7 +79,7 @@ const clutch = createClutch({ runId: "run_email_001", renderer });
 const { decision, resumeContext } = await clutch.confirmAction({
   userGoal: {
     original: "Send a follow-up email to the client",
-    summary: "Send follow-up email"
+    summary: "Send follow-up email",
   },
   proposedAction: {
     kind: "email.send",
@@ -88,14 +88,14 @@ const { decision, resumeContext } = await clutch.confirmAction({
     targetApp: "Gmail",
     rawInput: {
       to: "client@example.com",
-      subject: "Follow-up from today"
-    }
+      subject: "Follow-up from today",
+    },
   },
   riskHints: {
     requiresApproval: true,
     reversibility: "not_reversible",
-    blastRadius: "external"
-  }
+    blastRadius: "external",
+  },
 });
 
 if (decision.type === "approve_once") {
@@ -112,7 +112,7 @@ import { attachClutch } from "@agentclutch/playwright";
 
 const clutch = await attachClutch(page, {
   runId: "run_checkout_001",
-  agentName: "browser-agent"
+  agentName: "browser-agent",
 });
 
 await clutch.click("#checkout", {
@@ -122,8 +122,8 @@ await clutch.click("#checkout", {
   changedFields: [
     { field: "product", after: "Wireless Headphones Pro", editable: false },
     { field: "quantity", after: 1, editable: true },
-    { field: "total", after: "$249.00", editable: false }
-  ]
+    { field: "total", after: "$249.00", editable: false },
+  ],
 });
 ```
 
@@ -143,13 +143,13 @@ const proposal = normalizeActionProposal({
     label: "Complete checkout",
     targetSurface: "browser",
     targetApp: "FakeStore",
-    targetIdentifier: "#checkout"
+    targetIdentifier: "#checkout",
   },
   riskHints: {
     requiresApproval: true,
     reversibility: "compensable",
-    blastRadius: "single_user"
-  }
+    blastRadius: "single_user",
+  },
 });
 
 const { decision, resumeContext } = await clutch.onActionProposed(proposal);
@@ -186,11 +186,11 @@ Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story
 
 AgentClutch keeps the same artifact chain across three adoption levels:
 
-| Level | Use when | Entry point |
-| --- | --- | --- |
-| `prompt_guard` | You have a prompt-driven app about to execute one risky action. | `clutch.confirmAction(...)` |
-| `tool_wrapper` | You have browser actions, shell commands, file writes, API calls, or other functions to guard. | `clutch.wrapTool(...)`, `clutch.click(...)`, `clutch.submit(...)` |
-| `loop_native` | You have explicit loop IDs, step IDs, state, plans, and resume behavior. | `normalizeActionProposal(...)`, `onActionProposed(...)`, `buildResumeContext(...)` |
+| Level          | Use when                                                                                       | Entry point                                                                        |
+| -------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `prompt_guard` | You have a prompt-driven app about to execute one risky action.                                | `clutch.confirmAction(...)`                                                        |
+| `tool_wrapper` | You have browser actions, shell commands, file writes, API calls, or other functions to guard. | `clutch.wrapTool(...)`, `clutch.click(...)`, `clutch.submit(...)`                  |
+| `loop_native`  | You have explicit loop IDs, step IDs, state, plans, and resume behavior.                       | `normalizeActionProposal(...)`, `onActionProposed(...)`, `buildResumeContext(...)` |
 
 Start with one prompt and one risky action. Grow into full loop control when the host app is ready.
 
@@ -231,7 +231,7 @@ Open the Vite URL printed in the terminal, usually:
 http://127.0.0.1:5173/
 ```
 
-![Action Card viewer placeholder](docs/assets/action-card-viewer-placeholder.svg)
+![Screenshot: Action Card viewer rendering sample checkout card](docs/assets/action-card-viewer-screenshot.png)
 
 You can also summarize the latest recorded run from the CLI after building:
 
@@ -243,15 +243,15 @@ The package-level CLI already exposes the `agentclutch` binary for published pac
 
 ## Packages
 
-| Package | Purpose |
-| --- | --- |
-| `@agentclutch/action-card` | Action Card types, schema, builders, and validation. |
-| `@agentclutch/loop` | Action Proposal, Clutch Decision, loop events, and Resume Context. |
-| `@agentclutch/core` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
-| `@agentclutch/recorder` | Local JSONL run recording. |
-| `@agentclutch/playwright` | Explicit browser action wrapper and local rule evaluation. |
-| `@agentclutch/react` | Reusable Action Card and Run Story UI components. |
-| `@agentclutch/cli` | Local demo commands and run inspection. |
+| Package                    | Purpose                                                                                          |
+| -------------------------- | ------------------------------------------------------------------------------------------------ |
+| `@agentclutch/action-card` | Action Card types, schema, builders, and validation.                                             |
+| `@agentclutch/loop`        | Action Proposal, Clutch Decision, loop events, and Resume Context.                               |
+| `@agentclutch/core`        | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
+| `@agentclutch/recorder`    | Local JSONL run recording.                                                                       |
+| `@agentclutch/playwright`  | Explicit browser action wrapper and local rule evaluation.                                       |
+| `@agentclutch/react`       | Reusable Action Card and Run Story UI components.                                                |
+| `@agentclutch/cli`         | Local demo commands and run inspection.                                                          |
 
 Apps:
 
@@ -306,7 +306,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.2-alpha Runnable Examples Candidate`
+Current: `v0.7.2-alpha Private Prerelease Checkpoint`
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

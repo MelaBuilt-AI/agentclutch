@@ -1,4 +1,7 @@
 import { createClutch, type DecisionRenderer } from "@agentclutch/core";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const decidedAt = "2026-06-26T18:00:00.000Z";
 
@@ -30,101 +33,122 @@ const editExpenseRenderer: DecisionRenderer = {
           path: "/amountUsd",
           from: 483.72,
           value: 438.72,
-          reason: "Receipt total was $438.72; the OCR draft transposed digits."
-        }
+          reason: "Receipt total was $438.72; the OCR draft transposed digits.",
+        },
       ],
-      note: "Approved after correcting the amount."
+      note: "Approved after correcting the amount.",
     };
-  }
+  },
 };
 
 export async function runExpenseSubmitExample() {
   const recorder = new MemoryRecorder();
+  const lessonsRootDir = await mkdtemp(
+    join(tmpdir(), "agentclutch-expense-lessons-"),
+  );
   const clutch = createClutch({
     runId: "run_expense_submit_example",
     renderer: editExpenseRenderer,
-    recorder
+    recorder,
+    lessonsRootDir,
   });
   const draft: ExpenseDraft = {
     merchant: "City Hotel",
     amountUsd: 483.72,
     category: "Travel",
     memo: "Client onsite - two nights",
-    receiptId: "receipt_city_hotel_042"
+    receiptId: "receipt_city_hotel_042",
   };
 
-  const result = await clutch.confirmAction({
-    userGoal: {
-      original: "Submit my hotel receipt for reimbursement.",
-      summary: "Submit a travel expense report"
-    },
-    proposedAction: {
-      kind: "browser.form_submit",
-      label: "Submit expense report",
-      targetSurface: "browser",
-      targetApp: "ExpensePortal",
-      targetIdentifier: "#submit-expense",
-      rawInput: {
-        ...draft,
-        changedFields: [
-          { field: "merchant", after: draft.merchant, editable: true },
-          { field: "amountUsd", before: null, after: draft.amountUsd, editable: true },
-          { field: "category", after: draft.category, editable: true },
-          { field: "receiptId", after: draft.receiptId, editable: false }
-        ]
-      }
-    },
-    visibleContext: {
-      pageTitle: "ExpensePortal - New Report",
-      highlightedSelector: "#submit-expense",
-      fields: {
-        merchant: draft.merchant,
-        amountUsd: draft.amountUsd,
-        category: draft.category,
-        memo: draft.memo
-      }
-    },
-    riskHints: {
-      requiresApproval: true,
-      reversibility: "not_reversible",
-      blastRadius: "single_user"
-    },
-    evidence: [
-      {
-        label: "Receipt OCR",
-        source: "receipt_city_hotel_042.pdf",
-        summary: "OCR detected City Hotel and a total that needs human review."
+  try {
+    const result = await clutch.confirmAction({
+      userGoal: {
+        original: "Submit my hotel receipt for reimbursement.",
+        summary: "Submit a travel expense report",
       },
-      {
-        label: "Company policy",
-        source: "travel-policy",
-        summary: "Hotel expenses over $250 require review before submission."
-      }
-    ]
-  });
+      proposedAction: {
+        kind: "browser.form_submit",
+        label: "Submit expense report",
+        targetSurface: "browser",
+        targetApp: "ExpensePortal",
+        targetIdentifier: "#submit-expense",
+        rawInput: {
+          ...draft,
+          changedFields: [
+            { field: "merchant", after: draft.merchant, editable: true },
+            {
+              field: "amountUsd",
+              before: null,
+              after: draft.amountUsd,
+              editable: true,
+            },
+            { field: "category", after: draft.category, editable: true },
+            { field: "receiptId", after: draft.receiptId, editable: false },
+          ],
+        },
+      },
+      visibleContext: {
+        pageTitle: "ExpensePortal - New Report",
+        highlightedSelector: "#submit-expense",
+        fields: {
+          merchant: draft.merchant,
+          amountUsd: draft.amountUsd,
+          category: draft.category,
+          memo: draft.memo,
+        },
+      },
+      riskHints: {
+        requiresApproval: true,
+        reversibility: "not_reversible",
+        blastRadius: "single_user",
+      },
+      evidence: [
+        {
+          label: "Receipt OCR",
+          source: "receipt_city_hotel_042.pdf",
+          summary:
+            "OCR detected City Hotel and a total that needs human review.",
+        },
+        {
+          label: "Company policy",
+          source: "travel-policy",
+          summary: "Hotel expenses over $250 require review before submission.",
+        },
+      ],
+    });
 
-  const submittedExpense =
-    result.decision.type === "edit"
-      ? applyExpensePatch(draft, result.decision.patch)
-      : result.decision.type === "approve_once"
-        ? draft
-        : undefined;
+    const submittedExpense =
+      result.decision.type === "edit"
+        ? applyExpensePatch(draft, result.decision.patch)
+        : result.decision.type === "approve_once"
+          ? draft
+          : undefined;
 
-  return {
-    proposal: result.proposal,
-    card: result.card,
-    decision: result.decision,
-    resumeContext: result.resumeContext,
-    submittedExpense,
-    recorderEvents: recorder.events
-  };
+    return {
+      proposal: result.proposal,
+      card: result.card,
+      decision: result.decision,
+      resumeContext: result.resumeContext,
+      submittedExpense,
+      recorderEvents: recorder.events,
+      lessonsRootDir,
+    };
+  } finally {
+    await rm(lessonsRootDir, { recursive: true, force: true });
+  }
 }
 
-function applyExpensePatch(draft: ExpenseDraft, patch: Array<{ path: string; value?: unknown }>): ExpenseDraft {
+function applyExpensePatch(
+  draft: ExpenseDraft,
+  patch: Array<{ path: string; value?: unknown }>,
+): ExpenseDraft {
   const next = { ...draft };
 
   for (const operation of patch) {
-    if (operation.path === "/amountUsd" && typeof operation.value === "number") {
+    if (
+      operation.path === "/amountUsd" &&
+      typeof operation.value === "number"
+    ) {
       next.amountUsd = operation.value;
     }
     if (operation.path === "/category" && typeof operation.value === "string") {

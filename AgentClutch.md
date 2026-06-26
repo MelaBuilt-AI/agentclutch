@@ -9,7 +9,7 @@
 **Initial license:** Apache-2.0 or MIT. Recommended: Apache-2.0 for enterprise comfort and patent language.  
 **Initial language:** TypeScript-first. Rust and Python are planned adapter/sidecar layers, not the MVP core.  
 **Initial runtime:** Node.js 22+, pnpm workspaces, Playwright, React, Vite. First-class targets: Linux, WSL2 Ubuntu, and native Windows.  
-**Document status:** Build-ready design document for Codex implementation.  
+**Document status:** Living design and launch-readiness specification. Current implementation is verified at the private `v0.7.2-alpha` prerelease tag; public/npm publishing remains deferred until explicitly approved.
 
 ---
 
@@ -46,7 +46,13 @@ AgentClutch turns those proposed actions into clear, inspectable, editable **Act
 - **Block**
 - **Create rule**
 
-The first open-source wedge is small and visual:
+The first visual wedge is small and local-first. Current private-repo command:
+
+```bash
+pnpm demo:checkout
+```
+
+After public package publishing is explicitly approved, the intended public command remains:
 
 ```bash
 npx agentclutch demo checkout
@@ -183,34 +189,41 @@ For prompt-based apps that are about to execute one side-effecting action.
 A developer can write:
 
 ```ts
+const emailDraft = {
+  to: "client@example.com",
+  subject: "Follow-up from today",
+  body: "Thanks for the call today...",
+};
+const bodyPreview = emailDraft.body.slice(0, 120);
+
 const { decision, resumeContext } = await clutch.confirmAction({
   userGoal: {
     original: userPrompt,
-    summary: "Send a follow-up email to the client"
+    summary: "Send a follow-up email to the client",
   },
   proposedAction: {
     kind: "email.send",
     label: "Send email",
-    targetSurface: "gmail",
+    targetSurface: "email",
     targetApp: "Gmail",
     rawInput: {
-      to: "client@example.com",
-      subject: "Follow-up from today",
-      body: "Thanks for the call today..."
-    }
+      to: emailDraft.to,
+      subject: emailDraft.subject,
+      bodyPreview,
+    },
   },
   visibleContext: {
     fields: {
-      to: "client@example.com",
-      subject: "Follow-up from today",
-      bodyPreview: "Thanks for the call today..."
-    }
+      to: emailDraft.to,
+      subject: emailDraft.subject,
+      bodyPreview,
+    },
   },
   riskHints: {
     reversibility: "not_reversible",
     blastRadius: "external",
-    requiresApproval: true
-  }
+    requiresApproval: true,
+  },
 });
 
 if (decision.type === "approve_once") {
@@ -221,6 +234,8 @@ if (decision.type === "edit") {
   await sendEmail(applyPatch(emailDraft, decision.patch));
 }
 ```
+
+For privacy-sensitive actions such as email sends, Action Card `rawInput` should contain reviewable metadata and previews, not full private bodies or secrets. Keep the full draft in local app state until the user approves.
 
 AgentClutch internally creates:
 
@@ -247,14 +262,14 @@ const guardedSendEmail = clutch.wrapTool(sendEmail, {
   riskHints: {
     reversibility: "not_reversible",
     blastRadius: "external",
-    requiresApproval: true
-  }
+    requiresApproval: true,
+  },
 });
 
 await guardedSendEmail({
   to: "client@example.com",
   subject: "Follow-up",
-  body: "Thanks for the call..."
+  body: "Thanks for the call...",
 });
 ```
 
@@ -267,8 +282,8 @@ const page = await withClutch(browser.newPage(), {
     "payment.checkout",
     "email.send",
     "file.delete",
-    "github.write"
-  ]
+    "github.write",
+  ],
 });
 ```
 
@@ -289,7 +304,7 @@ const proposal = normalizeActionProposal({
   visibleContext,
   loopContext,
   evidence,
-  riskHints
+  riskHints,
 });
 
 const decision = await clutch.onActionProposed(proposal);
@@ -335,7 +350,12 @@ const guarded = clutch.wrapTool(sendEmail, metadata);
 A mature agent runtime can later move to:
 
 ```ts
-const proposal = normalizeActionProposal({ sourceMode: "loop_native", loopId, stepId, proposedAction });
+const proposal = normalizeActionProposal({
+  sourceMode: "loop_native",
+  loopId,
+  stepId,
+  proposedAction,
+});
 const result = await clutch.onActionProposed(proposal);
 ```
 
@@ -470,6 +490,14 @@ Definitions:
 
 The first demo must be visually obvious.
 
+Current private-repo command:
+
+```bash
+pnpm demo:checkout
+```
+
+Future public package command after publishing approval:
+
 ```bash
 npx agentclutch demo checkout
 ```
@@ -502,9 +530,10 @@ Build an installable monorepo that provides:
 4. `@agentclutch/react` — Action Card modal, overlay, Clutch Button, Run Story viewer.
 5. `@agentclutch/playwright` — Playwright wrapper for proposing actions before execution.
 6. `@agentclutch/recorder` — local JSONL recorder for loop events, action cards, decisions, resume context, and run stories.
-7. `@agentclutch/cli` — demo runner and local viewer commands.
-8. `apps/browser-demo` — fake store / email / file-delete demo.
-9. `apps/action-card-viewer` — static viewer for recorded action cards.
+7. `@agentclutch/cli` — demo runner and local run-inspection commands.
+8. `apps/browser-demo` — local FakeStore checkout demo.
+9. `apps/action-card-viewer` — local viewer for Action Cards and recorder JSONL.
+10. `examples/*` — runnable prompt-guard, tool-wrapper, expense-submit, and GitHub PR-create examples.
 
 The MVP must expose all three progressive adoption modes:
 
@@ -585,13 +614,13 @@ pnpm demo:checkout
 
 ### 3.5.1 Platform support matrix
 
-| Target | MVP support | Notes |
-|---|---:|---|
-| Linux native | Tier 1 | Best match for CI, containers, Playwright, and open-source contributors. |
-| WSL2 Ubuntu | Tier 1 | Recommended Windows development environment for Linux-like workflows. Keep repo under `~/code`, not `/mnt/c`. |
-| Native Windows | Tier 1 | Must support PowerShell, Windows paths, Playwright Chromium, and Node.js. |
-| macOS | Tier 2 initially | Should work naturally from Node/Playwright, but not the first validation target. |
-| Native desktop overlay | Later | Needs OS-specific implementations. Browser overlay comes first. |
+| Target                 |      MVP support | Notes                                                                                                         |
+| ---------------------- | ---------------: | ------------------------------------------------------------------------------------------------------------- |
+| Linux native           |           Tier 1 | Best match for CI, containers, Playwright, and open-source contributors.                                      |
+| WSL2 Ubuntu            |           Tier 1 | Recommended Windows development environment for Linux-like workflows. Keep repo under `~/code`, not `/mnt/c`. |
+| Native Windows         |           Tier 1 | Must support PowerShell, Windows paths, Playwright Chromium, and Node.js.                                     |
+| macOS                  | Tier 2 initially | Should work naturally from Node/Playwright, but not the first validation target.                              |
+| Native desktop overlay |            Later | Needs OS-specific implementations. Browser overlay comes first.                                               |
 
 ### 3.5.2 What works everywhere in v0.1
 
@@ -787,7 +816,6 @@ strategy:
 ```
 
 macOS can be added after the first public release.
-
 
 ---
 
@@ -1596,7 +1624,13 @@ Create `schemas/action-card.schema.json`:
     },
     "consequence": {
       "type": "object",
-      "required": ["class", "label", "reversibility", "blast_radius", "requires_confirmation"],
+      "required": [
+        "class",
+        "label",
+        "reversibility",
+        "blast_radius",
+        "requires_confirmation"
+      ],
       "properties": {
         "class": { "type": "string" },
         "label": { "type": "string" },
@@ -1864,8 +1898,17 @@ export interface ActionProposalInput {
   metadata?: Record<string, unknown>;
 }
 
-export interface ActionProposal
-  extends Omit<ActionProposalInput, "type" | "id" | "loopId" | "stepId" | "createdAt" | "loopContext" | "agent" | "evidence"> {
+export interface ActionProposal extends Omit<
+  ActionProposalInput,
+  | "type"
+  | "id"
+  | "loopId"
+  | "stepId"
+  | "createdAt"
+  | "loopContext"
+  | "agent"
+  | "evidence"
+> {
   type: "agentclutch.action_proposal.v0";
   id: string;
   loopId: string;
@@ -1959,7 +2002,11 @@ export interface LoopResumeContext {
 ### 6.5.4 `src/normalize.ts`
 
 ```ts
-import type { ActionProposal, ActionProposalInput, AgentRuntime } from "./types.js";
+import type {
+  ActionProposal,
+  ActionProposalInput,
+  AgentRuntime,
+} from "./types.js";
 
 function id(prefix: string): string {
   const cryptoObj = globalThis.crypto;
@@ -1967,7 +2014,9 @@ function id(prefix: string): string {
   return `${prefix}_${Math.random().toString(16).slice(2)}${Date.now().toString(16)}`;
 }
 
-function defaultRuntimeForSource(sourceMode: ActionProposalInput["sourceMode"]): AgentRuntime {
+function defaultRuntimeForSource(
+  sourceMode: ActionProposalInput["sourceMode"],
+): AgentRuntime {
   switch (sourceMode) {
     case "prompt_guard":
       return "custom";
@@ -1978,7 +2027,9 @@ function defaultRuntimeForSource(sourceMode: ActionProposalInput["sourceMode"]):
   }
 }
 
-export function normalizeActionProposal(input: ActionProposalInput): ActionProposal {
+export function normalizeActionProposal(
+  input: ActionProposalInput,
+): ActionProposal {
   const loopId = input.loopId ?? id("implicit_loop");
   const stepId = input.stepId ?? "step_001";
 
@@ -1991,7 +2042,7 @@ export function normalizeActionProposal(input: ActionProposalInput): ActionPropo
     sourceMode: input.sourceMode,
     agent: input.agent ?? {
       runtime: defaultRuntimeForSource(input.sourceMode),
-      name: `${input.sourceMode}-agent`
+      name: `${input.sourceMode}-agent`,
     },
     userGoal: input.userGoal,
     proposedAction: input.proposedAction,
@@ -2000,11 +2051,11 @@ export function normalizeActionProposal(input: ActionProposalInput): ActionPropo
       previousStepIds: input.loopContext?.previousStepIds ?? [],
       planSummary: input.loopContext?.planSummary,
       whyNow: input.loopContext?.whyNow,
-      confidence: input.loopContext?.confidence
+      confidence: input.loopContext?.confidence,
     },
     riskHints: input.riskHints,
     evidence: input.evidence ?? [],
-    metadata: input.metadata
+    metadata: input.metadata,
   };
 }
 ```
@@ -2043,7 +2094,11 @@ export interface AgentLoopEvent<TPayload = unknown> {
 ### 6.5.6 `src/adapter.ts`
 
 ```ts
-import type { ActionProposal, ClutchDecision, LoopResumeContext } from "./types.js";
+import type {
+  ActionProposal,
+  ClutchDecision,
+  LoopResumeContext,
+} from "./types.js";
 
 export interface TakeoverSession {
   loopId: string;
@@ -2056,7 +2111,7 @@ export interface ClutchControls {
   requireClutch(proposal: ActionProposal): Promise<ClutchDecision>;
   buildResumeContext(
     proposal: ActionProposal,
-    decision: ClutchDecision
+    decision: ClutchDecision,
   ): LoopResumeContext;
 }
 
@@ -2065,7 +2120,7 @@ export interface AgentLoopAdapter {
 
   onActionProposed(
     proposal: ActionProposal,
-    controls: ClutchControls
+    controls: ClutchControls,
   ): Promise<ClutchDecision>;
 
   pause(loopId: string): Promise<void>;
@@ -2081,11 +2136,15 @@ export interface AgentLoopAdapter {
 ### 6.5.7 `src/resume-context.ts`
 
 ```ts
-import type { ActionProposal, ClutchDecision, LoopResumeContext } from "./types.js";
+import type {
+  ActionProposal,
+  ClutchDecision,
+  LoopResumeContext,
+} from "./types.js";
 
 export function buildResumeContext(
   proposal: ActionProposal,
-  decision: ClutchDecision
+  decision: ClutchDecision,
 ): LoopResumeContext {
   const base: LoopResumeContext = {
     type: "agentclutch.loop_resume_context.v0",
@@ -2095,18 +2154,21 @@ export function buildResumeContext(
     sourceMode: proposal.sourceMode,
     decision,
     continuePolicy: {
-      allowSameActionRetry: decision.type === "approve_once" || decision.type === "edit",
+      allowSameActionRetry:
+        decision.type === "approve_once" || decision.type === "edit",
       requireApprovalForSimilarActions:
-        decision.type === "edit" || decision.type === "takeover" || decision.type === "create_rule",
-      maxRetries: 1
-    }
+        decision.type === "edit" ||
+        decision.type === "takeover" ||
+        decision.type === "create_rule",
+      maxRetries: 1,
+    },
   };
 
   if (decision.type === "edit") {
     base.userCorrection = {
       before: proposal.proposedAction.rawInput ?? proposal.proposedAction,
       after: decision.patch,
-      explanation: decision.note
+      explanation: decision.note,
     };
     base.instructionForAgent =
       "Continue from the corrected action. Do not repeat the original unedited action unless the user explicitly approves it.";
@@ -2224,7 +2286,7 @@ export const ActionSurfaceSchema = z.enum([
   "payment",
   "saas",
   "endpoint",
-  "unknown"
+  "unknown",
 ]);
 
 export const ConsequenceClassSchema = z.enum([
@@ -2240,7 +2302,7 @@ export const ConsequenceClassSchema = z.enum([
   "code_repository_change",
   "endpoint_or_device_change",
   "sensitive_data_access",
-  "unknown"
+  "unknown",
 ]);
 
 export const ReversibilitySchema = z.enum([
@@ -2249,7 +2311,7 @@ export const ReversibilitySchema = z.enum([
   "residue_remains",
   "not_cleanly_reversible",
   "irreversible",
-  "unknown"
+  "unknown",
 ]);
 
 export const BlastRadiusSchema = z.enum([
@@ -2263,7 +2325,7 @@ export const BlastRadiusSchema = z.enum([
   "organization",
   "public",
   "production",
-  "unknown"
+  "unknown",
 ]);
 
 export const RiskLevelSchema = z.enum([
@@ -2271,7 +2333,7 @@ export const RiskLevelSchema = z.enum([
   "medium",
   "high",
   "critical",
-  "unknown"
+  "unknown",
 ]);
 
 export const UserOptionSchema = z.enum([
@@ -2281,7 +2343,7 @@ export const UserOptionSchema = z.enum([
   "take_wheel",
   "block",
   "create_rule",
-  "request_more_context"
+  "request_more_context",
 ]);
 
 export const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
@@ -2291,8 +2353,8 @@ export const JsonValueSchema: z.ZodType<unknown> = z.lazy(() =>
     z.boolean(),
     z.null(),
     z.array(JsonValueSchema),
-    z.record(JsonValueSchema)
-  ])
+    z.record(JsonValueSchema),
+  ]),
 );
 
 export const AgentDescriptorSchema = z.object({
@@ -2300,14 +2362,14 @@ export const AgentDescriptorSchema = z.object({
   name: z.string().min(1),
   runtime: z.string().optional(),
   version: z.string().optional(),
-  model: z.string().optional()
+  model: z.string().optional(),
 });
 
 export const BoundingBoxSchema = z.object({
   x: z.number(),
   y: z.number(),
   width: z.number(),
-  height: z.number()
+  height: z.number(),
 });
 
 export const VisibleTargetSchema = z.object({
@@ -2319,7 +2381,7 @@ export const VisibleTargetSchema = z.object({
   selector_hash: z.string().optional(),
   button_text: z.string().optional(),
   aria_label: z.string().optional(),
-  bounding_box: BoundingBoxSchema.optional()
+  bounding_box: BoundingBoxSchema.optional(),
 });
 
 export const EvidenceItemSchema = z.object({
@@ -2334,13 +2396,13 @@ export const EvidenceItemSchema = z.object({
     "api_response",
     "memory",
     "system_policy",
-    "unknown"
+    "unknown",
   ]),
   source_ref: z.string().optional(),
   summary: z.string().optional(),
   quote: z.string().optional(),
   confidence: z.number().min(0).max(1).optional(),
-  hash: z.string().optional()
+  hash: z.string().optional(),
 });
 
 export const ChangedFieldSchema = z.object({
@@ -2348,7 +2410,7 @@ export const ChangedFieldSchema = z.object({
   before: JsonValueSchema.optional(),
   after: JsonValueSchema,
   evidence_ids: z.array(z.string()).optional(),
-  editable: z.boolean().optional()
+  editable: z.boolean().optional(),
 });
 
 export const ConsequenceDescriptorSchema = z.object({
@@ -2359,14 +2421,14 @@ export const ConsequenceDescriptorSchema = z.object({
   blast_radius: BlastRadiusSchema,
   requires_confirmation: z.boolean(),
   possible_residue: z.array(z.string()).optional(),
-  compensation_hint: z.string().optional()
+  compensation_hint: z.string().optional(),
 });
 
 export const RiskDescriptorSchema = z.object({
   level: RiskLevelSchema,
   score: z.number().min(0).max(100).optional(),
   reasons: z.array(z.string()),
-  policy_ids: z.array(z.string()).optional()
+  policy_ids: z.array(z.string()).optional(),
 });
 
 export const ProposedActionSchema = z.object({
@@ -2377,7 +2439,7 @@ export const ProposedActionSchema = z.object({
   surface: ActionSurfaceSchema,
   target: VisibleTargetSchema,
   changed_fields: z.array(ChangedFieldSchema).optional(),
-  raw: z.record(JsonValueSchema).optional()
+  raw: z.record(JsonValueSchema).optional(),
 });
 
 export const ActionCardSchema = z.object({
@@ -2392,7 +2454,7 @@ export const ActionCardSchema = z.object({
   evidence: z.array(EvidenceItemSchema),
   user_options: z.array(UserOptionSchema),
   expires_at: z.string().datetime().optional(),
-  metadata: z.record(JsonValueSchema).optional()
+  metadata: z.record(JsonValueSchema).optional(),
 });
 
 export type ActionCardFromSchema = z.infer<typeof ActionCardSchema>;
@@ -2410,7 +2472,7 @@ import type {
   EvidenceItem,
   ProposedAction,
   RiskDescriptor,
-  UserOption
+  UserOption,
 } from "./types";
 
 export interface BuildActionCardInput {
@@ -2440,8 +2502,8 @@ export function buildActionCard(input: BuildActionCardInput): ActionCard {
       "approve_once",
       "edit_fields",
       "take_wheel",
-      "block"
-    ]
+      "block",
+    ],
   };
 }
 ```
@@ -2455,7 +2517,10 @@ import { ActionCardSchema } from "./schema";
 import type { ActionCard } from "./types";
 
 export class ActionCardValidationError extends Error {
-  constructor(message: string, public readonly issues: unknown) {
+  constructor(
+    message: string,
+    public readonly issues: unknown,
+  ) {
     super(message);
     this.name = "ActionCardValidationError";
   }
@@ -2464,7 +2529,10 @@ export class ActionCardValidationError extends Error {
 export function parseActionCard(value: unknown): ActionCard {
   const result = ActionCardSchema.safeParse(value);
   if (!result.success) {
-    throw new ActionCardValidationError("Invalid AgentClutch Action Card", result.error.issues);
+    throw new ActionCardValidationError(
+      "Invalid AgentClutch Action Card",
+      result.error.issues,
+    );
   }
   return result.data as ActionCard;
 }
@@ -2507,24 +2575,22 @@ const card = buildActionCard({
       target_app: "FakeExpense",
       page_title: "Expense Report",
       selector: "#submit-report",
-      button_text: "Submit Report"
+      button_text: "Submit Report",
     },
-    changed_fields: [
-      { field: "amount", after: "$231.47", editable: true }
-    ]
+    changed_fields: [{ field: "amount", after: "$231.47", editable: true }],
   },
   consequence: {
     class: "external_business_submission",
     label: "External business submission",
     reversibility: "not_cleanly_reversible",
     blast_radius: "single_user",
-    requires_confirmation: true
+    requires_confirmation: true,
   },
   risk: {
     level: "high",
     score: 82,
-    reasons: ["The action submits a business record outside the local page."]
-  }
+    reasons: ["The action submits a business record outside the local page."],
+  },
 });
 
 describe("ActionCard", () => {
@@ -2611,10 +2677,17 @@ export interface ConsequenceInput {
   buttonText?: string;
 }
 
-export function classifyConsequence(input: ConsequenceInput): ConsequenceDescriptor {
-  const haystack = `${input.kind} ${input.label ?? ""} ${input.buttonText ?? ""}`.toLowerCase();
+export function classifyConsequence(
+  input: ConsequenceInput,
+): ConsequenceDescriptor {
+  const haystack =
+    `${input.kind} ${input.label ?? ""} ${input.buttonText ?? ""}`.toLowerCase();
 
-  if (haystack.includes("checkout") || haystack.includes("buy") || haystack.includes("purchase")) {
+  if (
+    haystack.includes("checkout") ||
+    haystack.includes("buy") ||
+    haystack.includes("purchase")
+  ) {
     return {
       class: "payment_or_purchase",
       label: "Payment or purchase",
@@ -2622,12 +2695,18 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
       reversibility: "compensable",
       blast_radius: "single_user",
       requires_confirmation: true,
-      possible_residue: ["Order record may be created", "Payment authorization may be captured"],
-      compensation_hint: "Cancel order or request refund if available."
+      possible_residue: [
+        "Order record may be created",
+        "Payment authorization may be captured",
+      ],
+      compensation_hint: "Cancel order or request refund if available.",
     };
   }
 
-  if (haystack.includes("send") && (haystack.includes("email") || haystack.includes("message"))) {
+  if (
+    haystack.includes("send") &&
+    (haystack.includes("email") || haystack.includes("message"))
+  ) {
     return {
       class: "external_message_send",
       label: "External message send",
@@ -2636,7 +2715,7 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
       blast_radius: "team",
       requires_confirmation: true,
       possible_residue: ["Recipient may read or forward the message"],
-      compensation_hint: "Send a follow-up correction if needed."
+      compensation_hint: "Send a follow-up correction if needed.",
     };
   }
 
@@ -2644,11 +2723,12 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
     return {
       class: "external_business_submission",
       label: "External business submission",
-      description: "This action may submit information to an external or business system.",
+      description:
+        "This action may submit information to an external or business system.",
       reversibility: "not_cleanly_reversible",
       blast_radius: "single_user",
       requires_confirmation: true,
-      possible_residue: ["A submitted record may remain in the target system"]
+      possible_residue: ["A submitted record may remain in the target system"],
     };
   }
 
@@ -2660,19 +2740,25 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
       reversibility: "unknown",
       blast_radius: "workspace",
       requires_confirmation: true,
-      possible_residue: ["Deleted data may not be recoverable"]
+      possible_residue: ["Deleted data may not be recoverable"],
     };
   }
 
-  if (haystack.includes("merge") || haystack.includes("deploy") || haystack.includes("production")) {
+  if (
+    haystack.includes("merge") ||
+    haystack.includes("deploy") ||
+    haystack.includes("production")
+  ) {
     return {
       class: "production_change",
       label: "Production or repository change",
-      description: "This action may alter code, deployment, or production state.",
+      description:
+        "This action may alter code, deployment, or production state.",
       reversibility: "compensable",
       blast_radius: "production",
       requires_confirmation: true,
-      compensation_hint: "Revert commit, rollback deployment, or restore previous config."
+      compensation_hint:
+        "Revert commit, rollback deployment, or restore previous config.",
     };
   }
 
@@ -2682,7 +2768,7 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
     description: "AgentClutch could not confidently classify this action.",
     reversibility: "unknown",
     blast_radius: "unknown",
-    requires_confirmation: true
+    requires_confirmation: true,
   };
 }
 ```
@@ -2692,9 +2778,14 @@ export function classifyConsequence(input: ConsequenceInput): ConsequenceDescrip
 `packages/core/src/risk.ts`:
 
 ```ts
-import type { ConsequenceDescriptor, RiskDescriptor } from "@agentclutch/action-card";
+import type {
+  ConsequenceDescriptor,
+  RiskDescriptor,
+} from "@agentclutch/action-card";
 
-export function riskFromConsequence(consequence: ConsequenceDescriptor): RiskDescriptor {
+export function riskFromConsequence(
+  consequence: ConsequenceDescriptor,
+): RiskDescriptor {
   const reasons: string[] = [];
   let score = 10;
 
@@ -2754,9 +2845,16 @@ export function riskFromConsequence(consequence: ConsequenceDescriptor): RiskDes
   const normalized = Math.min(100, Math.max(0, score));
 
   return {
-    level: normalized >= 85 ? "critical" : normalized >= 65 ? "high" : normalized >= 35 ? "medium" : "low",
+    level:
+      normalized >= 85
+        ? "critical"
+        : normalized >= 65
+          ? "high"
+          : normalized >= 35
+            ? "medium"
+            : "low",
     score: normalized,
-    reasons
+    reasons,
   };
 }
 ```
@@ -2836,7 +2934,7 @@ export class ClutchSession {
       run_id: this.run_id,
       state: this.state,
       current_action_card: this.currentActionCard,
-      decisions: [...this.decisions]
+      decisions: [...this.decisions],
     };
   }
 }
@@ -2864,7 +2962,7 @@ import {
   type ActionProposal,
   type ActionProposalInput,
   type ClutchDecision,
-  type LoopResumeContext
+  type LoopResumeContext,
 } from "@agentclutch/loop";
 
 export interface ClutchDecisionResult {
@@ -2891,7 +2989,10 @@ export interface CreateClutchOptions {
   recorder?: ClutchRecorderLike;
 }
 
-export interface ConfirmActionInput extends Omit<ActionProposalInput, "sourceMode"> {
+export interface ConfirmActionInput extends Omit<
+  ActionProposalInput,
+  "sourceMode"
+> {
   sourceMode?: "prompt_guard";
 }
 
@@ -2901,13 +3002,17 @@ export interface WrapToolOptions<TArgs extends unknown[]> {
   targetSurface: string;
   targetApp?: string;
   risk?: ActionProposalInput["riskHints"];
-  buildVisibleContext?: (...args: TArgs) => ActionProposalInput["visibleContext"];
+  buildVisibleContext?: (
+    ...args: TArgs
+  ) => ActionProposalInput["visibleContext"];
   buildEvidence?: (...args: TArgs) => ActionProposalInput["evidence"];
   buildUserGoal?: (...args: TArgs) => ActionProposalInput["userGoal"];
 }
 
 export function createClutch(options: CreateClutchOptions) {
-  async function decide(input: ActionProposalInput): Promise<ClutchDecisionResult> {
+  async function decide(
+    input: ActionProposalInput,
+  ): Promise<ClutchDecisionResult> {
     const proposal = normalizeActionProposal(input);
 
     await options.recorder?.record({
@@ -2916,7 +3021,7 @@ export function createClutch(options: CreateClutchOptions) {
       stepId: proposal.stepId,
       eventType: "action.proposed",
       timestamp: new Date().toISOString(),
-      payload: proposal
+      payload: proposal,
     });
 
     const decision = await options.renderer.decide(proposal);
@@ -2928,7 +3033,7 @@ export function createClutch(options: CreateClutchOptions) {
       stepId: proposal.stepId,
       eventType: "user.decision",
       timestamp: new Date().toISOString(),
-      payload: decision
+      payload: decision,
     });
 
     await options.recorder?.record({
@@ -2937,7 +3042,7 @@ export function createClutch(options: CreateClutchOptions) {
       stepId: proposal.stepId,
       eventType: "resume_context.created",
       timestamp: new Date().toISOString(),
-      payload: resumeContext
+      payload: resumeContext,
     });
 
     return { proposal, decision, resumeContext };
@@ -2948,14 +3053,14 @@ export function createClutch(options: CreateClutchOptions) {
     confirmAction(input: ConfirmActionInput): Promise<ClutchDecisionResult> {
       return decide({
         ...input,
-        sourceMode: "prompt_guard"
+        sourceMode: "prompt_guard",
       });
     },
 
     /** Level 2: tool_wrapper */
     wrapTool<TArgs extends unknown[], TResult>(
       tool: (...args: TArgs) => Promise<TResult>,
-      toolOptions: WrapToolOptions<TArgs>
+      toolOptions: WrapToolOptions<TArgs>,
     ) {
       return async (...args: TArgs): Promise<TResult | undefined> => {
         const { decision } = await decide({
@@ -2966,11 +3071,11 @@ export function createClutch(options: CreateClutchOptions) {
             label: toolOptions.label,
             targetSurface: toolOptions.targetSurface,
             targetApp: toolOptions.targetApp,
-            rawInput: args
+            rawInput: args,
           },
           visibleContext: toolOptions.buildVisibleContext?.(...args),
           evidence: toolOptions.buildEvidence?.(...args),
-          riskHints: toolOptions.risk
+          riskHints: toolOptions.risk,
         });
 
         if (decision.type === "approve_once") {
@@ -2978,7 +3083,9 @@ export function createClutch(options: CreateClutchOptions) {
         }
 
         if (decision.type === "edit") {
-          throw new Error("MVP wrapTool edit decisions require a caller-provided patch executor.");
+          throw new Error(
+            "MVP wrapTool edit decisions require a caller-provided patch executor.",
+          );
         }
 
         if (decision.type === "takeover" || decision.type === "block") {
@@ -2990,12 +3097,14 @@ export function createClutch(options: CreateClutchOptions) {
     },
 
     /** Level 3: loop_native */
-    async onActionProposed(input: ActionProposalInput | ActionProposal): Promise<ClutchDecisionResult> {
+    async onActionProposed(
+      input: ActionProposalInput | ActionProposal,
+    ): Promise<ClutchDecisionResult> {
       return decide({
         ...input,
-        sourceMode: input.sourceMode ?? "loop_native"
+        sourceMode: input.sourceMode ?? "loop_native",
       });
-    }
+    },
   };
 }
 ```
@@ -3007,7 +3116,6 @@ MVP notes:
 - `onActionProposed` is the explicit loop-engineering API.
 - The renderer is injected so the same core can power React modals, browser overlays, CLI prompts, tests, and future desktop overlays.
 - `wrapTool` edit support should be expanded later with caller-provided patch application.
-
 
 ### 8.7 Public exports
 
@@ -3125,7 +3233,10 @@ export class RunStore {
   }
 
   async readEvents(runId: string): Promise<unknown[]> {
-    const file = await readFile(join(this.rootDir, "runs", runId, "events.jsonl"), "utf8");
+    const file = await readFile(
+      join(this.rootDir, "runs", runId, "events.jsonl"),
+      "utf8",
+    );
     return file
       .split("\n")
       .filter(Boolean)
@@ -3198,7 +3309,11 @@ For the MVP, UI state can be local React state. Later, it should support event s
 
 ```tsx
 import React, { createContext, useCallback, useMemo, useState } from "react";
-import type { ActionCard, UserDecision, UserDecisionType } from "@agentclutch/action-card";
+import type {
+  ActionCard,
+  UserDecision,
+  UserDecisionType,
+} from "@agentclutch/action-card";
 
 export interface AgentClutchContextValue {
   currentCard: ActionCard | null;
@@ -3207,13 +3322,19 @@ export interface AgentClutchContextValue {
   decide: (decision: UserDecisionType, extra?: Partial<UserDecision>) => void;
 }
 
-export const AgentClutchContext = createContext<AgentClutchContextValue | null>(null);
+export const AgentClutchContext = createContext<AgentClutchContextValue | null>(
+  null,
+);
 
 interface PendingResolver {
   resolve: (decision: UserDecision) => void;
 }
 
-export function AgentClutchProvider({ children }: { children: React.ReactNode }) {
+export function AgentClutchProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [currentCard, setCurrentCard] = useState<ActionCard | null>(null);
   const [history, setHistory] = useState<Array<ActionCard | UserDecision>>([]);
   const [pending, setPending] = useState<PendingResolver | null>(null);
@@ -3238,7 +3359,7 @@ export function AgentClutchProvider({ children }: { children: React.ReactNode })
         action_card_id: currentCard.id,
         decided_at: new Date().toISOString(),
         decision: decisionType,
-        ...extra
+        ...extra,
       };
 
       setHistory((prev) => [...prev, decision]);
@@ -3246,15 +3367,19 @@ export function AgentClutchProvider({ children }: { children: React.ReactNode })
       setPending(null);
       setCurrentCard(null);
     },
-    [currentCard, pending]
+    [currentCard, pending],
   );
 
   const value = useMemo(
     () => ({ currentCard, history, proposeAction, decide }),
-    [currentCard, history, proposeAction, decide]
+    [currentCard, history, proposeAction, decide],
   );
 
-  return <AgentClutchContext.Provider value={value}>{children}</AgentClutchContext.Provider>;
+  return (
+    <AgentClutchContext.Provider value={value}>
+      {children}
+    </AgentClutchContext.Provider>
+  );
 }
 ```
 
@@ -3283,10 +3408,17 @@ export function useAgentClutch() {
 import React from "react";
 import type { RiskLevel } from "@agentclutch/action-card";
 
-export function RiskBadge({ level, score }: { level: RiskLevel; score?: number }) {
+export function RiskBadge({
+  level,
+  score,
+}: {
+  level: RiskLevel;
+  score?: number;
+}) {
   return (
     <span className={`ac-risk-badge ac-risk-${level}`}>
-      {level.toUpperCase()}{typeof score === "number" ? ` ${score}/100` : ""}
+      {level.toUpperCase()}
+      {typeof score === "number" ? ` ${score}/100` : ""}
     </span>
   );
 }
@@ -3311,7 +3443,9 @@ export function EvidenceList({ evidence }: { evidence: EvidenceItem[] }) {
         <li key={item.id}>
           <strong>{item.label}</strong>
           {item.summary ? <span> — {item.summary}</span> : null}
-          {item.source_ref ? <div className="ac-muted">Source: {item.source_ref}</div> : null}
+          {item.source_ref ? (
+            <div className="ac-muted">Source: {item.source_ref}</div>
+          ) : null}
         </li>
       ))}
     </ul>
@@ -3335,7 +3469,10 @@ interface DecisionBarProps {
 export function DecisionBar({ onDecision, canEdit = true }: DecisionBarProps) {
   return (
     <div className="ac-decision-bar">
-      <button className="ac-btn ac-btn-primary" onClick={() => onDecision("approve_once")}>
+      <button
+        className="ac-btn ac-btn-primary"
+        onClick={() => onDecision("approve_once")}
+      >
         Approve once
       </button>
       {canEdit ? (
@@ -3346,7 +3483,10 @@ export function DecisionBar({ onDecision, canEdit = true }: DecisionBarProps) {
       <button className="ac-btn" onClick={() => onDecision("take_wheel")}>
         Take wheel
       </button>
-      <button className="ac-btn ac-btn-danger" onClick={() => onDecision("block")}>
+      <button
+        className="ac-btn ac-btn-danger"
+        onClick={() => onDecision("block")}
+      >
         Block
       </button>
       <button className="ac-btn" onClick={() => onDecision("create_rule")}>
@@ -3370,7 +3510,7 @@ import { RiskBadge } from "./RiskBadge";
 
 export function ActionCardModal({
   card,
-  onDecision
+  onDecision,
 }: {
   card: ActionCard;
   onDecision: (decision: UserDecisionType) => void;
@@ -3379,7 +3519,12 @@ export function ActionCardModal({
 
   return (
     <div className="ac-modal-backdrop" role="presentation">
-      <section className="ac-modal" role="dialog" aria-modal="true" aria-labelledby="ac-modal-title">
+      <section
+        className="ac-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="ac-modal-title"
+      >
         <header className="ac-modal-header">
           <div>
             <div className="ac-eyebrow">AgentClutch Action Card</div>
@@ -3390,7 +3535,9 @@ export function ActionCardModal({
 
         <div className="ac-section">
           <h3>The agent wants to</h3>
-          <p className="ac-large">{card.proposed_action.description ?? card.proposed_action.label}</p>
+          <p className="ac-large">
+            {card.proposed_action.description ?? card.proposed_action.label}
+          </p>
         </div>
 
         <div className="ac-grid">
@@ -3402,7 +3549,11 @@ export function ActionCardModal({
               <dt>App</dt>
               <dd>{card.proposed_action.target.target_app ?? "Unknown"}</dd>
               <dt>Button</dt>
-              <dd>{card.proposed_action.target.button_text ?? card.proposed_action.target.aria_label ?? "Unknown"}</dd>
+              <dd>
+                {card.proposed_action.target.button_text ??
+                  card.proposed_action.target.aria_label ??
+                  "Unknown"}
+              </dd>
               <dt>Page</dt>
               <dd>{card.proposed_action.target.page_title ?? "Unknown"}</dd>
             </dl>
@@ -3459,7 +3610,10 @@ export function ActionCardModal({
           </ul>
         </div>
 
-        <DecisionBar onDecision={onDecision} canEdit={changedFields.some((f) => f.editable)} />
+        <DecisionBar
+          onDecision={onDecision}
+          canEdit={changedFields.some((f) => f.editable)}
+        />
       </section>
     </div>
   );
@@ -3503,7 +3657,7 @@ export function AgentEyesOverlay({ frame }: { frame: PerceptionFrame | null }) {
                 left: box.x,
                 top: box.y,
                 width: box.width,
-                height: box.height
+                height: box.height,
               }}
             />
           );
@@ -3520,13 +3674,23 @@ export function AgentEyesOverlay({ frame }: { frame: PerceptionFrame | null }) {
 ```tsx
 import React from "react";
 
-export function ClutchButton({ onPause, onTakeWheel }: { onPause?: () => void; onTakeWheel?: () => void }) {
+export function ClutchButton({
+  onPause,
+  onTakeWheel,
+}: {
+  onPause?: () => void;
+  onTakeWheel?: () => void;
+}) {
   return (
     <div className="ac-clutch-button">
       <button className="ac-clutch-main" onClick={onPause} title="Pause agent">
         Clutch
       </button>
-      <button className="ac-clutch-secondary" onClick={onTakeWheel} title="Take wheel">
+      <button
+        className="ac-clutch-secondary"
+        onClick={onTakeWheel}
+        title="Take wheel"
+      >
         Take wheel
       </button>
     </div>
@@ -3551,7 +3715,14 @@ export function ClutchButton({ onPause, onTakeWheel }: { onPause?: () => void; o
   --ac-warning: #ffcc66;
   --ac-success: #5ee39a;
   --ac-shadow: 0 20px 80px rgba(0, 0, 0, 0.45);
-  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
 }
 
 .ac-modal-backdrop {
@@ -3667,11 +3838,21 @@ export function ClutchButton({ onPause, onTakeWheel }: { onPause?: () => void; o
   border: 1px solid var(--ac-border);
 }
 
-.ac-risk-low { color: var(--ac-success); }
-.ac-risk-medium { color: var(--ac-warning); }
-.ac-risk-high { color: #ff9f43; }
-.ac-risk-critical { color: var(--ac-danger); }
-.ac-risk-unknown { color: var(--ac-muted); }
+.ac-risk-low {
+  color: var(--ac-success);
+}
+.ac-risk-medium {
+  color: var(--ac-warning);
+}
+.ac-risk-high {
+  color: #ff9f43;
+}
+.ac-risk-critical {
+  color: var(--ac-danger);
+}
+.ac-risk-unknown {
+  color: var(--ac-muted);
+}
 
 .ac-decision-bar {
   position: sticky;
@@ -3793,7 +3974,7 @@ For MVP, do not try to monkey-patch all Playwright actions. Start with an explic
 const clutch = await attachClutch(page, options);
 await clutch.click("#checkout", {
   kind: "browser.checkout",
-  label: "Complete checkout"
+  label: "Complete checkout",
 });
 ```
 
@@ -3857,7 +4038,11 @@ const page = await withClutch(page, { intercept: true });
 `packages/playwright/src/browserOverlay.ts`:
 
 ```ts
-import type { ActionCard, UserDecision, UserDecisionType } from "@agentclutch/action-card";
+import type {
+  ActionCard,
+  UserDecision,
+  UserDecisionType,
+} from "@agentclutch/action-card";
 
 export function browserOverlayScript() {
   return `
@@ -4002,7 +4187,7 @@ import {
   buildActionCard,
   type ActionCard,
   type ChangedField,
-  type UserDecision
+  type UserDecision,
 } from "@agentclutch/action-card";
 import { classifyConsequence, riskFromConsequence } from "@agentclutch/core";
 import {
@@ -4011,7 +4196,7 @@ import {
   type ActionProposal,
   type ActionProposalInput,
   type ClutchDecision,
-  type LoopResumeContext
+  type LoopResumeContext,
 } from "@agentclutch/loop";
 import { JsonlRecorder } from "@agentclutch/recorder";
 import { browserOverlayScript } from "./browserOverlay";
@@ -4041,16 +4226,27 @@ export interface ProposedDecisionResult {
 }
 
 export interface ClutchPlaywright {
-  click(selector: string, options?: ProposeClickOptions): Promise<ProposedDecisionResult>;
-  submit(selector: string, options?: ProposeClickOptions): Promise<ProposedDecisionResult>;
+  click(
+    selector: string,
+    options?: ProposeClickOptions,
+  ): Promise<ProposedDecisionResult>;
+  submit(
+    selector: string,
+    options?: ProposeClickOptions,
+  ): Promise<ProposedDecisionResult>;
   propose(input: ActionProposalInput): Promise<ProposedDecisionResult>;
 }
 
-export async function attachClutch(page: Page, options: AttachClutchOptions): Promise<ClutchPlaywright> {
+export async function attachClutch(
+  page: Page,
+  options: AttachClutchOptions,
+): Promise<ClutchPlaywright> {
   await page.addInitScript(browserOverlayScript());
   await page.evaluate(browserOverlayScript());
 
-  async function propose(input: ActionProposalInput): Promise<ProposedDecisionResult> {
+  async function propose(
+    input: ActionProposalInput,
+  ): Promise<ProposedDecisionResult> {
     const proposal = normalizeActionProposal(input);
 
     await options.recorder?.record({
@@ -4059,7 +4255,7 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
       stepId: proposal.stepId,
       eventType: "action.proposed",
       timestamp: new Date().toISOString(),
-      payload: proposal
+      payload: proposal,
     });
 
     const card = actionCardFromProposal(proposal, options.runId);
@@ -4083,7 +4279,7 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
       stepId: proposal.stepId,
       eventType: "resume_context.created",
       timestamp: new Date().toISOString(),
-      payload: resumeContext
+      payload: resumeContext,
     });
 
     return { proposal, card, decision, resumeContext };
@@ -4091,7 +4287,7 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
 
   async function buildProposalForSelector(
     selector: string,
-    actionOptions: ProposeClickOptions = {}
+    actionOptions: ProposeClickOptions = {},
   ): Promise<ActionProposalInput> {
     const target = await page.locator(selector).first();
     const box = await target.boundingBox();
@@ -4100,14 +4296,16 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
     const title = await page.title().catch(() => "");
     const url = page.url();
 
-    const kind = actionOptions.kind ?? inferKindFromText(buttonText || ariaLabel || selector);
-    const label = actionOptions.label ?? buttonText || ariaLabel || kind;
+    const kind =
+      actionOptions.kind ??
+      inferKindFromText(buttonText || ariaLabel || selector);
+    const label = (actionOptions.label ?? buttonText) || ariaLabel || kind;
 
     return {
       sourceMode: "tool_wrapper",
       agent: {
         name: options.agentName ?? "playwright-agent",
-        runtime: "playwright"
+        runtime: "playwright",
       },
       userGoal: actionOptions.userGoal,
       proposedAction: {
@@ -4116,7 +4314,7 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
         targetSurface: "browser",
         targetApp: actionOptions.targetApp,
         targetIdentifier: selector,
-        rawInput: { selector, kind, label }
+        rawInput: { selector, kind, label },
       },
       visibleContext: {
         pageTitle: title,
@@ -4127,24 +4325,26 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
           ariaLabel: ariaLabel ?? undefined,
           boundingBox: box
             ? { x: box.x, y: box.y, width: box.width, height: box.height }
-            : undefined
-        }
+            : undefined,
+        },
       },
       riskHints: {
-        requiresApproval: true
+        requiresApproval: true,
       },
       evidence: actionOptions.evidence?.map((item) => ({
         label: item.label,
         source: item.source_ref ?? item.source_type,
         summary: item.summary,
-        hash: item.hash
-      }))
+        hash: item.hash,
+      })),
     };
   }
 
   return {
     async click(selector, actionOptions) {
-      const result = await propose(await buildProposalForSelector(selector, actionOptions));
+      const result = await propose(
+        await buildProposalForSelector(selector, actionOptions),
+      );
 
       if (result.decision.type === "approve_once") {
         await page.locator(selector).first().click();
@@ -4155,10 +4355,12 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
     },
 
     async submit(selector, actionOptions) {
-      const result = await propose(await buildProposalForSelector(selector, {
-        ...actionOptions,
-        kind: actionOptions?.kind ?? "browser.form_submit"
-      }));
+      const result = await propose(
+        await buildProposalForSelector(selector, {
+          ...actionOptions,
+          kind: actionOptions?.kind ?? "browser.form_submit",
+        }),
+      );
 
       if (result.decision.type === "approve_once") {
         await page.locator(selector).first().click();
@@ -4167,11 +4369,14 @@ export async function attachClutch(page: Page, options: AttachClutchOptions): Pr
       return result;
     },
 
-    propose
+    propose,
   };
 }
 
-function actionCardFromProposal(proposal: ActionProposal, runId: string): ActionCard {
+function actionCardFromProposal(
+  proposal: ActionProposal,
+  runId: string,
+): ActionCard {
   const kind = proposal.proposedAction.kind;
   const label = proposal.proposedAction.label;
   const buttonText = String(proposal.visibleContext?.fields?.buttonText ?? "");
@@ -4187,7 +4392,7 @@ function actionCardFromProposal(proposal: ActionProposal, runId: string): Action
       id: proposal.agent.id,
       name: proposal.agent.name ?? "agentclutch-agent",
       runtime: proposal.agent.runtime,
-      model: proposal.agent.model
+      model: proposal.agent.model,
     },
     proposed_action: {
       id: `act_${proposal.id}`,
@@ -4201,9 +4406,11 @@ function actionCardFromProposal(proposal: ActionProposal, runId: string): Action
         url: proposal.visibleContext?.url,
         page_title: proposal.visibleContext?.pageTitle,
         selector: proposal.visibleContext?.highlightedSelector,
-        button_text: buttonText
+        button_text: buttonText,
       },
-      raw: proposal.proposedAction.rawInput as Record<string, unknown> | undefined
+      raw: proposal.proposedAction.rawInput as
+        | Record<string, unknown>
+        | undefined,
     },
     consequence,
     risk,
@@ -4213,8 +4420,8 @@ function actionCardFromProposal(proposal: ActionProposal, runId: string): Action
       source_type: "tool_output",
       source_ref: item.source,
       summary: item.summary,
-      hash: item.hash
-    }))
+      hash: item.hash,
+    })),
   });
 }
 
@@ -4225,11 +4432,27 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
     case "approve_once":
       return { type: "approve_once", approvedBy: "local-user", decidedAt };
     case "edit_fields":
-      return { type: "edit", approvedBy: "local-user", decidedAt, patch: [], note: "User requested field editing." };
+      return {
+        type: "edit",
+        approvedBy: "local-user",
+        decidedAt,
+        patch: [],
+        note: "User requested field editing.",
+      };
     case "take_wheel":
-      return { type: "takeover", operator: "local-user", decidedAt, resumeMode: "resume_from_current_state" };
+      return {
+        type: "takeover",
+        operator: "local-user",
+        decidedAt,
+        resumeMode: "resume_from_current_state",
+      };
     case "block":
-      return { type: "block", blockedBy: "local-user", decidedAt, reason: "User blocked the action." };
+      return {
+        type: "block",
+        blockedBy: "local-user",
+        decidedAt,
+        reason: "User blocked the action.",
+      };
     case "create_rule":
       return {
         type: "create_rule",
@@ -4239,20 +4462,31 @@ function userDecisionToClutchDecision(decision: UserDecision): ClutchDecision {
           id: `rule_${crypto.randomUUID()}`,
           description: "Rule created from local AgentClutch decision.",
           match: { actionCardId: decision.action_card_id },
-          decision: "require_clutch"
-        }
+          decision: "require_clutch",
+        },
       };
     default:
-      return { type: "block", blockedBy: "local-user", decidedAt, reason: `Unsupported decision: ${decision.decision}` };
+      return {
+        type: "block",
+        blockedBy: "local-user",
+        decidedAt,
+        reason: `Unsupported decision: ${decision.decision}`,
+      };
   }
 }
 
 function inferKindFromText(text: string): string {
   const lower = text.toLowerCase();
-  if (lower.includes("checkout") || lower.includes("buy") || lower.includes("purchase")) return "browser.checkout";
+  if (
+    lower.includes("checkout") ||
+    lower.includes("buy") ||
+    lower.includes("purchase")
+  )
+    return "browser.checkout";
   if (lower.includes("submit")) return "browser.form_submit";
   if (lower.includes("send")) return "email.send";
-  if (lower.includes("delete") || lower.includes("remove")) return "file.delete";
+  if (lower.includes("delete") || lower.includes("remove"))
+    return "file.delete";
   if (lower.includes("approve")) return "browser.approve";
   return "browser.click";
 }
@@ -4332,7 +4566,9 @@ const program = new Command();
 
 program
   .name("agentclutch")
-  .description("Action Cards and takeover UX for consequential AI agent actions.")
+  .description(
+    "Action Cards and takeover UX for consequential AI agent actions.",
+  )
   .version("0.0.1");
 
 program
@@ -4377,7 +4613,9 @@ export async function runCheckoutDemo(): Promise<void> {
   const recorder = await store.createRecorder(runId);
 
   const browser = await chromium.launch({ headless: false });
-  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 900 },
+  });
 
   const demoFile = demoHtmlPath();
   await page.goto(`file://${demoFile}`);
@@ -4386,7 +4624,7 @@ export async function runCheckoutDemo(): Promise<void> {
     runId,
     agentName: "demo-shopping-agent",
     agentRuntime: "agentclutch-demo",
-    recorder
+    recorder,
   });
 
   await page.locator("#search").fill("noise cancelling headphones");
@@ -4403,7 +4641,7 @@ export async function runCheckoutDemo(): Promise<void> {
     changedFields: [
       { field: "product", after: "Wireless Headphones Pro", editable: false },
       { field: "quantity", after: 1, editable: true },
-      { field: "total", after: "$249.00", editable: false }
+      { field: "total", after: "$249.00", editable: false },
     ],
     evidence: [
       {
@@ -4411,13 +4649,17 @@ export async function runCheckoutDemo(): Promise<void> {
         label: "Selected product",
         source_type: "dom",
         source_ref: "#product-title",
-        summary: "Wireless Headphones Pro was selected on the product page."
-      }
-    ]
+        summary: "Wireless Headphones Pro was selected on the product page.",
+      },
+    ],
   });
 
-  console.log(`AgentClutch demo run recorded: .agentclutch/runs/${runId}/events.jsonl`);
-  console.log("Leave the browser open to inspect the result. Press Ctrl+C to exit.");
+  console.log(
+    `AgentClutch demo run recorded: .agentclutch/runs/${runId}/events.jsonl`,
+  );
+  console.log(
+    "Leave the browser open to inspect the result. Press Ctrl+C to exit.",
+  );
 }
 
 function demoHtmlPath(): string {
@@ -4454,7 +4696,10 @@ export async function inspectRuns(runArg: string): Promise<void> {
       console.log(`ACTION CARD: ${event.proposed_action?.label}`);
       console.log(`  consequence: ${event.consequence?.label}`);
       console.log(`  risk: ${event.risk?.level} ${event.risk?.score ?? ""}`);
-    } else if (isObject(event) && event.type === "agentclutch.user_decision.v0") {
+    } else if (
+      isObject(event) &&
+      event.type === "agentclutch.user_decision.v0"
+    ) {
       console.log(`DECISION: ${event.decision}`);
     } else {
       console.log(JSON.stringify(event));
@@ -4507,7 +4752,14 @@ function isObject(value: unknown): value is Record<string, any> {
     <title>FakeStore Checkout Demo</title>
     <style>
       body {
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-family:
+          Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          sans-serif;
         margin: 0;
         background: #f5f7fb;
         color: #172033;
@@ -4605,7 +4857,9 @@ function isObject(value: unknown): value is Record<string, any> {
           <p>Quantity: <strong>1</strong></p>
           <p>Total: <strong>$249.00</strong></p>
           <button id="checkout" class="danger">Complete checkout</button>
-          <div id="result" class="result hidden">Checkout completed. This page simulates an external purchase.</div>
+          <div id="result" class="result hidden">
+            Checkout completed. This page simulates an external purchase.
+          </div>
         </div>
       </section>
     </main>
@@ -4685,7 +4939,9 @@ export function App() {
       <br />
       <button onClick={load}>Render card</button>
       {error ? <pre style={{ color: "crimson" }}>{error}</pre> : null}
-      {card ? <ActionCardModal card={card} onDecision={(d) => alert(d)} /> : null}
+      {card ? (
+        <ActionCardModal card={card} onDecision={(d) => alert(d)} />
+      ) : null}
     </main>
   );
 }
@@ -4768,7 +5024,7 @@ const defaultRiskMap = {
   "filesystem.write": "medium",
   "filesystem.delete": "high",
   "shell.exec": "high",
-  "payment.charge": "critical"
+  "payment.charge": "critical",
 };
 ```
 
@@ -4835,7 +5091,7 @@ MVP recommended:
 ```ts
 await clutch.click("#checkout", {
   kind: "browser.checkout",
-  label: "Complete checkout"
+  label: "Complete checkout",
 });
 ```
 
@@ -4946,7 +5202,11 @@ MCP tool calls are becoming one of the most important places where agents touch 
 `packages/mcp/src/actionCardForToolCall.ts`:
 
 ```ts
-import { buildActionCard, type ActionCard, type ChangedField } from "@agentclutch/action-card";
+import {
+  buildActionCard,
+  type ActionCard,
+  type ChangedField,
+} from "@agentclutch/action-card";
 import { classifyConsequence, riskFromConsequence } from "@agentclutch/core";
 
 export interface McpToolCallInput {
@@ -4960,18 +5220,20 @@ export interface McpToolCallInput {
 export function actionCardForMcpToolCall(input: McpToolCallInput): ActionCard {
   const kind = `mcp.${input.serverName}.${input.toolName}`;
   const consequence = classifyConsequence({ kind, label: input.toolName });
-  const changedFields: ChangedField[] = Object.entries(input.args).map(([key, value]) => ({
-    field: key,
-    after: value as any,
-    editable: true
-  }));
+  const changedFields: ChangedField[] = Object.entries(input.args).map(
+    ([key, value]) => ({
+      field: key,
+      after: value as any,
+      editable: true,
+    }),
+  );
 
   return buildActionCard({
     id: `acard_${crypto.randomUUID()}`,
     run_id: input.runId,
     agent: {
       name: input.agentName,
-      runtime: "mcp"
+      runtime: "mcp",
     },
     proposed_action: {
       id: `act_${crypto.randomUUID()}`,
@@ -4980,18 +5242,18 @@ export function actionCardForMcpToolCall(input: McpToolCallInput): ActionCard {
       surface: "mcp",
       target: {
         surface: "mcp",
-        target_app: input.serverName
+        target_app: input.serverName,
       },
       changed_fields: changedFields,
       raw: {
         server: input.serverName,
         tool: input.toolName,
-        args: input.args as any
-      }
+        args: input.args as any,
+      },
     },
     consequence,
     risk: riskFromConsequence(consequence),
-    evidence: []
+    evidence: [],
   });
 }
 ```
@@ -5043,17 +5305,17 @@ export function mapActionCardToAgUiEvents(card: ActionCard) {
       type: "STATE_DELTA",
       payload: {
         agentclutch: {
-          current_action_card: card
-        }
-      }
+          current_action_card: card,
+        },
+      },
     },
     {
       type: "INTERRUPT",
       payload: {
         reason: "consequential_action_requires_decision",
-        action_card_id: card.id
-      }
-    }
+        action_card_id: card.id,
+      },
+    },
   ];
 }
 ```
@@ -5076,30 +5338,32 @@ export function actionCardToAgUiEvents(card: ActionCard): AgUiLikeEvent[] {
       type: "STATE_DELTA",
       payload: {
         agentclutch: {
-          current_action_card: card
-        }
-      }
+          current_action_card: card,
+        },
+      },
     },
     {
       type: "INTERRUPT",
       payload: {
         reason: "consequential_action_requires_decision",
-        action_card_id: card.id
-      }
-    }
+        action_card_id: card.id,
+      },
+    },
   ];
 }
 
-export function userDecisionToAgUiEvents(decision: UserDecision): AgUiLikeEvent[] {
+export function userDecisionToAgUiEvents(
+  decision: UserDecision,
+): AgUiLikeEvent[] {
   return [
     {
       type: "STATE_DELTA",
       payload: {
         agentclutch: {
-          last_decision: decision
-        }
-      }
-    }
+          last_decision: decision,
+        },
+      },
+    },
   ];
 }
 ```
@@ -5162,7 +5426,7 @@ export function actionCardToChapReviewRequest(card: ActionCard): ChapLikeEvent {
     timestamp: card.created_at,
     task_id: card.run_id,
     artifact: card,
-    reason: "consequential_action_requires_review"
+    reason: "consequential_action_requires_review",
   };
 }
 
@@ -5185,7 +5449,7 @@ export function decisionToChapEvent(decision: UserDecision): ChapLikeEvent {
     task_id: decision.run_id,
     artifact: decision,
     actor: decision.actor?.display_name,
-    reason: decision.reason
+    reason: decision.reason,
   };
 }
 ```
@@ -5213,9 +5477,16 @@ The agent completed checkout.
 `packages/core/src/run-story.ts`:
 
 ```ts
-import type { ActionCard, RunStory, UserDecision } from "@agentclutch/action-card";
+import type {
+  ActionCard,
+  RunStory,
+  UserDecision,
+} from "@agentclutch/action-card";
 
-export function generateRunStory(runId: string, events: Array<ActionCard | UserDecision>): RunStory {
+export function generateRunStory(
+  runId: string,
+  events: Array<ActionCard | UserDecision>,
+): RunStory {
   const steps: RunStory["steps"] = [];
 
   for (const event of events) {
@@ -5224,7 +5495,7 @@ export function generateRunStory(runId: string, events: Array<ActionCard | UserD
         timestamp: event.created_at,
         actor: "agent",
         action_card_id: event.id,
-        text: `The agent proposed: ${event.proposed_action.label}. Consequence: ${event.consequence.label}.`
+        text: `The agent proposed: ${event.proposed_action.label}. Consequence: ${event.consequence.label}.`,
       });
     }
 
@@ -5234,7 +5505,7 @@ export function generateRunStory(runId: string, events: Array<ActionCard | UserD
         actor: "user",
         decision_id: event.id,
         action_card_id: event.action_card_id,
-        text: decisionToText(event)
+        text: decisionToText(event),
       });
     }
   }
@@ -5246,7 +5517,7 @@ export function generateRunStory(runId: string, events: Array<ActionCard | UserD
     created_at: new Date().toISOString(),
     title: `Run ${runId}`,
     summary: summarize(steps),
-    steps
+    steps,
   };
 }
 
@@ -5270,7 +5541,9 @@ function decisionToText(decision: UserDecision): string {
 }
 
 function summarize(steps: RunStory["steps"]): string {
-  const proposed = steps.filter((s) => s.action_card_id && s.actor === "agent").length;
+  const proposed = steps.filter(
+    (s) => s.action_card_id && s.actor === "agent",
+  ).length;
   const userEvents = steps.filter((s) => s.actor === "user").length;
   return `The run included ${proposed} proposed consequential action(s) and ${userEvents} user decision event(s).`;
 }
@@ -5330,10 +5603,13 @@ test("shows action card before consequential click", async ({ page }) => {
 
   const clutch = await attachClutch(page as any, {
     runId: "run_test",
-    agentName: "test-agent"
+    agentName: "test-agent",
   });
 
-  const promise = clutch.click("#checkout", { kind: "browser.checkout", label: "Complete checkout" });
+  const promise = clutch.click("#checkout", {
+    kind: "browser.checkout",
+    label: "Complete checkout",
+  });
   await expect(page.locator("text=AgentClutch Action Card")).toBeVisible();
   await page.locator("text=Approve once").click();
   await promise;
@@ -5405,7 +5681,7 @@ jobs:
 
 `README.md`:
 
-```md
+````md
 # AgentClutch
 
 **Approve, edit, or take the wheel before agents touch the real world.**
@@ -5438,6 +5714,7 @@ pnpm install
 pnpm build
 pnpm demo:checkout
 ```
+````
 
 Or after publishing:
 
@@ -5452,7 +5729,7 @@ import { attachClutch } from "@agentclutch/playwright";
 
 const clutch = await attachClutch(page, {
   runId: "run_001",
-  agentName: "browser-agent"
+  agentName: "browser-agent",
 });
 
 await clutch.click("#checkout", {
@@ -5460,8 +5737,8 @@ await clutch.click("#checkout", {
   label: "Complete checkout",
   changedFields: [
     { field: "product", after: "Wireless Headphones Pro", editable: false },
-    { field: "total", after: "$249.00", editable: false }
-  ]
+    { field: "total", after: "$249.00", editable: false },
+  ],
 });
 ```
 
@@ -5481,7 +5758,8 @@ AgentClutch is not a full agent, browser agent, desktop agent, general agent pro
 It owns one moment:
 
 > When an AI agent is about to do something consequential, AgentClutch shows the human a clear, inspectable card and gives them a steering wheel.
-```
+
+````
 
 ---
 
@@ -5511,13 +5789,13 @@ Future releases will include redaction hooks.
 ## Reporting vulnerabilities
 
 Open a private security advisory or email the maintainers.
-```
+````
 
 ---
 
 ## 25. CONTRIBUTING.md Draft
 
-```md
+````md
 # Contributing to AgentClutch
 
 AgentClutch is focused on one primitive: Action Cards and takeover UX for consequential AI agent actions.
@@ -5550,7 +5828,9 @@ pnpm build
 pnpm test
 pnpm demo:checkout
 ```
-```
+````
+
+````
 
 ---
 
@@ -5631,7 +5911,7 @@ export class DefaultRedactor implements Redactor {
     return value;
   }
 }
-```
+````
 
 ---
 
@@ -6118,7 +6398,7 @@ The first developer value proposition should be just as simple:
 ```ts
 await clutch.click("#checkout", {
   kind: "browser.checkout",
-  label: "Complete checkout"
+  label: "Complete checkout",
 });
 ```
 
@@ -6178,7 +6458,11 @@ The long-term value is that Action Cards become the standard UX object for agent
       "button_text": "Complete checkout"
     },
     "changed_fields": [
-      { "field": "product", "after": "Wireless Headphones Pro", "editable": false },
+      {
+        "field": "product",
+        "after": "Wireless Headphones Pro",
+        "editable": false
+      },
       { "field": "quantity", "after": 1, "editable": true },
       { "field": "total", "after": "$249.00", "editable": false }
     ]
@@ -6190,7 +6474,10 @@ The long-term value is that Action Cards become the standard UX object for agent
     "reversibility": "compensable",
     "blast_radius": "single_user",
     "requires_confirmation": true,
-    "possible_residue": ["Order record may be created", "Payment authorization may be captured"],
+    "possible_residue": [
+      "Order record may be created",
+      "Payment authorization may be captured"
+    ],
     "compensation_hint": "Cancel order or request refund if available."
   },
   "risk": {
@@ -6211,7 +6498,13 @@ The long-term value is that Action Cards become the standard UX object for agent
       "summary": "Wireless Headphones Pro was selected on the product page."
     }
   ],
-  "user_options": ["approve_once", "edit_fields", "take_wheel", "block", "create_rule"]
+  "user_options": [
+    "approve_once",
+    "edit_fields",
+    "take_wheel",
+    "block",
+    "create_rule"
+  ]
 }
 ```
 
@@ -6232,8 +6525,6 @@ The agent completed checkout.
 ```
 
 That is the product.
-
-
 
 ---
 
@@ -6262,4 +6553,3 @@ Validate in native Windows Codex app / PowerShell after each milestone.
 Keep TypeScript as the MVP implementation language.
 Delay Python and Rust until adapters/sidecars are justified.
 ```
-

@@ -260,6 +260,16 @@ describe("classifyConsequence", () => {
     expect(consequence.blast_radius).toBe("team");
   });
 
+  it("does not classify read-only GitHub repository actions as code repository changes", () => {
+    const consequence = classifyConsequence({
+      kind: "github.repository_read",
+      label: "List repository files",
+      url: "https://github.com/MelaBuilt-AI/agentclutch",
+    });
+
+    expect(consequence.class).toBe("unknown");
+  });
+
   it("classifies deploy and merge consequence", () => {
     const deploy = classifyConsequence({
       kind: "shell.exec",
@@ -598,7 +608,9 @@ describe("createClutch", () => {
         },
       });
 
-      const first = await clutch.onActionProposed(actionProposalWithQuantity(1));
+      const first = await clutch.onActionProposed(
+        actionProposalWithQuantity(1),
+      );
       expect(first.decision.type).toBe("edit");
 
       const stored = JSON.parse(

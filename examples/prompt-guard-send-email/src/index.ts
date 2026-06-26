@@ -1,4 +1,7 @@
 import { createClutch, type DecisionRenderer } from "@agentclutch/core";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 
 const decidedAt = "2026-06-26T18:00:00.000Z";
 
@@ -23,90 +26,100 @@ const approveRenderer: DecisionRenderer = {
       type: "approve_once",
       approvedBy: "message-owner",
       decidedAt,
-      note: "Recipient, subject, and body preview are approved."
+      note: "Recipient, subject, and body preview are approved.",
     };
-  }
+  },
 };
 
 export async function runPromptGuardSendEmailExample() {
   const recorder = new MemoryRecorder();
+  const lessonsRootDir = await mkdtemp(
+    join(tmpdir(), "agentclutch-email-lessons-"),
+  );
   const clutch = createClutch({
     runId: "run_prompt_guard_send_email_example",
     renderer: approveRenderer,
-    recorder
+    recorder,
+    lessonsRootDir,
   });
   const draft: EmailDraft = {
     to: ["client@example.com"],
     cc: ["account-team@example.com"],
     subject: "Next steps from today",
-    body:
-      "Hi Sam,\n\nThanks for the call today. Here are the next steps we discussed: confirm scope, share the launch checklist, and pick a review window.\n\nBest,\nAlex"
+    body: "Hi Sam,\n\nThanks for the call today. Here are the next steps we discussed: confirm scope, share the launch checklist, and pick a review window.\n\nBest,\nAlex",
   };
 
   const bodyPreview = draft.body.slice(0, 120);
 
-  const result = await clutch.confirmAction({
-    userGoal: {
-      original: "Send a follow-up email to the client with the next steps.",
-      summary: "Send client follow-up email"
-    },
-    proposedAction: {
-      kind: "email.send",
-      label: "Send client follow-up email",
-      targetSurface: "email",
-      targetApp: "Gmail",
-      targetIdentifier: draft.to.join(", "),
-      rawInput: {
-        to: draft.to,
-        cc: draft.cc,
-        subject: draft.subject,
-        bodyPreview,
-        changedFields: [
-          { field: "to", after: draft.to, editable: true },
-          { field: "cc", after: draft.cc, editable: true },
-          { field: "subject", after: draft.subject, editable: true },
-          { field: "bodyPreview", after: bodyPreview, editable: true }
-        ]
-      }
-    },
-    visibleContext: {
-      pageTitle: "Gmail - Compose",
-      fields: {
-        to: draft.to.join(", "),
-        cc: draft.cc.join(", "),
-        subject: draft.subject,
-        bodyPreview
-      }
-    },
-    riskHints: {
-      requiresApproval: true,
-      reversibility: "residue",
-      blastRadius: "external"
-    },
-    evidence: [
-      {
-        label: "User instruction",
-        source: "prompt",
-        summary: "The user asked for a follow-up email with next steps."
+  try {
+    const result = await clutch.confirmAction({
+      userGoal: {
+        original: "Send a follow-up email to the client with the next steps.",
+        summary: "Send client follow-up email",
       },
-      {
-        label: "Visible compose fields",
-        source: "gmail-compose",
-        summary: "Recipient, CC, subject, and body preview are visible before sending."
-      }
-    ]
-  });
+      proposedAction: {
+        kind: "email.send",
+        label: "Send client follow-up email",
+        targetSurface: "email",
+        targetApp: "Gmail",
+        targetIdentifier: draft.to.join(", "),
+        rawInput: {
+          to: draft.to,
+          cc: draft.cc,
+          subject: draft.subject,
+          bodyPreview,
+          changedFields: [
+            { field: "to", after: draft.to, editable: true },
+            { field: "cc", after: draft.cc, editable: true },
+            { field: "subject", after: draft.subject, editable: true },
+            { field: "bodyPreview", after: bodyPreview, editable: true },
+          ],
+        },
+      },
+      visibleContext: {
+        pageTitle: "Gmail - Compose",
+        fields: {
+          to: draft.to.join(", "),
+          cc: draft.cc.join(", "),
+          subject: draft.subject,
+          bodyPreview,
+        },
+      },
+      riskHints: {
+        requiresApproval: true,
+        reversibility: "residue",
+        blastRadius: "external",
+      },
+      evidence: [
+        {
+          label: "User instruction",
+          source: "prompt",
+          summary: "The user asked for a follow-up email with next steps.",
+        },
+        {
+          label: "Visible compose fields",
+          source: "gmail-compose",
+          summary:
+            "Recipient, CC, subject, and body preview are visible before sending.",
+        },
+      ],
+    });
 
-  const sentEmail = result.decision.type === "approve_once" ? draft : undefined;
+    const sentEmail =
+      result.decision.type === "approve_once" ? draft : undefined;
 
-  return {
-    proposal: result.proposal,
-    card: result.card,
-    decision: result.decision,
-    resumeContext: result.resumeContext,
-    sentEmail,
-    recorderEvents: recorder.events
-  };
+    return {
+      proposal: result.proposal,
+      card: result.card,
+      decision: result.decision,
+      resumeContext: result.resumeContext,
+      sentEmail,
+      recorderEvents: recorder.events,
+      lessonsRootDir,
+    };
+  } finally {
+    await rm(lessonsRootDir, { recursive: true, force: true });
+  }
 }
 
 function printExampleSummary(name: string, output: unknown): void {

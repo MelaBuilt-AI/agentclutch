@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import { runExpenseSubmitExample } from "../src/index.js";
 
@@ -14,5 +16,12 @@ describe("expense-submit runnable example", () => {
       category: "Travel",
     });
     expect(result.resumeContext.decision.type).toBe("edit");
+  });
+
+  it("uses an isolated temporary lessons root", async () => {
+    const result = await runExpenseSubmitExample();
+
+    expect(result.lessonsRootDir.startsWith(tmpdir())).toBe(true);
+    await expect(access(result.lessonsRootDir)).rejects.toThrow();
   });
 });

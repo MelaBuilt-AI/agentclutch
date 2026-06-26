@@ -1,3 +1,5 @@
+import { access } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import { runPromptGuardSendEmailExample } from "../src/index.js";
 
@@ -20,10 +22,21 @@ describe("prompt-guard-send-email runnable example", () => {
       to: ["client@example.com"],
       cc: ["account-team@example.com"],
       subject: "Next steps from today",
-      bodyPreview: expect.stringContaining("Thanks for the call today")
+      bodyPreview: expect.stringContaining("Thanks for the call today"),
     });
     expect(raw).not.toHaveProperty("body");
     expect(JSON.stringify(result.card)).not.toContain("Best,\\nAlex");
     expect(result.sentEmail?.body).toContain("Best,\nAlex");
+    expect(result.sentEmail?.body).toBeDefined();
+    expect(JSON.stringify(result.card)).not.toContain(
+      result.sentEmail?.body ?? "",
+    );
+  });
+
+  it("uses an isolated temporary lessons root", async () => {
+    const result = await runPromptGuardSendEmailExample();
+
+    expect(result.lessonsRootDir.startsWith(tmpdir())).toBe(true);
+    await expect(access(result.lessonsRootDir)).rejects.toThrow();
   });
 });
