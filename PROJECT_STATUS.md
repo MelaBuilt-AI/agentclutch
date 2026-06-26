@@ -66,6 +66,7 @@ Next Planned Work:
 
 * review design doc against current implementation
 * resolve launch-prep gaps before public launch decision
+* use the recorded FakeStore Action Card screenshot/GIF as the README media baseline
 
 Do NOT build yet:
 

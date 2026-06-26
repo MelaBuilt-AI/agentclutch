@@ -51,11 +51,13 @@ Demo flow:
 
 The demo is intentionally local. It uses a fake store page, local rules, local lessons, and local JSONL run recording under `.agentclutch/`.
 
-**Screenshot:** FakeStore checkout Action Card overlay.
+**Screenshot:** Real FakeStore checkout Action Card overlay captured from the local demo.
 
-![Screenshot: FakeStore checkout Action Card overlay](docs/assets/action-card-overlay-placeholder.svg)
+![Screenshot: FakeStore checkout Action Card overlay](docs/assets/fakestore-action-card-overlay.png)
 
-**Future GIF/video placeholder:** `docs/assets/fakestore-demo.gif`
+**Demo GIF:** FakeStore search -> clutch point -> approve once -> local checkout completion.
+
+![GIF: FakeStore checkout demo flow](docs/assets/fakestore-demo.gif)
 
 After publishing, the intended public command is:
 

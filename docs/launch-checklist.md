@@ -39,7 +39,7 @@ Use this checklist before sharing the repository with a new GitHub visitor.
 - [ ] `docs/demo-script.md` matches current CLI flags.
 - [ ] `examples/README.md` summarizes all three adoption examples.
 - [ ] README links to demo script, launch checklist, architecture, examples, and Run Story docs.
-- [ ] Screenshot and GIF placeholders are present until final assets are recorded.
+- [ ] README uses real local demo screenshot/GIF assets, not launch placeholders.
 - [ ] Roadmap stays focused on local-first launch polish, examples, tests, and stable core artifacts.
 
 ## Quality
@@ -47,4 +47,4 @@ Use this checklist before sharing the repository with a new GitHub visitor.
 - [ ] `pnpm typecheck` passes.
 - [ ] `pnpm test` passes.
 - [ ] No launch doc claims product behavior that is not implemented.
-- [ ] No secrets, real user data, or private URLs appear in screenshots, placeholders, run files, or docs.
+- [ ] No secrets, real user data, or private URLs appear in screenshots, media assets, run files, or docs.
