@@ -1,6 +1,6 @@
 # AgentClutch Quickstart
 
-Use this guide to validate AgentClutch from a clean checkout before the first public GitHub + npm alpha launch.
+Use this guide to try AgentClutch from a clean checkout or npm alpha install.
 
 ## Requirements
 
@@ -64,9 +64,9 @@ http://127.0.0.1:5173/
 
 The viewer can render sample Action Card JSON and recorder JSONL from `.agentclutch/runs/<run_id>/events.jsonl`.
 
-## After npm alpha publish
+## npm alpha install
 
-The first npm alpha is prepared as `0.7.3-alpha.0` under the `alpha` dist-tag. Once published, install only the package you need:
+The first npm alpha is published as `0.7.3-alpha.0`. Install only the package you need and prefer the explicit `@alpha` tag while the API is unstable:
 
 ```bash
 pnpm add @agentclutch/core@alpha
@@ -75,7 +75,7 @@ pnpm add @agentclutch/playwright@alpha playwright
 pnpm dlx @agentclutch/cli@alpha --help
 ```
 
-Run the CLI demo after publish:
+Run the CLI demo from npm:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
@@ -93,4 +93,3 @@ pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
 
 - AgentClutch is alpha-stage and local-first.
 - It is not a generic agent framework, hosted approval service, browser agent, chat UI, or observability dashboard.
-- Public GitHub launch and npm publishing require explicit approval before execution.

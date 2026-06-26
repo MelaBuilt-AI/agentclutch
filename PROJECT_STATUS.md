@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.3-alpha Public GitHub + npm Alpha Launch Candidate
+v0.7.3-alpha.0 Public GitHub + npm Alpha
 
 Completed:
 
@@ -55,11 +55,9 @@ ActionProposal
 
 Current Milestone Status:
 
-`v0.7.3-alpha` remains the verified private git checkpoint. The next launch target is a public GitHub + npm alpha launch candidate, with package versions prepared as `0.7.3-alpha.0` and npm publishing planned under the `alpha` dist-tag.
+`v0.7.3-alpha.0` is live as the first public GitHub prerelease and npm alpha. The repository is public, the npm packages are published, and registry install smoke tests passed.
 
-The project is still private until explicit approval. npm packages are prepared but must not be published until explicit approval.
-
-Prepared npm alpha packages:
+Published npm alpha packages:
 
 - `@agentclutch/action-card@0.7.3-alpha.0`
 - `@agentclutch/loop@0.7.3-alpha.0`
@@ -81,12 +79,11 @@ Completed v0.7 Goals:
 
 Next Planned Work:
 
-- run package publish dry-runs for the prepared npm alpha packages
-- run tarball install smoke test from `/tmp`
-- re-run full launch checklist before public launch decision
-- verify GitHub Actions after launch-prep commit
-- ask for explicit approval before making the repo public
-- ask for explicit approval before publishing npm packages
+- monitor first public feedback/issues
+- improve npm package quickstarts and examples
+- add release automation for future alpha versions
+- add a minimal consumer app example
+- keep future public releases and npm publishes behind explicit approval
 
 Do NOT build yet:
 
@@ -98,4 +95,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-`v0.7.3-alpha` private annotated tag cut from verified `main` (`da47b1a6240c66063054681d281903a4cc845dc6`)
+`v0.7.3-alpha.0` public prerelease tag cut from verified `main` (`09da493fec82791210335e183575dd22756a4c49`)

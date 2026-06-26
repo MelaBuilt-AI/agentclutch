@@ -1,10 +1,10 @@
 # npm Publishing Plan
 
-This document prepares the first AgentClutch npm alpha. It is a checklist, not permission to publish.
+This document records the first AgentClutch npm alpha publish and provides the checklist for future alpha versions.
 
-## Publish boundary
+## Published boundary
 
-Publish these workspace packages only:
+The first public npm alpha published these workspace packages only:
 
 - `@agentclutch/action-card@0.7.3-alpha.0`
 - `@agentclutch/loop@0.7.3-alpha.0`
@@ -14,7 +14,7 @@ Publish these workspace packages only:
 - `@agentclutch/react@0.7.3-alpha.0`
 - `@agentclutch/cli@0.7.3-alpha.0`
 
-Do not publish:
+Remain unpublished:
 
 - root package `agentclutch-monorepo` (`private: true`)
 - `apps/*`
@@ -24,7 +24,7 @@ Do not publish:
 
 `@agentclutch/core`, `@agentclutch/react`, `@agentclutch/playwright`, and `@agentclutch/cli` depend on the loop and recorder packages. Publishing them together keeps the first npm alpha installable without hidden monorepo-only dependencies.
 
-## Required npm/org setup
+## npm/org setup
 
 1. Confirm the npm account/organization that owns the `@agentclutch` scope.
 2. Login locally:
@@ -41,9 +41,9 @@ npm view @agentclutch/core name version
 npm view @agentclutch/cli name version
 ```
 
-Expected before first publish: npm returns `E404` for each package.
+For future new packages, npm should return `E404` before first publish. Existing AgentClutch packages should return their published versions.
 
-## Prepublish verification
+## Prepublish verification for future versions
 
 ```bash
 pnpm install --frozen-lockfile
@@ -54,7 +54,7 @@ pnpm test
 git diff --check
 ```
 
-## Package dry-run
+## Package dry-run for future versions
 
 Run from the repo root after building:
 
@@ -75,7 +75,7 @@ Inspect each dry-run manifest and tarball listing for:
 - Workspace dependencies are rewritten to real versions in the publish manifest.
 - No `.agentclutch`, local run logs, secrets, screenshots with private data, or repo-only files are included.
 
-## Tarball smoke test before real publish
+## Tarball smoke test before future publish
 
 Pack tarballs into a temporary directory and install them together in a clean app before publishing. Use `npm install` for this prepublish tarball smoke because the packed manifests correctly rewrite `workspace:*` dependencies to exact registry versions; until the packages exist on npm, pnpm may try to resolve those exact transitive versions from the registry instead of the sibling tarballs.
 
@@ -95,9 +95,9 @@ npm install /tmp/agentclutch-npm-pack/*.tgz playwright@1.61.1
 npx agentclutch --help
 ```
 
-## Real publish commands
+## Future publish commands
 
-Only run these after explicit approval:
+For future alpha versions, run these only after explicit approval:
 
 ```bash
 pnpm --filter @agentclutch/action-card publish --tag alpha --access public
@@ -109,7 +109,7 @@ pnpm --filter @agentclutch/react publish --tag alpha --access public
 pnpm --filter @agentclutch/cli publish --tag alpha --access public
 ```
 
-Use `alpha`, not `latest`, for this first release.
+Use `alpha` for future prereleases. npm also created `latest` for `0.7.3-alpha.0` because it was the first version of each package; docs should still recommend explicit `@alpha` installs until a stable release exists.
 
 ## Postpublish verification
 

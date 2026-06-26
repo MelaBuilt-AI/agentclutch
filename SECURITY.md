@@ -1,82 +1,58 @@
 # Security Policy
 
-AgentClutch is a user-control layer for consequential AI agent actions. It may process sensitive action metadata such as page titles, URLs, selectors, button text, field values, evidence summaries, proposed tool inputs, user decisions, and run events.
+AgentClutch is a user-control layer for consequential AI agent actions. It may process sensitive action metadata such as page titles, selectors, field values, URLs, tool names, proposed messages, and local run records.
 
-## Security Principles
+## Supported versions
+
+AgentClutch is currently alpha software. Security fixes target the latest public alpha release and the `main` branch.
+
+| Version | Supported |
+| --- | --- |
+| `0.7.3-alpha.x` | Yes |
+| older alpha tags | Best effort |
+
+## Reporting a vulnerability
+
+Please report security issues privately before opening a public issue.
+
+Use GitHub's private vulnerability reporting / security advisory flow if it is available for the repository. If private reporting is not available, contact the maintainer privately through the GitHub organization and avoid posting exploit details publicly.
+
+A useful report includes:
+
+- Affected package/version or commit SHA
+- Reproduction steps
+- Expected vs. actual behavior
+- Impact assessment
+- Whether sensitive data, credentials, local files, or external side effects are involved
+
+## Security principles
 
 - Local-first by default.
 - No telemetry by default.
-- No SaaS backend or cloud sync in the open-source MVP.
-- Record only what is needed to explain and resume a proposed action.
-- Do not store credentials.
-- Do not bypass native browser, OS, identity, payment, or enterprise approval prompts.
-- Do not treat an AgentClutch approval as legal, compliance, financial, or production authorization by itself.
+- No cloud sync in the open-source alpha.
+- Do not store credentials in Action Cards, recorder events, screenshots, or examples.
+- Redact secrets before recording events or generating Run Stories.
+- Keep full private payloads out of Action Card `rawInput` when a preview or metadata is enough.
+- Treat Action Cards, recorder JSONL, Run Stories, and screenshots as reviewable/disclosable surfaces.
 
-## Approval Boundaries
+## Sensitive data guidance
 
-AgentClutch approval means the user approved the proposed action in the host application context. It does not:
+When integrating AgentClutch, avoid putting these into visible or recorded payloads unless absolutely necessary:
 
-- Grant new permissions to the agent.
-- Override OAuth, SSO, browser, OS, repository, deployment, or payment controls.
-- Prove the action is legally or contractually authorized.
-- Replace policy review for regulated workflows.
+- API keys, OAuth tokens, session cookies, passwords, or SSH keys
+- Full email/message bodies when a preview is enough
+- Private file contents
+- Full local filesystem paths when a relative or redacted path is enough
+- Customer, patient, financial, or other regulated data
 
-Host applications remain responsible for enforcing authorization, policy, rate limits, and downstream safety checks.
+Prefer reviewable metadata and previews, such as:
 
-## Data Handling
+- recipient + subject + `bodyPreview` instead of a full email body
+- relative path + action summary instead of raw file contents
+- endpoint + method + redacted parameters instead of full authenticated requests
 
-The local recorder writes JSONL files under:
+## Dependency and release hygiene
 
-```text
-.agentclutch/runs/<run_id>/events.jsonl
-```
-
-Recorded data may include:
-
-- Action Cards
-- Action proposals
-- Loop events
-- User decisions
-- Resume contexts
-- Run Story inputs
-
-The repository does not enable remote telemetry or cloud upload by default.
-
-## Secret Redaction Expectations
-
-Developers integrating AgentClutch should redact secrets before creating Action Cards or recording events. Do not attach:
-
-- Passwords
-- API keys
-- Access tokens
-- Refresh tokens
-- Session cookies
-- Private keys
-- Credit card numbers
-- Social Security numbers
-- Full unredacted email bodies unless explicitly intended
-- Full DOM snapshots containing private user data
-
-Recommended integration behavior:
-
-- Replace sensitive values with `[REDACTED]`.
-- Avoid recording password fields entirely.
-- Prefer summaries over raw content for private messages.
-- Hash or omit identifiers when the raw value is not needed for the user decision.
-
-Future versions may add default redaction hooks, but current integrations should treat redaction as the caller's responsibility.
-
-## Local-First Behavior
-
-AgentClutch currently operates as local packages, local demo apps, local browser overlays, and local JSONL recording. If a host application uploads AgentClutch data elsewhere, that host application is responsible for user disclosure, access control, retention, and deletion.
-
-## Reporting Vulnerabilities
-
-Please report security issues privately through GitHub Security Advisories when available. Include:
-
-- Affected package or app
-- Reproduction steps
-- Expected and actual impact
-- Whether sensitive data can be exposed, modified, or executed without approval
-
-Do not open public issues for vulnerabilities involving secrets, authorization bypass, or unsafe execution.
+- npm alpha packages are published under the `@agentclutch/*` scope.
+- Prefer explicit `@alpha` installs until AgentClutch reaches a stable release.
+- npm versions are immutable; bad alpha releases should be superseded by a new alpha patch and deprecated if necessary.

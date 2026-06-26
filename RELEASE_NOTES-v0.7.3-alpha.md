@@ -1,12 +1,12 @@
 # AgentClutch v0.7.3-alpha Release Notes
 
-> Draft release notes for the first public GitHub + npm alpha launch. Do not publish these notes as a public release until the repo visibility and npm publish steps are explicitly approved.
+> Public prerelease notes for the first AgentClutch GitHub + npm alpha launch.
 
 ## Summary
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses proposed side effects before execution, shows a structured Action Card, records the human decision, and returns resume context to the host app or loop.
 
-`v0.7.3-alpha` is the current launch-readiness checkpoint. The npm package version prepared for the first public alpha is `0.7.3-alpha.0` under the `alpha` dist-tag.
+`v0.7.3-alpha.0` is the first public GitHub prerelease and npm alpha for AgentClutch.
 
 ## What is included
 
@@ -22,9 +22,9 @@ AgentClutch is an open, local-first Action Card and takeover UX layer for conseq
 - Runnable examples for email prompt guard, file delete tool wrapper, expense submit, GitHub PR proposal, and loop-native checkout.
 - Real demo/viewer screenshots in the README.
 
-## Prepared npm alpha packages
+## Published npm alpha packages
 
-These packages are prepared at `0.7.3-alpha.0` with `publishConfig.tag = alpha` and `publishConfig.access = public`:
+These packages are published at `0.7.3-alpha.0` and available through the `alpha` dist-tag:
 
 - `@agentclutch/action-card`
 - `@agentclutch/loop`
@@ -36,7 +36,7 @@ These packages are prepared at `0.7.3-alpha.0` with `publishConfig.tag = alpha` 
 
 The root monorepo remains private in npm terms (`private: true`) and should never be published.
 
-## Intended install commands after npm publish
+## Install commands
 
 ```bash
 pnpm add @agentclutch/core@alpha
@@ -65,7 +65,7 @@ xvfb-run -a pnpm demo:checkout --seed-block-rule
 pnpm agentclutch inspect latest
 ```
 
-After npm publish, the intended CLI path is:
+CLI path:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
@@ -76,12 +76,11 @@ pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
 - Alpha-stage API and package boundaries may still change.
 - Local-first by design; no hosted approval service, cloud sync, desktop overlay, MCP, AG-UI, or CHAP integration is included in this milestone.
 - The interactive `require_clutch` browser demo needs a GUI/human decision; terminal-only automation should use seeded allow/block flows plus browser-backed tests.
-- npm publish should use the `alpha` dist-tag, not `latest`.
-- Public GitHub visibility and npm publishing are separate irreversible-ish steps and require explicit approval.
+- npm automatically created a `latest` dist-tag because this is the first version, but docs recommend the explicit `@alpha` install path until AgentClutch is stable.
 
-## Verification target before launch
+## Verification performed before launch
 
-Before public launch/publish, verify:
+The launch candidate was verified with:
 
 ```bash
 pnpm install --frozen-lockfile

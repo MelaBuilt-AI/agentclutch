@@ -2,9 +2,16 @@
 
 **Approve, edit, or take the wheel before agents touch the real world.**
 
+[![npm alpha: @agentclutch/core](https://img.shields.io/npm/v/@agentclutch/core/alpha?label=%40agentclutch%2Fcore%40alpha)](https://www.npmjs.com/package/@agentclutch/core)
+[![Build](https://github.com/MelaBuilt-AI/agentclutch/actions/workflows/build.yml/badge.svg)](https://github.com/MelaBuilt-AI/agentclutch/actions/workflows/build.yml)
+[![Test](https://github.com/MelaBuilt-AI/agentclutch/actions/workflows/test.yml/badge.svg)](https://github.com/MelaBuilt-AI/agentclutch/actions/workflows/test.yml)
+[![License: Apache-2.0](https://img.shields.io/github/license/MelaBuilt-AI/agentclutch)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-blue)](tsconfig.base.json)
+
+
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha` is cut, pushed, and verified as a private git checkpoint. The repo is now being prepared as a public GitHub + npm alpha launch candidate with npm package version `0.7.3-alpha.0` under the `alpha` dist-tag. Until launch approval, use the local monorepo commands below; after npm publishing, install only the package you need.
+Current milestone: `v0.7.3-alpha.0` is public on GitHub and published to npm as the first alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
 
 ## 30-Second Explanation
 
@@ -59,7 +66,7 @@ The demo is intentionally local. It uses a fake store page, local rules, local l
 
 ![GIF: FakeStore checkout demo flow](docs/assets/fakestore-demo.gif)
 
-After npm alpha publishing, the intended public CLI command is:
+Public npm alpha CLI command:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha demo checkout
@@ -239,7 +246,7 @@ You can also summarize the latest recorded run from the CLI after building:
 pnpm agentclutch inspect latest
 ```
 
-The package-level CLI exposes the `agentclutch` binary for npm installs. Until npm publishing is explicitly approved and completed, use the local root script above instead of relying on registry packages.
+The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha --help`.
 
 ## Packages
 
@@ -270,7 +277,9 @@ Examples:
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)
-- [npm publishing plan](docs/npm-publishing.md)
+- [npm publishing notes](docs/npm-publishing.md)
+- [Security policy](SECURITY.md)
+- [Launch announcement drafts](docs/launch-announcement-drafts.md)
 - [Demo script](docs/demo-script.md)
 - [Launch checklist](docs/launch-checklist.md)
 - [Architecture](docs/architecture.md)
@@ -308,7 +317,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.3-alpha` private git checkpoint; public GitHub + npm alpha launch candidate prepared as `0.7.3-alpha.0`.
+Current: `v0.7.3-alpha.0` public GitHub prerelease and npm alpha.
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.
