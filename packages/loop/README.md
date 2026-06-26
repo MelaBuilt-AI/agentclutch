@@ -6,7 +6,7 @@ This package is part of [AgentClutch](https://github.com/MelaBuilt-AI/agentclutc
 
 ## Status
 
-`0.7.3-alpha.0` is the first published npm alpha version. Prefer installing with the explicit `@alpha` tag until AgentClutch is stable.
+`0.7.3-alpha.1` is the latest published npm alpha version. Prefer installing with the explicit `@alpha` tag until AgentClutch is stable.
 
 ## Install
 

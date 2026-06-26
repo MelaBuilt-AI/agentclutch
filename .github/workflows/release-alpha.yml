@@ -1,0 +1,82 @@
+name: Alpha Release Prep
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Alpha version to validate, for example 0.7.3-alpha.1
+        required: true
+        type: string
+      pack_artifacts:
+        description: Upload packed npm tarballs as workflow artifacts
+        required: true
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  release-prep:
+    name: Alpha release prep (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate publish boundary
+        run: node scripts/release-alpha.mjs check
+
+      - name: Bump package manifests in workspace
+        run: node scripts/release-alpha.mjs bump --version "${{ inputs.version }}"
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Install Playwright Chromium with Linux dependencies
+        if: runner.os == 'Linux'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Install Playwright Chromium
+        if: runner.os != 'Linux'
+        run: pnpm exec playwright install chromium
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: npm publish dry-runs
+        run: node scripts/release-alpha.mjs dry-run
+
+      - name: Pack npm tarballs
+        run: node scripts/release-alpha.mjs pack --destination npm-pack
+
+      - name: Upload npm tarballs
+        if: inputs.pack_artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agentclutch-${{ inputs.version }}-${{ runner.os }}-npm-pack
+          path: npm-pack/*.tgz
+          if-no-files-found: error

@@ -45,6 +45,22 @@ For future new packages, npm should return `E404` before first publish. Existing
 
 ## Prepublish verification for future versions
 
+AgentClutch uses a lightweight release helper instead of Changesets for the current alpha line. It keeps the publishable package list explicit and intentionally does **not** run real `npm publish`.
+
+Validate the publish boundary before preparing a release:
+
+```bash
+pnpm release:check
+```
+
+Bump the root package marker and all publishable package manifests:
+
+```bash
+pnpm release:bump -- --version 0.7.3-alpha.1
+```
+
+The helper only accepts prerelease versions shaped like `x.y.z-alpha.n`, which keeps alpha release prep from accidentally producing stable package metadata.
+
 ```bash
 pnpm install --frozen-lockfile
 pnpm build
@@ -59,13 +75,7 @@ git diff --check
 Run from the repo root after building:
 
 ```bash
-pnpm --filter @agentclutch/action-card publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/loop publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/core publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/recorder publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/playwright publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/react publish --dry-run --tag alpha --access public
-pnpm --filter @agentclutch/cli publish --dry-run --tag alpha --access public
+pnpm release:dry-run
 ```
 
 Inspect each dry-run manifest and tarball listing for:
@@ -82,18 +92,25 @@ Pack tarballs into a temporary directory and install them together in a clean ap
 ```bash
 rm -rf /tmp/agentclutch-npm-pack /tmp/agentclutch-npm-smoke
 mkdir -p /tmp/agentclutch-npm-pack /tmp/agentclutch-npm-smoke
-pnpm --filter @agentclutch/action-card pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/loop pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/core pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/recorder pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/playwright pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/react pack --pack-destination /tmp/agentclutch-npm-pack
-pnpm --filter @agentclutch/cli pack --pack-destination /tmp/agentclutch-npm-pack
+pnpm release:pack -- --destination /tmp/agentclutch-npm-pack
 cd /tmp/agentclutch-npm-smoke
 npm init -y
 npm install /tmp/agentclutch-npm-pack/*.tgz playwright@1.61.1
 npx agentclutch --help
+npx agentclutch smoke
 ```
+
+## GitHub release-prep workflow
+
+Maintainers can also run **Alpha Release Prep** from GitHub Actions with an input like `0.7.3-alpha.1`. The workflow:
+
+1. validates the explicit publish boundary;
+2. bumps manifests in the workflow workspace only;
+3. runs lint, typecheck, tests, and build on Ubuntu and Windows;
+4. runs npm publish dry-runs with `--tag alpha --access public --no-git-checks`;
+5. packs tarballs and uploads them as artifacts.
+
+The workflow has read-only repository permissions and never publishes to npm. Real publication remains manual so npm auth and 2FA stay in the maintainer-controlled step.
 
 ## Future publish commands
 

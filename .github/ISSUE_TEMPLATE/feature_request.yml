@@ -1,0 +1,67 @@
+name: Feature request
+description: Suggest a focused improvement to AgentClutch
+title: "feat: "
+labels: [enhancement, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for shaping AgentClutch! Please keep requests focused on the Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story loop.
+
+        Before filing, skim [CONTRIBUTING.md](../../CONTRIBUTING.md), the [quickstart](../../docs/quickstart.md), and [known limitations](../../docs/limitations.md).
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package or area
+      options:
+        - "@agentclutch/core"
+        - "@agentclutch/action-card"
+        - "@agentclutch/loop"
+        - "@agentclutch/recorder"
+        - "@agentclutch/playwright"
+        - "@agentclutch/react"
+        - "@agentclutch/cli"
+        - "docs"
+        - "examples/demo"
+        - "not sure"
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: AgentClutch version or commit
+      placeholder: "0.7.3-alpha.1 or main"
+    validations:
+      required: false
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do, and what is hard today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What would make this easier?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional, but helpful for API/design changes.
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment, if relevant
+      value: |
+        - OS:
+        - Node version:
+        - pnpm version:
+        - Install method:
+    validations:
+      required: false

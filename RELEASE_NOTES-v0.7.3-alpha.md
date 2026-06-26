@@ -1,12 +1,12 @@
-# AgentClutch v0.7.3-alpha Release Notes
+# AgentClutch v0.7.3-alpha.1 Release Notes
 
-> Public prerelease notes for the first AgentClutch GitHub + npm alpha launch.
+> Public prerelease notes for the AgentClutch GitHub + npm alpha line.
 
 ## Summary
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses proposed side effects before execution, shows a structured Action Card, records the human decision, and returns resume context to the host app or loop.
 
-`v0.7.3-alpha.0` is the first public GitHub prerelease and npm alpha for AgentClutch.
+`v0.7.3-alpha.1` is the latest public GitHub prerelease and npm alpha for AgentClutch.
 
 ## What is included
 
@@ -19,12 +19,15 @@ AgentClutch is an open, local-first Action Card and takeover UX layer for conseq
 - Playwright adapter for guarded browser actions.
 - React-compatible Action Card and Run Story UI components.
 - CLI demo and run inspection commands.
+- Registry-safe `agentclutch smoke` command for npm CLI install checks.
+- Contributor-friendly issue templates.
+- Alpha release-prep workflow and helper scripts that do dry-runs/packs without auto-publishing.
 - Runnable examples for email prompt guard, file delete tool wrapper, expense submit, GitHub PR proposal, loop-native checkout, and a minimal npm consumer path.
 - Real demo/viewer screenshots in the README.
 
 ## Published npm alpha packages
 
-These packages are published at `0.7.3-alpha.0` and available through the `alpha` dist-tag:
+These packages are published at `0.7.3-alpha.1` and available through the `alpha` dist-tag:
 
 - `@agentclutch/action-card`
 - `@agentclutch/loop`
@@ -66,7 +69,7 @@ xvfb-run -a pnpm demo:checkout --seed-block-rule
 pnpm agentclutch inspect latest
 ```
 
-Registry-safe CLI smoke path, available after the next npm alpha publish:
+Registry-safe CLI smoke path:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha smoke

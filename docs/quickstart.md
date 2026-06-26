@@ -66,7 +66,7 @@ The viewer can render sample Action Card JSON and recorder JSONL from `.agentclu
 
 ## npm alpha install
 
-The first npm alpha is published as `0.7.3-alpha.0`. Install only the package you need and prefer the explicit `@alpha` tag while the API is unstable:
+The latest npm alpha is published as `0.7.3-alpha.1`. Install only the package you need and prefer the explicit `@alpha` tag while the API is unstable:
 
 ```bash
 pnpm add @agentclutch/core@alpha
@@ -76,13 +76,13 @@ pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
 
-Verify the npm-installed CLI without a source checkout, after the next npm alpha publish:
+Verify the npm-installed CLI without a source checkout:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha smoke
 ```
 
-The smoke command is intentionally lightweight. It confirms that the registry CLI entrypoint and Node runtime work, and it does not require local FakeStore demo assets. Until the next npm alpha is published, use `pnpm dlx @agentclutch/cli@alpha --help` as the current registry sanity check.
+The smoke command is intentionally lightweight. It confirms that the registry CLI entrypoint and Node runtime work, and it does not require local FakeStore demo assets.
 
 Run the CLI demo from a source checkout:
 
@@ -114,6 +114,6 @@ The example imports only from `@agentclutch/core`, creates one email-send Action
 
 - AgentClutch is alpha-stage and local-first.
 - It is not a generic agent framework, hosted approval service, browser agent, chat UI, or observability dashboard.
-- npm currently exposes the first alpha as both `alpha` and `latest`; prefer explicit `@alpha` installs until stable.
+- npm exposes the alpha release through the `alpha` dist-tag; prefer explicit `@alpha` installs until stable.
 - The registry CLI smoke command works without a checkout; the full FakeStore demo currently needs this repo's local demo assets.
 - See [Known Limitations](limitations.md) for the full alpha caveat list.

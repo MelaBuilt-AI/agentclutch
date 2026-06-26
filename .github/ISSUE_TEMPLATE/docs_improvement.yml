@@ -1,0 +1,43 @@
+name: Docs improvement
+description: Report unclear, missing, or outdated documentation
+title: "docs: "
+labels: [documentation, needs-triage]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for improving the docs! Good docs issues include the page, what was confusing, and what you expected to find.
+
+        Contributor pointers: [CONTRIBUTING.md](../../CONTRIBUTING.md) and [quickstart](../../docs/quickstart.md).
+  - type: input
+    id: page
+    attributes:
+      label: Page or file
+      placeholder: "README.md, docs/quickstart.md, packages/cli/README.md"
+    validations:
+      required: true
+  - type: textarea
+    id: issue
+    attributes:
+      label: What should change?
+      description: Describe what is unclear, missing, or outdated.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested wording or structure
+      description: Optional draft text is welcome.
+    validations:
+      required: false
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment, if docs depend on setup
+      value: |
+        - OS:
+        - Node version:
+        - pnpm version:
+        - Install method:
+    validations:
+      required: false

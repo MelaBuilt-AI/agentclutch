@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.3-alpha.0 Public GitHub + npm Alpha
+v0.7.3-alpha.1 Public GitHub + npm Alpha
 
 Completed:
 
@@ -22,6 +22,9 @@ Completed:
 - Viewer Consequence Display
 - Run Story Consequence Summaries
 - npm alpha metadata for the publishable SDK/CLI packages
+- contributor-friendly GitHub issue templates
+- alpha release-prep workflow and helper scripts
+- registry-safe CLI smoke command
 
 Verified Working:
 
@@ -44,6 +47,7 @@ Verified Working:
 - Runnable tool-wrapper file-delete example
 - Runnable expense-submit example with edit approval
 - Runnable GitHub PR-create example
+- Registry-safe CLI smoke command
 
 Current Architecture:
 
@@ -55,17 +59,17 @@ ActionProposal
 
 Current Milestone Status:
 
-`v0.7.3-alpha.0` is live as the first public GitHub prerelease and npm alpha. The repository is public, the npm packages are published, and registry install smoke tests passed.
+`v0.7.3-alpha.1` is live as the latest public GitHub prerelease and npm alpha. The repository is public, the npm packages are published, and registry install smoke tests passed.
 
 Published npm alpha packages:
 
-- `@agentclutch/action-card@0.7.3-alpha.0`
-- `@agentclutch/loop@0.7.3-alpha.0`
-- `@agentclutch/core@0.7.3-alpha.0`
-- `@agentclutch/recorder@0.7.3-alpha.0`
-- `@agentclutch/playwright@0.7.3-alpha.0`
-- `@agentclutch/react@0.7.3-alpha.0`
-- `@agentclutch/cli@0.7.3-alpha.0`
+- `@agentclutch/action-card@0.7.3-alpha.1`
+- `@agentclutch/loop@0.7.3-alpha.1`
+- `@agentclutch/core@0.7.3-alpha.1`
+- `@agentclutch/recorder@0.7.3-alpha.1`
+- `@agentclutch/playwright@0.7.3-alpha.1`
+- `@agentclutch/react@0.7.3-alpha.1`
+- `@agentclutch/cli@0.7.3-alpha.1`
 
 Completed v0.7 Goals:
 
@@ -79,11 +83,9 @@ Completed v0.7 Goals:
 
 Next Planned Work:
 
-- monitor first public feedback/issues
-- improve npm package quickstarts and examples
-- add release automation for future alpha versions
-- add a minimal consumer app example
+- monitor public feedback/issues
 - keep future public releases and npm publishes behind explicit approval
+- evaluate MCP / AG-UI / CHAP only after the core alpha loop is stable
 
 Do NOT build yet:
 
@@ -95,4 +97,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-`v0.7.3-alpha.0` public prerelease tag cut from verified `main` (`09da493fec82791210335e183575dd22756a4c49`)
+`v0.7.3-alpha.1` public prerelease tag is cut from verified `main` for the latest npm alpha.

@@ -1,6 +1,6 @@
 {
   "name": "@agentclutch/recorder",
-  "version": "0.7.3-alpha.0",
+  "version": "0.7.3-alpha.1",
   "description": "Local JSONL recorder and run-store utilities for AgentClutch runs.",
   "license": "Apache-2.0",
   "type": "module",

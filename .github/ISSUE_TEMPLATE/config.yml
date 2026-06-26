@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/MelaBuilt-AI/agentclutch/blob/main/CONTRIBUTING.md
+    about: Start here for local setup, checks, and contribution expectations.
+  - name: Quickstart
+    url: https://github.com/MelaBuilt-AI/agentclutch/blob/main/docs/quickstart.md
+    about: Try AgentClutch from source or the npm alpha before filing setup issues.
+  - name: Security reports
+    url: https://github.com/MelaBuilt-AI/agentclutch/security/advisories/new
+    about: Please report vulnerabilities privately instead of opening a public issue.

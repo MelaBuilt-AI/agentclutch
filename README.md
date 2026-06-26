@@ -11,7 +11,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha.0` is public on GitHub and published to npm as the first alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+Current milestone: `v0.7.3-alpha.1` is public on GitHub and published to npm as the latest alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
 
 ## 30-Second Explanation
 
@@ -66,13 +66,13 @@ The demo is intentionally local. It uses a fake store page, local rules, local l
 
 ![GIF: FakeStore checkout demo flow](docs/assets/fakestore-demo.gif)
 
-Public npm alpha CLI smoke command, available from source and the next npm alpha publish:
+Public npm alpha CLI smoke command:
 
 ```bash
 pnpm dlx @agentclutch/cli@alpha smoke
 ```
 
-The smoke command verifies the npm-installed CLI entrypoint without needing a source checkout. Until the next npm alpha is published, the current registry sanity check is `pnpm dlx @agentclutch/cli@alpha --help`. The full FakeStore browser demo currently uses local demo assets from this repo; from a clone, run `pnpm demo:checkout --seed-allow-rule`.
+The smoke command verifies the npm-installed CLI entrypoint without needing a source checkout. The full FakeStore browser demo currently uses local demo assets from this repo; from a clone, run `pnpm demo:checkout --seed-allow-rule`.
 
 ## Quick Start
 
@@ -248,19 +248,19 @@ You can also summarize the latest recorded run from the CLI after building:
 pnpm agentclutch inspect latest
 ```
 
-The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha --help` today and `pnpm dlx @agentclutch/cli@alpha smoke` after the next npm alpha publish.
+The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha smoke` or `pnpm dlx @agentclutch/cli@alpha --help`.
 
 ## Packages
 
-| Package | First npm alpha version | Purpose | Docs |
+| Package | Latest npm alpha version | Purpose | Docs |
 | --- | --- | --- | --- |
-| `@agentclutch/action-card` | `0.7.3-alpha.0` | Action Card types, schema, builders, and validation. | [README](packages/action-card/README.md) |
-| `@agentclutch/loop` | `0.7.3-alpha.0` | Action Proposal, Clutch Decision, loop events, and Resume Context. | [README](packages/loop/README.md) |
-| `@agentclutch/core` | `0.7.3-alpha.0` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. | [README](packages/core/README.md) |
-| `@agentclutch/recorder` | `0.7.3-alpha.0` | Local JSONL run recording. | [README](packages/recorder/README.md) |
-| `@agentclutch/playwright` | `0.7.3-alpha.0` | Explicit browser action wrapper and local rule evaluation. | [README](packages/playwright/README.md) |
-| `@agentclutch/react` | `0.7.3-alpha.0` | Reusable Action Card and Run Story UI components. | [README](packages/react/README.md) |
-| `@agentclutch/cli` | `0.7.3-alpha.0` | Local demo commands and run inspection. | [README](packages/cli/README.md) |
+| `@agentclutch/action-card` | `0.7.3-alpha.1` | Action Card types, schema, builders, and validation. | [README](packages/action-card/README.md) |
+| `@agentclutch/loop` | `0.7.3-alpha.1` | Action Proposal, Clutch Decision, loop events, and Resume Context. | [README](packages/loop/README.md) |
+| `@agentclutch/core` | `0.7.3-alpha.1` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. | [README](packages/core/README.md) |
+| `@agentclutch/recorder` | `0.7.3-alpha.1` | Local JSONL run recording. | [README](packages/recorder/README.md) |
+| `@agentclutch/playwright` | `0.7.3-alpha.1` | Explicit browser action wrapper and local rule evaluation. | [README](packages/playwright/README.md) |
+| `@agentclutch/react` | `0.7.3-alpha.1` | Reusable Action Card and Run Story UI components. | [README](packages/react/README.md) |
+| `@agentclutch/cli` | `0.7.3-alpha.1` | Local demo commands and run inspection. | [README](packages/cli/README.md) |
 
 Apps:
 
@@ -321,7 +321,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.3-alpha.0` public GitHub prerelease and npm alpha.
+Current: `v0.7.3-alpha.1` public GitHub prerelease and npm alpha.
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

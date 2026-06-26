@@ -1,7 +1,7 @@
 {
   "name": "agentclutch-monorepo",
   "private": true,
-  "version": "0.7.3-alpha.0",
+  "version": "0.7.3-alpha.1",
   "description": "AgentClutch: the open Action Card and takeover UX for consequential AI agent actions.",
   "license": "Apache-2.0",
   "type": "module",
@@ -17,6 +17,10 @@
     "dev": "turbo run dev --parallel",
     "demo:checkout": "node --import tsx packages/cli/src/index.ts demo checkout",
     "agentclutch": "node --import tsx packages/cli/src/index.ts",
+    "release:check": "node scripts/release-alpha.mjs check",
+    "release:bump": "node scripts/release-alpha.mjs bump",
+    "release:dry-run": "node scripts/release-alpha.mjs dry-run",
+    "release:pack": "node scripts/release-alpha.mjs pack",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css}\""
   },
   "devDependencies": {
