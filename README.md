@@ -4,7 +4,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.1-alpha`. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, and Run Story playback.
+Current milestone: `v0.7.2-alpha` candidate on `main` until the prerelease tag is cut. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, and Run Story playback.
 
 ## 30-Second Explanation
 
@@ -236,8 +236,10 @@ http://127.0.0.1:5173/
 You can also summarize the latest recorded run from the CLI after building:
 
 ```bash
-node packages/cli/dist/index.js inspect latest
+pnpm agentclutch inspect latest
 ```
+
+The package-level CLI already exposes the `agentclutch` binary for published packages. Until the npm publishing strategy is chosen, use the local root script above instead of calling `node packages/cli/dist/index.js` directly.
 
 ## Packages
 
@@ -258,8 +260,10 @@ Apps:
 
 Examples:
 
-- `examples/prompt-guard-send-email`
-- `examples/tool-wrapper-file-delete`
+- `examples/prompt-guard-send-email` — runnable prompt-guard email send
+- `examples/tool-wrapper-file-delete` — runnable wrapped local temp-file delete
+- `examples/expense-submit` — runnable expense form submission with edit approval
+- `examples/github-pr-create` — runnable GitHub PR creation proposal
 - `examples/loop-native-checkout`
 - [Examples index](examples/README.md)
 
@@ -291,7 +295,7 @@ pnpm build
 pnpm typecheck
 pnpm test
 pnpm demo:checkout --clear-rules
-node packages/cli/dist/index.js inspect latest
+pnpm agentclutch inspect latest
 ```
 
 ## Roadmap
@@ -302,7 +306,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.1-alpha Launch Prep Polish`
+Current: `v0.7.2-alpha Runnable Examples Candidate`
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

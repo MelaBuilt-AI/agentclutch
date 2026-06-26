@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "id": "expense-submit-requires-approval",
+      "match": {
+        "kind": "browser.form_submit",
+        "targetApp": "ExpensePortal"
+      },
+      "decision": "require_clutch",
+      "reason": "Expense submission creates a business record and may trigger reimbursement."
+    }
+  ]
+}

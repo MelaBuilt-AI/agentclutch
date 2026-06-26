@@ -1,0 +1,20 @@
+{
+  "name": "@agentclutch/example-tool-wrapper-file-delete",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@agentclutch/core": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "latest",
+    "typescript": "latest",
+    "vitest": "latest",
+    "@types/node": "latest"
+  }
+}

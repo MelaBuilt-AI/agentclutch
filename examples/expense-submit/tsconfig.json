@@ -1,0 +1,27 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@agentclutch/core": [
+        "../../packages/core/dist/index.d.ts"
+      ],
+      "@agentclutch/action-card": [
+        "../../packages/action-card/dist/index.d.ts"
+      ],
+      "@agentclutch/loop": [
+        "../../packages/loop/dist/index.d.ts"
+      ]
+    },
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

@@ -59,6 +59,82 @@ importers:
 
   apps/browser-demo: {}
 
+  examples/expense-submit:
+    dependencies:
+      '@agentclutch/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.0.1
+      tsx:
+        specifier: latest
+        version: 4.22.4
+      typescript:
+        specifier: latest
+        version: 6.0.3
+      vitest:
+        specifier: latest
+        version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
+
+  examples/github-pr-create:
+    dependencies:
+      '@agentclutch/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.0.1
+      tsx:
+        specifier: latest
+        version: 4.22.4
+      typescript:
+        specifier: latest
+        version: 6.0.3
+      vitest:
+        specifier: latest
+        version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
+
+  examples/prompt-guard-send-email:
+    dependencies:
+      '@agentclutch/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.0.1
+      tsx:
+        specifier: latest
+        version: 4.22.4
+      typescript:
+        specifier: latest
+        version: 6.0.3
+      vitest:
+        specifier: latest
+        version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
+
+  examples/tool-wrapper-file-delete:
+    dependencies:
+      '@agentclutch/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.0.1
+      tsx:
+        specifier: latest
+        version: 4.22.4
+      typescript:
+        specifier: latest
+        version: 6.0.3
+      vitest:
+        specifier: latest
+        version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
+
   packages/action-card:
     dependencies:
       zod:

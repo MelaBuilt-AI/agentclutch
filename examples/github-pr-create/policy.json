@@ -1,0 +1,13 @@
+{
+  "rules": [
+    {
+      "id": "github-pr-create-requires-approval",
+      "match": {
+        "kind": "github.pr_create",
+        "targetApp": "GitHub"
+      },
+      "decision": "require_clutch",
+      "reason": "Creating a pull request changes repository state and may notify collaborators."
+    }
+  ]
+}

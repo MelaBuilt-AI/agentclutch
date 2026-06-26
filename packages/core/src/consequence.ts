@@ -107,6 +107,27 @@ export const DEFAULT_CONSEQUENCE_REGISTRY: readonly ConsequenceRegistryEntry[] =
       compensation_hint:
         "Revert commit, rollback deployment, or restore previous config."
     }
+  },
+  {
+    id: "code_repository_change",
+    description: "GitHub and repository write actions such as pull request creation.",
+    match: {
+      includesAny: ["github", "pull request", "pr_create", "repository"]
+    },
+    consequence: {
+      class: "code_repository_change",
+      label: "Code repository change",
+      description:
+        "This action may create, update, or expose repository state for collaborators.",
+      reversibility: "compensable",
+      blast_radius: "team",
+      requires_confirmation: true,
+      possible_residue: [
+        "Repository notifications may be sent",
+        "Reviewers may see proposed code or metadata"
+      ],
+      compensation_hint: "Close the pull request, revert commits, or update the branch if needed."
+    }
   }
 ];
 

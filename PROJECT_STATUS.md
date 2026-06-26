@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.1-alpha Launch Prep Polish
+v0.7.2-alpha Runnable Examples Candidate
 
 Completed:
 
@@ -39,6 +39,10 @@ Verified Working:
 * Compensation Metadata Display
 * Residue Metadata Display
 * Run Story Residue And Compensation Summaries
+* Runnable prompt-guard email example
+* Runnable tool-wrapper file-delete example
+* Runnable expense-submit example with edit approval
+* Runnable GitHub PR-create example
 
 Current Architecture:
 
@@ -50,7 +54,7 @@ ActionProposal
 
 Current Milestone Status:
 
-v0.7.1-alpha published as pre-launch demo polish candidate after browser overlay layout, Playwright version pinning, and CI browser-install fixes
+v0.7.2-alpha candidate adds runnable consequential-action examples, GitHub PR consequence classification, and a friendlier local CLI invocation while keeping the repo private and pre-launch
 
 Completed v0.7 Goals:
 
@@ -65,8 +69,9 @@ Completed v0.7 Goals:
 Next Planned Work:
 
 * review design doc against current implementation
-* resolve launch-prep gaps before public launch decision
-* use the recorded FakeStore Action Card screenshot/GIF as the README media baseline
+* re-run full launch checklist before public launch decision
+* decide package publishing strategy: repo-only alpha vs npm packages under `@agentclutch/*` and/or an `agentclutch` CLI package
+* add/record a real Action Card viewer screenshot or GIF if viewer remains launch positioning
 
 Do NOT build yet:
 
@@ -78,4 +83,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-v0.7.1-alpha
+v0.7.2-alpha candidate pending tag cut from current `main`

@@ -324,7 +324,7 @@ After any demo run, summarize the latest local recorder events:
 
 ```bash
 pnpm build
-node packages/cli/dist/index.js inspect latest
+pnpm agentclutch inspect latest
 ```
 
 Expected output includes the run id, event count, latest Action Card, consequence, risk, and final decision.

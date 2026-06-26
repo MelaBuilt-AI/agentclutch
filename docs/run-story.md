@@ -33,8 +33,8 @@ Recorded JSONL events can be converted into a Run Story by a host app or local i
 The CLI includes a lightweight inspector for launch/debug flows:
 
 ```bash
-node packages/cli/dist/index.js inspect latest
-node packages/cli/dist/index.js inspect <run_id>
+pnpm agentclutch inspect latest
+pnpm agentclutch inspect <run_id>
 ```
 
 It summarizes the event count, latest Action Card, consequence, risk, user decision, and resume status when those events are present.

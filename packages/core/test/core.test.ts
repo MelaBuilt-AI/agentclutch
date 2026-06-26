@@ -147,6 +147,7 @@ describe("classifyConsequence", () => {
       "external_business_submission",
       "local_file_delete",
       "production_change",
+      "code_repository_change",
     ]);
   });
 
@@ -247,6 +248,16 @@ describe("classifyConsequence", () => {
 
     expect(consequence.class).toBe("local_file_delete");
     expect(consequence.blast_radius).toBe("workspace");
+  });
+
+  it("classifies GitHub pull request creation as a code repository change", () => {
+    const consequence = classifyConsequence({
+      kind: "github.pr_create",
+      label: "Create pull request",
+    });
+
+    expect(consequence.class).toBe("code_repository_change");
+    expect(consequence.blast_radius).toBe("team");
   });
 
   it("classifies deploy and merge consequence", () => {
