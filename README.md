@@ -4,7 +4,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha` is cut, pushed, and verified as a private prerelease checkpoint. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and a local `pnpm agentclutch` CLI script.
+Current milestone: `v0.7.3-alpha` is cut, pushed, and verified as a private git checkpoint. The repo is now being prepared as a public GitHub + npm alpha launch candidate with npm package version `0.7.3-alpha.0` under the `alpha` dist-tag. Until launch approval, use the local monorepo commands below; after npm publishing, install only the package you need.
 
 ## 30-Second Explanation
 
@@ -28,7 +28,7 @@ FakeStore is a local interactive demo. It opens a browser, loads a local fake st
 Install once:
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 pnpm exec playwright install chromium
 ```
@@ -59,10 +59,10 @@ The demo is intentionally local. It uses a fake store page, local rules, local l
 
 ![GIF: FakeStore checkout demo flow](docs/assets/fakestore-demo.gif)
 
-After publishing, the intended public command is:
+After npm alpha publishing, the intended public CLI command is:
 
 ```bash
-npx agentclutch demo checkout
+pnpm dlx @agentclutch/cli@alpha demo checkout
 ```
 
 ## Quick Start
@@ -239,19 +239,19 @@ You can also summarize the latest recorded run from the CLI after building:
 pnpm agentclutch inspect latest
 ```
 
-The package-level CLI already exposes the `agentclutch` binary for published packages. Until the npm publishing strategy is chosen, use the local root script above instead of calling `node packages/cli/dist/index.js` directly.
+The package-level CLI exposes the `agentclutch` binary for npm installs. Until npm publishing is explicitly approved and completed, use the local root script above instead of relying on registry packages.
 
 ## Packages
 
-| Package                    | Purpose                                                                                          |
-| -------------------------- | ------------------------------------------------------------------------------------------------ |
-| `@agentclutch/action-card` | Action Card types, schema, builders, and validation.                                             |
-| `@agentclutch/loop`        | Action Proposal, Clutch Decision, loop events, and Resume Context.                               |
-| `@agentclutch/core`        | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
-| `@agentclutch/recorder`    | Local JSONL run recording.                                                                       |
-| `@agentclutch/playwright`  | Explicit browser action wrapper and local rule evaluation.                                       |
-| `@agentclutch/react`       | Reusable Action Card and Run Story UI components.                                                |
-| `@agentclutch/cli`         | Local demo commands and run inspection.                                                          |
+| Package                    | First npm alpha version | Purpose                                                                                          |
+| -------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
+| `@agentclutch/action-card` | `0.7.3-alpha.0`        | Action Card types, schema, builders, and validation.                                             |
+| `@agentclutch/loop`        | `0.7.3-alpha.0`        | Action Proposal, Clutch Decision, loop events, and Resume Context.                               |
+| `@agentclutch/core`        | `0.7.3-alpha.0`        | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
+| `@agentclutch/recorder`    | `0.7.3-alpha.0`        | Local JSONL run recording.                                                                       |
+| `@agentclutch/playwright`  | `0.7.3-alpha.0`        | Explicit browser action wrapper and local rule evaluation.                                       |
+| `@agentclutch/react`       | `0.7.3-alpha.0`        | Reusable Action Card and Run Story UI components.                                                |
+| `@agentclutch/cli`         | `0.7.3-alpha.0`        | Local demo commands and run inspection.                                                          |
 
 Apps:
 
@@ -269,6 +269,8 @@ Examples:
 
 ## Documentation
 
+- [Quickstart](docs/quickstart.md)
+- [npm publishing plan](docs/npm-publishing.md)
 - [Demo script](docs/demo-script.md)
 - [Launch checklist](docs/launch-checklist.md)
 - [Architecture](docs/architecture.md)
@@ -290,7 +292,7 @@ Requirements:
 Common commands:
 
 ```bash
-pnpm install
+pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
 pnpm test
@@ -306,7 +308,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.3-alpha Private Prerelease Checkpoint`
+Current: `v0.7.3-alpha` private git checkpoint; public GitHub + npm alpha launch candidate prepared as `0.7.3-alpha.0`.
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

@@ -1,0 +1,100 @@
+# AgentClutch v0.7.3-alpha Release Notes
+
+> Draft release notes for the first public GitHub + npm alpha launch. Do not publish these notes as a public release until the repo visibility and npm publish steps are explicitly approved.
+
+## Summary
+
+AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses proposed side effects before execution, shows a structured Action Card, records the human decision, and returns resume context to the host app or loop.
+
+`v0.7.3-alpha` is the current launch-readiness checkpoint. The npm package version prepared for the first public alpha is `0.7.3-alpha.0` under the `alpha` dist-tag.
+
+## What is included
+
+- Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story artifact chain.
+- `prompt_guard`, `tool_wrapper`, and `loop_native` adoption paths.
+- Local JSONL recorder and Run Story generation.
+- Consequence classification, reversibility, compensation, residue, and risk metadata.
+- Local rules for `allow`, `block`, and `require_clutch` decisions.
+- Local lesson reuse for user corrections without silently approving future actions.
+- Playwright adapter for guarded browser actions.
+- React-compatible Action Card and Run Story UI components.
+- CLI demo and run inspection commands.
+- Runnable examples for email prompt guard, file delete tool wrapper, expense submit, GitHub PR proposal, and loop-native checkout.
+- Real demo/viewer screenshots in the README.
+
+## Prepared npm alpha packages
+
+These packages are prepared at `0.7.3-alpha.0` with `publishConfig.tag = alpha` and `publishConfig.access = public`:
+
+- `@agentclutch/action-card`
+- `@agentclutch/loop`
+- `@agentclutch/core`
+- `@agentclutch/recorder`
+- `@agentclutch/playwright`
+- `@agentclutch/react`
+- `@agentclutch/cli`
+
+The root monorepo remains private in npm terms (`private: true`) and should never be published.
+
+## Intended install commands after npm publish
+
+```bash
+pnpm add @agentclutch/core@alpha
+pnpm add @agentclutch/react@alpha
+pnpm add @agentclutch/playwright@alpha playwright
+pnpm dlx @agentclutch/cli@alpha --help
+```
+
+## Demo
+
+From a cloned repo:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm exec playwright install chromium
+pnpm demo:checkout
+```
+
+In WSL/headless automation, use seeded flows:
+
+```bash
+xvfb-run -a pnpm demo:checkout --seed-allow-rule
+pnpm agentclutch inspect latest
+xvfb-run -a pnpm demo:checkout --seed-block-rule
+pnpm agentclutch inspect latest
+```
+
+After npm publish, the intended CLI path is:
+
+```bash
+pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
+```
+
+## Known caveats
+
+- Alpha-stage API and package boundaries may still change.
+- Local-first by design; no hosted approval service, cloud sync, desktop overlay, MCP, AG-UI, or CHAP integration is included in this milestone.
+- The interactive `require_clutch` browser demo needs a GUI/human decision; terminal-only automation should use seeded allow/block flows plus browser-backed tests.
+- npm publish should use the `alpha` dist-tag, not `latest`.
+- Public GitHub visibility and npm publishing are separate irreversible-ish steps and require explicit approval.
+
+## Verification target before launch
+
+Before public launch/publish, verify:
+
+```bash
+pnpm install --frozen-lockfile
+pnpm build
+pnpm typecheck
+pnpm lint
+pnpm test
+git diff --check
+pnpm exec playwright install chromium
+xvfb-run -a pnpm demo:checkout --seed-allow-rule
+pnpm agentclutch inspect latest
+xvfb-run -a pnpm demo:checkout --seed-block-rule
+pnpm agentclutch inspect latest
+```
+
+Then perform package dry-runs and a clean install smoke test from packed tarballs before publishing.

@@ -1,9 +1,32 @@
 {
   "name": "@agentclutch/cli",
-  "version": "0.0.0",
+  "version": "0.7.3-alpha.0",
   "description": "CLI for AgentClutch demos and local run inspection.",
   "license": "Apache-2.0",
   "type": "module",
+  "keywords": [
+    "agentclutch",
+    "cli",
+    "ai-agents",
+    "human-in-the-loop",
+    "playwright"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelaBuilt-AI/agentclutch.git",
+    "directory": "packages/cli"
+  },
+  "homepage": "https://github.com/MelaBuilt-AI/agentclutch#readme",
+  "bugs": {
+    "url": "https://github.com/MelaBuilt-AI/agentclutch/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {

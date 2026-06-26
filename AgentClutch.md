@@ -55,7 +55,7 @@ pnpm demo:checkout
 After public package publishing is explicitly approved, the intended public command remains:
 
 ```bash
-npx agentclutch demo checkout
+pnpm dlx @agentclutch/cli@alpha demo checkout
 ```
 
 The demo launches a browser-agent simulation. The agent tries to click a checkout/submit/send/delete action. AgentClutch freezes the action, highlights the target, explains what will change, shows reversibility and risk, and lets the human approve, edit, block, or take over.
@@ -499,7 +499,7 @@ pnpm demo:checkout
 Future public package command after publishing approval:
 
 ```bash
-npx agentclutch demo checkout
+pnpm dlx @agentclutch/cli@alpha demo checkout
 ```
 
 The demo should show:
@@ -5719,7 +5719,7 @@ pnpm demo:checkout
 Or after publishing:
 
 ```bash
-npx agentclutch demo checkout
+pnpm dlx @agentclutch/cli@alpha demo checkout
 ```
 
 ## Example

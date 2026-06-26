@@ -1,9 +1,32 @@
 {
   "name": "@agentclutch/playwright",
-  "version": "0.0.0",
-  "description": "Playwright adapter for AgentClutch Action Cards and takeover UX.",
+  "version": "0.7.3-alpha.0",
+  "description": "Playwright adapter for AgentClutch Action Cards, rules, and takeover UX.",
   "license": "Apache-2.0",
   "type": "module",
+  "keywords": [
+    "agentclutch",
+    "playwright",
+    "browser-automation",
+    "human-in-the-loop",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelaBuilt-AI/agentclutch.git",
+    "directory": "packages/playwright"
+  },
+  "homepage": "https://github.com/MelaBuilt-AI/agentclutch#readme",
+  "bugs": {
+    "url": "https://github.com/MelaBuilt-AI/agentclutch/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

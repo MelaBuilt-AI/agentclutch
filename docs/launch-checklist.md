@@ -1,6 +1,6 @@
 # Launch Checklist
 
-Use this checklist before sharing the repository with a new GitHub visitor.
+Use this checklist before making the repository public and before publishing the first npm alpha.
 
 ## Positioning
 
@@ -9,22 +9,43 @@ Use this checklist before sharing the repository with a new GitHub visitor.
 - [ ] README states the core chain: Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story.
 - [ ] README says AgentClutch is not a generic agent framework, chat UI, browser agent, observability dashboard, or hosted approval product.
 - [ ] Rules are described as explicit `allow`, `block`, and `require_clutch` control policy.
-- [ ] Future Teach Mode is described only as future preference and correction memory, with no current behavior implied.
+- [ ] Lessons are described as correction memory that does not silently approve future actions.
+- [ ] README and release notes make alpha maturity clear.
+
+## Public GitHub readiness
+
+- [ ] Repo description and topics are ready.
+- [ ] License is visible and correct.
+- [ ] README links to quickstart, npm publishing notes, demo script, architecture, examples, and Run Story docs.
+- [ ] README uses real local demo/viewer assets, not launch placeholders.
+- [ ] No docs imply npm packages are already published before they are actually published.
+- [ ] No private tester workflow remains as a launch blocker.
+
+## npm alpha readiness
+
+- [ ] `@agentclutch` npm scope ownership/access is confirmed.
+- [ ] Publishable packages are limited to `packages/*` SDK/CLI packages.
+- [ ] Root package, apps, and examples remain unpublished.
+- [ ] Publishable package versions are set to `0.7.3-alpha.0`.
+- [ ] Publishable package metadata includes repository, homepage, bugs, engines, keywords, and `publishConfig`.
+- [ ] Package README files exist for each publishable package.
+- [ ] Publish dry-runs pass with `--tag alpha --access public`.
+- [ ] Tarball smoke install passes from `/tmp` before real publish.
 
 ## Demo
 
-- [ ] `pnpm install` completes.
+- [ ] `pnpm install --frozen-lockfile` completes.
 - [ ] `pnpm build` completes.
 - [ ] `pnpm exec playwright install chromium` completes.
-- [ ] `pnpm demo:checkout --clear-rules` opens the fake store.
+- [ ] `pnpm demo:checkout --clear-rules` opens the fake store in a GUI environment.
 - [ ] The Action Card highlights `#checkout`.
 - [ ] `approve_once` completes checkout.
 - [ ] Editing quantity records a patch and completes edited checkout.
 - [ ] `block` prevents checkout.
 - [ ] `create_rule` writes a local `require_clutch` rule.
-- [ ] `--seed-allow-rule` skips the overlay and completes checkout.
-- [ ] `--seed-block-rule` skips the overlay and prevents checkout.
-- [ ] `--seed-require-clutch-rule` shows the Action Card.
+- [ ] `xvfb-run -a pnpm demo:checkout --seed-allow-rule` passes in WSL/headless automation.
+- [ ] `xvfb-run -a pnpm demo:checkout --seed-block-rule` passes in WSL/headless automation.
+- [ ] `--seed-require-clutch-rule` shows the Action Card in a GUI/human run or is documented as interactive.
 
 ## Run Story
 
@@ -36,15 +57,26 @@ Use this checklist before sharing the repository with a new GitHub visitor.
 
 ## Docs
 
+- [ ] `docs/quickstart.md` works from a clean clone.
+- [ ] `docs/npm-publishing.md` matches package metadata and publish order.
 - [ ] `docs/demo-script.md` matches current CLI flags.
-- [ ] `examples/README.md` summarizes all three adoption examples.
-- [ ] README links to demo script, launch checklist, architecture, examples, and Run Story docs.
-- [ ] README uses real local demo screenshot/GIF assets, not launch placeholders.
-- [ ] Roadmap stays focused on local-first launch polish, examples, tests, and stable core artifacts.
+- [ ] `examples/README.md` summarizes all adoption examples.
+- [ ] `RELEASE_NOTES-v0.7.3-alpha.md` is accurate and marked as draft until public release approval.
+- [ ] Roadmap stays focused on local-first launch polish, examples, tests, stable core artifacts, and npm alpha readiness.
 
 ## Quality
 
+- [ ] `pnpm build` passes.
 - [ ] `pnpm typecheck` passes.
+- [ ] `pnpm lint` passes.
 - [ ] `pnpm test` passes.
+- [ ] `git diff --check` passes.
+- [ ] GitHub Actions Build/Test pass on Ubuntu and Windows.
 - [ ] No launch doc claims product behavior that is not implemented.
-- [ ] No secrets, real user data, or private URLs appear in screenshots, media assets, run files, or docs.
+- [ ] No secrets, real user data, private URLs, local run logs, or sensitive generated files appear in screenshots, media assets, package tarballs, or docs.
+
+## Approval gates
+
+- [ ] User explicitly approves making the GitHub repo public.
+- [ ] User explicitly approves publishing npm alpha packages.
+- [ ] User explicitly approves any GitHub Release creation.

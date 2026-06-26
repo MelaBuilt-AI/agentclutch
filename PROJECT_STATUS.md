@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.3-alpha Private Prerelease Checkpoint
+v0.7.3-alpha Public GitHub + npm Alpha Launch Candidate
 
 Completed:
 
@@ -21,6 +21,7 @@ Completed:
 - Action Card Consequence Display
 - Viewer Consequence Display
 - Run Story Consequence Summaries
+- npm alpha metadata for the publishable SDK/CLI packages
 
 Verified Working:
 
@@ -54,7 +55,19 @@ ActionProposal
 
 Current Milestone Status:
 
-v0.7.3-alpha is the current private launch-readiness checkpoint on the private repo. It includes the v0.7.2 runnable consequential-action examples plus design-doc/status sync, privacy-safe email Action Card docs/tests, safer example isolation/cleanup, a real viewer screenshot, cross-platform file-delete regression coverage, narrowed GitHub consequence classification, and `pnpm agentclutch --help` polish while keeping AgentClutch private and pre-launch.
+`v0.7.3-alpha` remains the verified private git checkpoint. The next launch target is a public GitHub + npm alpha launch candidate, with package versions prepared as `0.7.3-alpha.0` and npm publishing planned under the `alpha` dist-tag.
+
+The project is still private until explicit approval. npm packages are prepared but must not be published until explicit approval.
+
+Prepared npm alpha packages:
+
+- `@agentclutch/action-card@0.7.3-alpha.0`
+- `@agentclutch/loop@0.7.3-alpha.0`
+- `@agentclutch/core@0.7.3-alpha.0`
+- `@agentclutch/recorder@0.7.3-alpha.0`
+- `@agentclutch/playwright@0.7.3-alpha.0`
+- `@agentclutch/react@0.7.3-alpha.0`
+- `@agentclutch/cli@0.7.3-alpha.0`
 
 Completed v0.7 Goals:
 
@@ -68,10 +81,12 @@ Completed v0.7 Goals:
 
 Next Planned Work:
 
+- run package publish dry-runs for the prepared npm alpha packages
+- run tarball install smoke test from `/tmp`
 - re-run full launch checklist before public launch decision
-- private repo-only alpha remains the current package strategy until explicit approval for public GitHub and/or npm publishing
-- add/record a real Action Card viewer screenshot or GIF if viewer remains launch positioning
-- decide later whether the first public publishing slice is public GitHub-only or npm packages under `@agentclutch/*` plus an `agentclutch` CLI package
+- verify GitHub Actions after launch-prep commit
+- ask for explicit approval before making the repo public
+- ask for explicit approval before publishing npm packages
 
 Do NOT build yet:
 
@@ -83,4 +98,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-v0.7.3-alpha private annotated tag cut from verified `main` (`c4fb7fb521a6e3715aa3454a868c95cf5cea95d5`)
+`v0.7.3-alpha` private annotated tag cut from verified `main` (`da47b1a6240c66063054681d281903a4cc845dc6`)

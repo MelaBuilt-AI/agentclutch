@@ -1,9 +1,32 @@
 {
   "name": "@agentclutch/loop",
-  "version": "0.0.0",
-  "description": "Loop lifecycle contracts for AgentClutch action proposals, progressive integration modes, decisions, and resume context.",
+  "version": "0.7.3-alpha.0",
+  "description": "Loop lifecycle contracts for AgentClutch action proposals, decisions, events, and resume context.",
   "license": "Apache-2.0",
   "type": "module",
+  "keywords": [
+    "agentclutch",
+    "agent-loop",
+    "human-in-the-loop",
+    "ai-agents",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelaBuilt-AI/agentclutch.git",
+    "directory": "packages/loop"
+  },
+  "homepage": "https://github.com/MelaBuilt-AI/agentclutch#readme",
+  "bugs": {
+    "url": "https://github.com/MelaBuilt-AI/agentclutch/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,7 +35,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",

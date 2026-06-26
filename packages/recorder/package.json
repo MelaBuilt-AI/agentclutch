@@ -1,9 +1,32 @@
 {
   "name": "@agentclutch/recorder",
-  "version": "0.0.0",
-  "description": "Local JSONL recorder for AgentClutch runs.",
+  "version": "0.7.3-alpha.0",
+  "description": "Local JSONL recorder and run-store utilities for AgentClutch runs.",
   "license": "Apache-2.0",
   "type": "module",
+  "keywords": [
+    "agentclutch",
+    "jsonl",
+    "run-recorder",
+    "ai-agents",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MelaBuilt-AI/agentclutch.git",
+    "directory": "packages/recorder"
+  },
+  "homepage": "https://github.com/MelaBuilt-AI/agentclutch#readme",
+  "bugs": {
+    "url": "https://github.com/MelaBuilt-AI/agentclutch/issues"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "alpha"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -12,7 +35,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
