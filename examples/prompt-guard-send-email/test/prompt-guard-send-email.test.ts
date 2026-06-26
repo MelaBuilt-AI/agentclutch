@@ -11,4 +11,19 @@ describe("prompt-guard-send-email runnable example", () => {
     expect(result.sentEmail?.body).toContain("next steps");
     expect(result.recorderEvents).toHaveLength(4);
   });
+
+  it("does not expose the full email body in the Action Card raw payload", async () => {
+    const result = await runPromptGuardSendEmailExample();
+    const raw = result.card.proposed_action.raw;
+
+    expect(raw).toMatchObject({
+      to: ["client@example.com"],
+      cc: ["account-team@example.com"],
+      subject: "Next steps from today",
+      bodyPreview: expect.stringContaining("Thanks for the call today")
+    });
+    expect(raw).not.toHaveProperty("body");
+    expect(JSON.stringify(result.card)).not.toContain("Best,\\nAlex");
+    expect(result.sentEmail?.body).toContain("Best,\nAlex");
+  });
 });

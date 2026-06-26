@@ -43,6 +43,8 @@ export async function runPromptGuardSendEmailExample() {
       "Hi Sam,\n\nThanks for the call today. Here are the next steps we discussed: confirm scope, share the launch checklist, and pick a review window.\n\nBest,\nAlex"
   };
 
+  const bodyPreview = draft.body.slice(0, 120);
+
   const result = await clutch.confirmAction({
     userGoal: {
       original: "Send a follow-up email to the client with the next steps.",
@@ -55,12 +57,15 @@ export async function runPromptGuardSendEmailExample() {
       targetApp: "Gmail",
       targetIdentifier: draft.to.join(", "),
       rawInput: {
-        ...draft,
+        to: draft.to,
+        cc: draft.cc,
+        subject: draft.subject,
+        bodyPreview,
         changedFields: [
           { field: "to", after: draft.to, editable: true },
           { field: "cc", after: draft.cc, editable: true },
           { field: "subject", after: draft.subject, editable: true },
-          { field: "bodyPreview", after: draft.body.slice(0, 120), editable: true }
+          { field: "bodyPreview", after: bodyPreview, editable: true }
         ]
       }
     },
@@ -70,7 +75,7 @@ export async function runPromptGuardSendEmailExample() {
         to: draft.to.join(", "),
         cc: draft.cc.join(", "),
         subject: draft.subject,
-        bodyPreview: draft.body.slice(0, 120)
+        bodyPreview
       }
     },
     riskHints: {
