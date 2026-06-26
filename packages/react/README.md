@@ -14,14 +14,30 @@ This package is part of [AgentClutch](https://github.com/MelaBuilt-AI/agentclutc
 pnpm add @agentclutch/react@alpha
 ```
 
-## Usage
+If you use the bundled styles, import:
 
 ```ts
+import "@agentclutch/react/styles.css";
+```
+
+## Minimal usage
+
+```ts
+import type { ActionCard as ActionCardModel } from "@agentclutch/action-card";
 import { ActionCard } from "@agentclutch/react";
+
+export function renderCard(card: ActionCardModel) {
+  return ActionCard({
+    card,
+    onDecision(decision, editedFields) {
+      console.log({ decision, editedFields });
+    },
+  });
+}
 ```
 
 ## Package role
 
-Reusable Action Card and Run Story UI components.
+Use this package when you want reusable Action Card and Run Story UI primitives. The current alpha exposes React-compatible element objects without requiring a specific app framework.
 
-See the root AgentClutch README and `docs/quickstart.md` for full setup, demos, and caveats.
+Links: [root README](../../README.md), [quickstart](../../docs/quickstart.md), [known limitations](../../docs/limitations.md), [React component docs](../../docs/react-components.md).

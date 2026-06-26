@@ -19,7 +19,7 @@ AgentClutch is an open, local-first Action Card and takeover UX layer for conseq
 - Playwright adapter for guarded browser actions.
 - React-compatible Action Card and Run Story UI components.
 - CLI demo and run inspection commands.
-- Runnable examples for email prompt guard, file delete tool wrapper, expense submit, GitHub PR proposal, and loop-native checkout.
+- Runnable examples for email prompt guard, file delete tool wrapper, expense submit, GitHub PR proposal, loop-native checkout, and a minimal npm consumer path.
 - Real demo/viewer screenshots in the README.
 
 ## Published npm alpha packages
@@ -72,6 +72,8 @@ pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
 ```
 
 ## Known caveats
+
+See [Known Limitations](docs/limitations.md) for the maintained caveat list. Highlights:
 
 - Alpha-stage API and package boundaries may still change.
 - Local-first by design; no hosted approval service, cloud sync, desktop overlay, MCP, AG-UI, or CHAP integration is included in this milestone.

@@ -14,14 +14,44 @@ This package is part of [AgentClutch](https://github.com/MelaBuilt-AI/agentclutc
 pnpm add @agentclutch/playwright@alpha playwright
 ```
 
-## Usage
+## Minimal usage
 
 ```ts
 import { attachClutch } from "@agentclutch/playwright";
+import { chromium } from "playwright";
+
+const browser = await chromium.launch({ headless: false });
+const page = await browser.newPage();
+await page.goto("http://127.0.0.1:5173");
+
+const clutch = await attachClutch(page, {
+  runId: "run_checkout_001",
+  agentName: "checkout-agent",
+});
+
+const result = await clutch.click("#checkout", {
+  kind: "browser.checkout",
+  label: "Complete checkout",
+  targetApp: "FakeStore",
+  changedFields: [
+    { field: "product", after: "Wireless Headphones Pro", editable: false },
+    { field: "quantity", after: 1, editable: true },
+  ],
+  riskHints: {
+    requiresApproval: true,
+    reversibility: "compensable",
+    blastRadius: "single_user",
+  },
+});
+
+console.log(result.decision.type, result.executed);
+await browser.close();
 ```
 
 ## Package role
 
-Explicit browser action wrapper and local rule evaluation for Playwright flows.
+Use this package to guard explicit Playwright browser actions with Action Cards, local rules, and resume context.
 
-See the root AgentClutch README and `docs/quickstart.md` for full setup, demos, and caveats.
+Headless note: interactive `require_clutch` flows need a GUI/human decision. For CI and WSL automation, use seeded demo flows or tests that do not wait for a live overlay decision.
+
+Links: [root README](../../README.md), [quickstart](../../docs/quickstart.md), [known limitations](../../docs/limitations.md), [Playwright docs](../../docs/playwright.md).

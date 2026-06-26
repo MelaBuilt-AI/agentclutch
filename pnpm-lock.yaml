@@ -97,6 +97,25 @@ importers:
         specifier: latest
         version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
 
+  examples/npm-consumer-basic:
+    dependencies:
+      '@agentclutch/core':
+        specifier: 0.7.3-alpha.0
+        version: 0.7.3-alpha.0
+    devDependencies:
+      '@types/node':
+        specifier: latest
+        version: 26.0.1
+      tsx:
+        specifier: latest
+        version: 4.22.4
+      typescript:
+        specifier: latest
+        version: 6.0.3
+      vitest:
+        specifier: latest
+        version: 4.1.9(@types/node@26.0.1)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(tsx@4.22.4))
+
   examples/prompt-guard-send-email:
     dependencies:
       '@agentclutch/core':
@@ -195,6 +214,18 @@ importers:
   packages/recorder: {}
 
 packages:
+
+  '@agentclutch/action-card@0.7.3-alpha.0':
+    resolution: {integrity: sha512-0x5d3/jV7JDn8sfKgAw1zK1scu2IcElnGCUzD4RC3xA53QpYwRL5Qprpl4Fn59kgGoaO6n8NLejHH5380njiIw==}
+    engines: {node: '>=22'}
+
+  '@agentclutch/core@0.7.3-alpha.0':
+    resolution: {integrity: sha512-7AnEfYDwnu3SCl6Hh97p+bg9B2wbD66JmRnTXIFkOazQDRBm9EWniE9fJUD9IETZJiRrfnyaKV+TUnP0OtN/oA==}
+    engines: {node: '>=22'}
+
+  '@agentclutch/loop@0.7.3-alpha.0':
+    resolution: {integrity: sha512-CjFkEPfee/I+6PC6kdU21cSK0GdFiVsNVNqHqddFAQLpJYiiwsk8LvEYgMe7wzfa3LSZrLUm/U3MMlyqDZIxFg==}
+    engines: {node: '>=22'}
 
   '@emnapi/core@1.11.1':
     resolution: {integrity: sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ==}
@@ -1220,6 +1251,17 @@ packages:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
+
+  '@agentclutch/action-card@0.7.3-alpha.0':
+    dependencies:
+      zod: 4.4.3
+
+  '@agentclutch/core@0.7.3-alpha.0':
+    dependencies:
+      '@agentclutch/action-card': 0.7.3-alpha.0
+      '@agentclutch/loop': 0.7.3-alpha.0
+
+  '@agentclutch/loop@0.7.3-alpha.0': {}
 
   '@emnapi/core@1.11.1':
     dependencies:

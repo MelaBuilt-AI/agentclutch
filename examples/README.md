@@ -11,6 +11,7 @@ pnpm --filter @agentclutch/example-prompt-guard-send-email start
 pnpm --filter @agentclutch/example-tool-wrapper-file-delete start
 pnpm --filter @agentclutch/example-expense-submit start
 pnpm --filter @agentclutch/example-github-pr-create start
+pnpm --filter @agentclutch/example-npm-consumer-basic start
 ```
 
 Each runnable example records the same chain in memory:
@@ -97,6 +98,23 @@ What it demonstrates:
 - A GitHub repository write proposal before PR creation.
 - Consequence classification as `code_repository_change`.
 - Simulated PR creation only after approval.
+
+### `npm-consumer-basic`
+
+Path: minimal public npm consumer
+
+Use this when you want to see the smallest fresh-project path for `@agentclutch/core@alpha` without workspace-only imports.
+
+Files:
+
+- [README.md](npm-consumer-basic/README.md)
+- [src/index.ts](npm-consumer-basic/src/index.ts)
+
+What it demonstrates:
+
+- Installing/using `@agentclutch/core` from the public npm API.
+- Creating one email-send Action Card with `createClutch`.
+- Returning a deterministic `approve_once` decision and resume policy.
 
 ### `loop-native-checkout`
 

@@ -14,14 +14,39 @@ This package is part of [AgentClutch](https://github.com/MelaBuilt-AI/agentclutc
 pnpm add @agentclutch/loop@alpha
 ```
 
-## Usage
+## Minimal usage
 
 ```ts
-import { normalizeActionProposal } from "@agentclutch/loop";
+import { buildResumeContext, normalizeActionProposal } from "@agentclutch/loop";
+
+const proposal = normalizeActionProposal({
+  sourceMode: "loop_native",
+  loopId: "loop_checkout_001",
+  stepId: "step_review_checkout",
+  userGoal: { summary: "Buy headphones after review" },
+  proposedAction: {
+    kind: "browser.checkout",
+    label: "Complete checkout",
+    targetSurface: "browser",
+    targetApp: "FakeStore",
+    targetIdentifier: "#checkout",
+  },
+  riskHints: {
+    requiresApproval: true,
+    reversibility: "compensable",
+    blastRadius: "single_user",
+  },
+});
+
+const resumeContext = buildResumeContext(proposal, {
+  type: "approve_once",
+  approvedBy: "human-operator",
+  decidedAt: new Date().toISOString(),
+});
 ```
 
 ## Package role
 
-Action Proposal, Clutch Decision, loop events, and Resume Context contracts.
+Use this package when your host app already has an engineered loop and needs typed Action Proposals, Clutch Decisions, loop events, and Resume Context objects.
 
-See the root AgentClutch README and `docs/quickstart.md` for full setup, demos, and caveats.
+Links: [root README](../../README.md), [quickstart](../../docs/quickstart.md), [known limitations](../../docs/limitations.md), [examples](../../examples/README.md).

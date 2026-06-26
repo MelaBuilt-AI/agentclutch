@@ -58,3 +58,24 @@ It is a local-first Action Card / takeover UX layer for consequential agent acti
 GitHub: https://github.com/MelaBuilt-AI/agentclutch
 npm: `pnpm add @agentclutch/core@alpha`
 CLI: `pnpm dlx @agentclutch/cli@alpha --help`
+
+## Updated post-launch community blurb
+
+AgentClutch alpha is public now 🎉
+
+It is a local-first Action Card / takeover UX layer for consequential AI agent actions — a clutch point before an agent clicks, sends, deletes, buys, submits, or changes something real.
+
+Useful links:
+
+- GitHub: https://github.com/MelaBuilt-AI/agentclutch
+- Release: https://github.com/MelaBuilt-AI/agentclutch/releases/tag/v0.7.3-alpha.0
+- Quickstart: https://github.com/MelaBuilt-AI/agentclutch/blob/main/docs/quickstart.md
+- Known limitations: https://github.com/MelaBuilt-AI/agentclutch/blob/main/docs/limitations.md
+- Minimal npm consumer example: https://github.com/MelaBuilt-AI/agentclutch/tree/main/examples/npm-consumer-basic
+
+Try the npm alpha:
+
+```bash
+pnpm add @agentclutch/core@alpha
+pnpm dlx @agentclutch/cli@alpha --help
+```

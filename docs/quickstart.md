@@ -81,6 +81,16 @@ Run the CLI demo from npm:
 pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
 ```
 
+## Minimal npm consumer example
+
+For the smallest external-consumer-style example, copy `examples/npm-consumer-basic` into a fresh project or run it from this repo after install/build:
+
+```bash
+pnpm --filter @agentclutch/example-npm-consumer-basic start
+```
+
+The example imports only from `@agentclutch/core`, creates one email-send Action Card, approves it with a deterministic renderer, and prints the decision plus resume policy.
+
 ## What success looks like
 
 - Build, typecheck, lint, and tests pass.
@@ -93,3 +103,5 @@ pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
 
 - AgentClutch is alpha-stage and local-first.
 - It is not a generic agent framework, hosted approval service, browser agent, chat UI, or observability dashboard.
+- npm currently exposes the first alpha as both `alpha` and `latest`; prefer explicit `@alpha` installs until stable.
+- See [Known Limitations](limitations.md) for the full alpha caveat list.

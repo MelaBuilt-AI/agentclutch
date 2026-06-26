@@ -250,15 +250,15 @@ The package-level CLI exposes the `agentclutch` binary for npm installs. From a 
 
 ## Packages
 
-| Package                    | First npm alpha version | Purpose                                                                                          |
-| -------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------ |
-| `@agentclutch/action-card` | `0.7.3-alpha.0`        | Action Card types, schema, builders, and validation.                                             |
-| `@agentclutch/loop`        | `0.7.3-alpha.0`        | Action Proposal, Clutch Decision, loop events, and Resume Context.                               |
-| `@agentclutch/core`        | `0.7.3-alpha.0`        | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. |
-| `@agentclutch/recorder`    | `0.7.3-alpha.0`        | Local JSONL run recording.                                                                       |
-| `@agentclutch/playwright`  | `0.7.3-alpha.0`        | Explicit browser action wrapper and local rule evaluation.                                       |
-| `@agentclutch/react`       | `0.7.3-alpha.0`        | Reusable Action Card and Run Story UI components.                                                |
-| `@agentclutch/cli`         | `0.7.3-alpha.0`        | Local demo commands and run inspection.                                                          |
+| Package | First npm alpha version | Purpose | Docs |
+| --- | --- | --- | --- |
+| `@agentclutch/action-card` | `0.7.3-alpha.0` | Action Card types, schema, builders, and validation. | [README](packages/action-card/README.md) |
+| `@agentclutch/loop` | `0.7.3-alpha.0` | Action Proposal, Clutch Decision, loop events, and Resume Context. | [README](packages/loop/README.md) |
+| `@agentclutch/core` | `0.7.3-alpha.0` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. | [README](packages/core/README.md) |
+| `@agentclutch/recorder` | `0.7.3-alpha.0` | Local JSONL run recording. | [README](packages/recorder/README.md) |
+| `@agentclutch/playwright` | `0.7.3-alpha.0` | Explicit browser action wrapper and local rule evaluation. | [README](packages/playwright/README.md) |
+| `@agentclutch/react` | `0.7.3-alpha.0` | Reusable Action Card and Run Story UI components. | [README](packages/react/README.md) |
+| `@agentclutch/cli` | `0.7.3-alpha.0` | Local demo commands and run inspection. | [README](packages/cli/README.md) |
 
 Apps:
 
@@ -272,12 +272,14 @@ Examples:
 - `examples/expense-submit` — runnable expense form submission with edit approval
 - `examples/github-pr-create` — runnable GitHub PR creation proposal
 - `examples/loop-native-checkout`
+- `examples/npm-consumer-basic` — minimal external npm consumer-style example
 - [Examples index](examples/README.md)
 
 ## Documentation
 
 - [Quickstart](docs/quickstart.md)
 - [npm publishing notes](docs/npm-publishing.md)
+- [Known limitations](docs/limitations.md)
 - [Security policy](SECURITY.md)
 - [Launch announcement drafts](docs/launch-announcement-drafts.md)
 - [Demo script](docs/demo-script.md)
@@ -330,3 +332,5 @@ Out of scope for the current milestone:
 - CHAP
 - Cloud sync
 - Desktop overlay
+
+See [Known Limitations](docs/limitations.md) for the full alpha caveat list.
