@@ -59,6 +59,9 @@ describe("attachClutch", () => {
     expect(script).toContain("Blast radius");
     expect(script).toContain("Description");
     expect(script).toContain("description");
+    expect(script).toContain(
+      "grid-template-columns:minmax(140px,max-content) minmax(0,1fr)",
+    );
     expect(script).toContain(".ac-actions{position:sticky;bottom:0;");
   });
 
@@ -158,6 +161,30 @@ describe("attachClutch", () => {
       expect(overlayText).toContain("Compensation");
       expect(overlayText).toContain("Cancel order or request refund if available.");
       expect(overlayText).toContain("The cart total shown before checkout is $249.00.");
+
+      const overlappingConsequenceRows = await page.evaluate(() => {
+        const section = Array.from(document.querySelectorAll(".ac-section")).find(
+          (element) => element.querySelector("h3")?.textContent === "Consequence",
+        );
+
+        if (!section) return ["missing consequence section"];
+
+        return Array.from(section.querySelectorAll("dt")).flatMap((term) => {
+          const detail = term.nextElementSibling;
+          if (!detail) return [`${term.textContent ?? "unknown"}: missing detail`];
+
+          const termBox = term.getBoundingClientRect();
+          const detailBox = detail.getBoundingClientRect();
+
+          return termBox.right > detailBox.left
+            ? [
+                `${term.textContent ?? "unknown"}: ${termBox.right} overlaps ${detailBox.left}`,
+              ]
+            : [];
+        });
+      });
+
+      expect(overlappingConsequenceRows).toEqual([]);
 
       await page.getByRole("button", { name: "Approve once" }).click();
 
