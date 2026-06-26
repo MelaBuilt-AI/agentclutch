@@ -19,11 +19,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md,json,css}\""
   },
   "devDependencies": {
-    "@playwright/test": "latest",
+    "@playwright/test": "1.61.1",
     "@types/node": "latest",
     "eslint": "latest",
     "globals": "^17.7.0",
-    "playwright": "latest",
+    "playwright": "1.61.1",
     "prettier": "latest",
     "tsx": "latest",
     "turbo": "latest",

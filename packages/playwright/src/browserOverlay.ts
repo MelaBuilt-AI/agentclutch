@@ -281,6 +281,10 @@ export function browserOverlayScript(): string {
       ["Blast radius", formatToken(consequence.blast_radius)]
     ];
 
+    if (typeof consequence.description === "string" && consequence.description.length > 0) {
+      rows.push(["Description", consequence.description]);
+    }
+
     if (Array.isArray(consequence.possible_residue) && consequence.possible_residue.length > 0) {
       rows.push(["Possible residue", consequence.possible_residue.map(formatValue).join("; ")]);
     }

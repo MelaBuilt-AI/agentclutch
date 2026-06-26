@@ -15,7 +15,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node --import tsx src/index.ts",
@@ -25,6 +27,6 @@
   "dependencies": {
     "@agentclutch/playwright": "workspace:*",
     "@agentclutch/recorder": "workspace:*",
-    "playwright": "latest"
+    "playwright": "1.61.1"
   }
 }

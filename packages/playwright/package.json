@@ -12,7 +12,9 @@
       "default": "./dist/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
@@ -26,5 +28,8 @@
   },
   "peerDependencies": {
     "playwright": ">=1.45.0"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
   }
 }

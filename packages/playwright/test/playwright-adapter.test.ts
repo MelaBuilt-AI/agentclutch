@@ -57,6 +57,8 @@ describe("attachClutch", () => {
     expect(script).toContain("compensation_hint");
     expect(script).toContain("Reversibility");
     expect(script).toContain("Blast radius");
+    expect(script).toContain("Description");
+    expect(script).toContain("description");
     expect(script).toContain(".ac-actions{position:sticky;bottom:0;");
   });
 
@@ -144,6 +146,8 @@ describe("attachClutch", () => {
 
       expect(overlayText).toContain("AGENTCLUTCH ACTION CARD");
       expect(overlayText).toContain("Payment or purchase");
+      expect(overlayText).toContain("Description");
+      expect(overlayText).toContain("This action may spend money or place an order.");
       expect(overlayText).toContain("Reversibility");
       expect(overlayText).toContain("compensable");
       expect(overlayText).toContain("Blast radius");
