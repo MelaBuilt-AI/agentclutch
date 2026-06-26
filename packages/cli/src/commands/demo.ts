@@ -11,9 +11,10 @@ import { createInterface } from "node:readline/promises";
 import { pathToFileURL } from "node:url";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { chromium, type Page } from "playwright";
+import { chromium, type LaunchOptions, type Page } from "playwright";
 
 const CHECKOUT_UNIT_PRICE_CENTS = 24_900;
+const CHECKOUT_DEMO_VIEWPORT = { width: 1280, height: 900 };
 const RULES_ROOT_DIR = ".agentclutch";
 
 export interface CheckoutEditApplication {
@@ -113,6 +114,16 @@ export function checkoutDemoRule(
   };
 }
 
+export function checkoutDemoBrowserLaunchOptions(): LaunchOptions {
+  return {
+    headless: false,
+    args: [
+      `--window-size=${CHECKOUT_DEMO_VIEWPORT.width},${CHECKOUT_DEMO_VIEWPORT.height}`,
+      "--window-position=80,80",
+    ],
+  };
+}
+
 export async function runCheckoutDemo(
   options: CheckoutDemoOptions = {},
 ): Promise<void> {
@@ -124,18 +135,18 @@ export async function runCheckoutDemo(
   const runId = createRunId();
   const store = new RunStore(RULES_ROOT_DIR);
   const recorder = await store.createRecorder(runId);
-  const browser = await chromium.launch({ headless: false });
+  const browser = await chromium.launch(checkoutDemoBrowserLaunchOptions());
 
   try {
-    const page = await browser.newPage({
-      viewport: { width: 1280, height: 900 },
-    });
+    const page = await browser.newPage({ viewport: CHECKOUT_DEMO_VIEWPORT });
     const demoUrl = pathToFileURL(fakeStorePath()).toString();
 
     console.log("Launching AgentClutch checkout demo...");
     await page.goto(demoUrl);
+    await page.bringToFront();
 
     await simulateAgentPreparation(page);
+    await page.bringToFront();
 
     const clutch = await attachClutch(page, {
       runId,

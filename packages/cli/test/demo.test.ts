@@ -6,6 +6,7 @@ import type { Page } from "playwright";
 import { afterEach, describe, expect, it } from "vitest";
 import {
   applyCheckoutEditPatch,
+  checkoutDemoBrowserLaunchOptions,
   checkoutDemoRule,
   type CheckoutEditDecision,
   completeEditedCheckout,
@@ -122,6 +123,16 @@ describe("applyCheckoutEditPatch", () => {
 });
 
 describe("checkout demo rules", () => {
+  it("uses visible headed browser launch options", () => {
+    expect(checkoutDemoBrowserLaunchOptions()).toEqual({
+      headless: false,
+      args: [
+        "--window-size=1280,900",
+        "--window-position=80,80",
+      ],
+    });
+  });
+
   it("parses checkout demo rule flags", () => {
     expect(
       parseCheckoutDemoArgs(["--clear-rules", "--seed-block-rule"]),

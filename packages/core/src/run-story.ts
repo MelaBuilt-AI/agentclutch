@@ -329,7 +329,7 @@ function collectActionCardSteps(
       timestamp,
       actor: "system",
       action_card_id: card.id,
-      text: `AgentClutch paused before ${card.proposed_action.label} because ${card.consequence.label.toLowerCase()} is ${formatReversibility(card.consequence.reversibility)}.`,
+      text: consequencePauseText(card),
     },
   });
 }
@@ -554,6 +554,32 @@ function formatReversibility(
   value: ActionCard["consequence"]["reversibility"],
 ): string {
   return value.replaceAll("_", " ");
+}
+
+function consequencePauseText(card: ActionCard): string {
+  const details = [
+    `AgentClutch paused before ${card.proposed_action.label} because ${card.consequence.label.toLowerCase()} is ${formatReversibility(card.consequence.reversibility)}`,
+    ...residueDetail(card.consequence.possible_residue),
+    ...compensationDetail(card.consequence.compensation_hint),
+  ].map(trimTerminalPunctuation);
+
+  return `${details.join(". ")}.`;
+}
+
+function residueDetail(possibleResidue: readonly string[] | undefined): string[] {
+  if (possibleResidue === undefined || possibleResidue.length === 0) return [];
+
+  return [`Possible residue: ${possibleResidue.join("; ")}`];
+}
+
+function compensationDetail(compensationHint: string | undefined): string[] {
+  if (compensationHint === undefined || compensationHint.length === 0) return [];
+
+  return [`Compensation: ${compensationHint}`];
+}
+
+function trimTerminalPunctuation(value: string): string {
+  return value.replace(/[.]+$/u, "");
 }
 
 function decisionTimestamp(decision: ClutchDecision): string {

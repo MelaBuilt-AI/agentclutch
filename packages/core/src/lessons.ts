@@ -3,7 +3,7 @@ import type {
   JsonObject,
   JsonValue,
 } from "@agentclutch/action-card";
-import type { ActionPatch, ActionProposal, ClutchDecision } from "@agentclutch/loop";
+import type { ActionProposal, ClutchDecision } from "@agentclutch/loop";
 
 export const LESSON_CONFIDENCE_THRESHOLD = 0.75;
 export const NEW_LESSON_CONFIDENCE = 0.8;

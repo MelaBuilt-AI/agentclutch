@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.6.0-alpha
+v0.7.0-alpha Consequence Engine
 
 Completed:
 
@@ -17,6 +17,10 @@ Completed:
 * Run Story
 * Rules Engine
 * Lesson Engine (Teach Mode)
+* Consequence Registry
+* Action Card Consequence Display
+* Viewer Consequence Display
+* Run Story Consequence Summaries
 
 Verified Working:
 
@@ -29,6 +33,12 @@ Verified Working:
 * Lesson Creation
 * Lesson Reuse
 * Run Story Viewer
+* Consequence Registry Lookup
+* Custom Consequence Registry Entries
+* Reversibility Metadata Display
+* Compensation Metadata Display
+* Residue Metadata Display
+* Run Story Residue And Compensation Summaries
 
 Current Architecture:
 
@@ -38,11 +48,11 @@ ActionProposal
 → LoopResumeContext
 → RunStory
 
-Next Planned Milestone:
+Current Milestone Status:
 
-v0.7 Consequence Engine
+v0.7.0-alpha release-ready after automated FakeStore consequence display verification
 
-Goals:
+Completed v0.7 Goals:
 
 * consequence registry
 * reversibility metadata
@@ -51,6 +61,11 @@ Goals:
 * Action Card consequence display
 * Viewer consequence display
 * Run Story consequence summaries
+
+Next Planned Work:
+
+* tag v0.7.0-alpha
+* publish release notes when approved
 
 Do NOT build yet:
 
@@ -62,4 +77,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-v0.6.0-alpha
+v0.7.0-alpha

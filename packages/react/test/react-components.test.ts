@@ -33,6 +33,9 @@ describe("ActionCard", () => {
     expect(text).toContain("FakeStore");
     expect(text).toContain("Payment or purchase");
     expect(text).toContain("compensable");
+    expect(text).toContain("Order record may be created");
+    expect(text).toContain("Payment authorization may be captured");
+    expect(text).toContain("Cancel order or request refund if available.");
     expect(text).toContain("Selected product");
     expect(text).toContain("#checkout");
     expect(text).toContain("Approve once");
@@ -274,6 +277,11 @@ function cardFixture(
       reversibility: "compensable",
       blast_radius: "single_user",
       requires_confirmation: true,
+      possible_residue: [
+        "Order record may be created",
+        "Payment authorization may be captured",
+      ],
+      compensation_hint: "Cancel order or request refund if available.",
     },
     risk: {
       level: "high",

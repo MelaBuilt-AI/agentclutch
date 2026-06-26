@@ -16,11 +16,13 @@ import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import {
   ClutchSession,
+  DEFAULT_CONSEQUENCE_REGISTRY,
   applyLessonsToProposal,
   buildActionPatchesFromEditedFields,
   captureLessonsFromEdit,
   classifyConsequence,
   createClutch,
+  findConsequenceRegistryEntry,
   generateRunStoryFromJsonl,
   generateRunStory,
   lessonsFilePath,
@@ -138,6 +140,75 @@ function loopEvent<TPayload>(
 }
 
 describe("classifyConsequence", () => {
+  it("exposes the default consequence registry", () => {
+    expect(DEFAULT_CONSEQUENCE_REGISTRY.map((entry) => entry.id)).toEqual([
+      "payment_or_purchase",
+      "external_message_send",
+      "external_business_submission",
+      "local_file_delete",
+      "production_change",
+    ]);
+  });
+
+  it("finds the matching registry entry", () => {
+    const entry = findConsequenceRegistryEntry({
+      kind: "browser.checkout",
+      label: "Complete checkout",
+    });
+
+    expect(entry?.id).toBe("payment_or_purchase");
+  });
+
+  it("supports custom registry entries", () => {
+    const consequence = classifyConsequence(
+      {
+        kind: "oauth.approve",
+        label: "Approve OAuth permissions",
+      },
+      [
+        {
+          id: "identity_or_permission_change",
+          description: "OAuth and permission grants.",
+          match: {
+            includesAny: ["OAUTH", "Permission"],
+          },
+          consequence: {
+            class: "identity_or_permission_change",
+            label: "Identity or permission change",
+            description:
+              "This action may grant access or change account permissions.",
+            reversibility: "not_cleanly_reversible",
+            blast_radius: "single_user",
+            requires_confirmation: true,
+            possible_residue: ["A downstream access grant may remain active"],
+            compensation_hint: "Revoke the permission grant if needed.",
+          },
+        },
+      ],
+    );
+
+    expect(consequence.class).toBe("identity_or_permission_change");
+    expect(consequence.compensation_hint).toBe(
+      "Revoke the permission grant if needed.",
+    );
+  });
+
+  it("returns fresh descriptors from registry entries", () => {
+    const first = classifyConsequence({
+      kind: "browser.checkout",
+      label: "Complete checkout",
+    });
+
+    first.possible_residue?.push("Mutated in caller");
+
+    const second = classifyConsequence({
+      kind: "browser.checkout",
+      label: "Complete checkout",
+    });
+
+    expect(second.possible_residue).not.toContain("Mutated in caller");
+  });
+
   it("classifies checkout consequence", () => {
     const consequence = classifyConsequence({
       kind: "browser.checkout",
@@ -614,13 +685,45 @@ describe("generateRunStory", () => {
     ]);
     expect(story.steps.map((step) => step.text)).toEqual([
       "The agent proposed action: Complete checkout on FakeStore.",
-      "AgentClutch paused before Complete checkout because payment or purchase is compensable.",
+      "AgentClutch paused before Complete checkout because payment or purchase is compensable. Possible residue: Order record may be created; Payment authorization may be captured. Compensation: Cancel order or request refund if available.",
       "tester approved the action once.",
       "AgentClutch returned resume context: the same action can continue; similar actions do not require extra approval.",
       "Final result: Checkout completed in the demo store.",
     ]);
     expect(story.summary).toBe(
       "The run included 1 proposed action(s), 1 AgentClutch pause(s), 1 user decision event(s) and 1 final result event(s).",
+    );
+  });
+
+  it("includes residue and compensation in consequence summaries", () => {
+    const card = testCard();
+    const story = generateRunStory(
+      "run_test_1",
+      [
+        {
+          ...card,
+          consequence: {
+            class: "payment_or_purchase",
+            label: "Payment or purchase",
+            description: "This action may spend money or place an order.",
+            reversibility: "compensable",
+            blast_radius: "single_user",
+            requires_confirmation: true,
+            possible_residue: [
+              "Order record may be created",
+              "Payment authorization may be captured",
+            ],
+            compensation_hint: "Cancel order or request refund if available.",
+          },
+        },
+      ],
+      {
+        createdAt: "2026-06-22T04:02:00.000Z",
+      },
+    );
+
+    expect(story.steps[1]?.text).toBe(
+      "AgentClutch paused before Complete checkout because payment or purchase is compensable. Possible residue: Order record may be created; Payment authorization may be captured. Compensation: Cancel order or request refund if available.",
     );
   });
 

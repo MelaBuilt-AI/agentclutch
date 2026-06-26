@@ -4,7 +4,7 @@ import type {
   JsonObject,
   UserDecision,
 } from "@agentclutch/action-card";
-import type { Page } from "playwright";
+import { chromium, type Page } from "playwright";
 import {
   loadLessons,
   saveLessons,
@@ -12,10 +12,12 @@ import {
 } from "@agentclutch/core";
 import { mkdtemp, readFile, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   attachClutch,
+  browserOverlayScript,
   createRuleFromDecision,
   evaluateRules,
   loadRules,
@@ -46,6 +48,132 @@ afterEach(async () => {
 });
 
 describe("attachClutch", () => {
+  it("browser overlay renders consequence metadata fields", () => {
+    const script = browserOverlayScript();
+
+    expect(script).toContain("Possible residue");
+    expect(script).toContain("possible_residue");
+    expect(script).toContain("Compensation");
+    expect(script).toContain("compensation_hint");
+    expect(script).toContain("Reversibility");
+    expect(script).toContain("Blast radius");
+    expect(script).toContain(".ac-actions{position:sticky;bottom:0;");
+  });
+
+  it("browser overlay resolves a clicked decision in Chromium", async () => {
+    const browser = await chromium.launch({ headless: true });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(
+        '<button id="checkout" type="button">Complete checkout</button>',
+      );
+      await page.addScriptTag({ content: browserOverlayScript() });
+
+      const decisionPromise = page.evaluate((card) => {
+        if (!window.__agentclutchShowActionCard) {
+          throw new Error("AgentClutch browser overlay was not installed.");
+        }
+
+        return window.__agentclutchShowActionCard(card as ActionCard);
+      }, checkoutActionCard());
+
+      await page.getByRole("button", { name: "Approve once" }).click();
+
+      await expect(decisionPromise).resolves.toMatchObject({
+        decision: "approve_once",
+      });
+      await expect(page.locator("[data-agentclutch-root]").count()).resolves.toBe(
+        0,
+      );
+    } finally {
+      await browser.close();
+    }
+  });
+
+  it("renders FakeStore consequence fields before completing checkout in Chromium", async () => {
+    const rootDir = await tempRoot();
+    const browser = await chromium.launch({ headless: true });
+
+    try {
+      const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
+      await page.goto(fakeStoreDemoUrl());
+      await page.locator("#search").fill("noise cancelling headphones");
+      await page.locator("#search-button").click();
+      await page.locator("#select-product").click();
+      await page.locator("#cart-summary").waitFor({ state: "visible" });
+
+      const clutch = await attachClutch(page, {
+        runId: "run_fakestore_consequence_verify",
+        recorder: new MemoryRecorder(),
+        rulesRootDir: rootDir,
+        lessonsRootDir: rootDir,
+      });
+
+      const resultPromise = clutch.click("#checkout", {
+        kind: "browser.checkout",
+        label: "Complete checkout",
+        description: "Complete checkout for Wireless Headphones Pro",
+        targetApp: "FakeStore",
+        changedFields: [
+          { field: "product", after: "Wireless Headphones Pro", editable: false },
+          { field: "quantity", after: 1, editable: true },
+          { field: "total", after: "$249.00", editable: false },
+        ],
+        evidence: [
+          {
+            id: "ev_product_page",
+            label: "Selected product",
+            source_type: "dom",
+            source_ref: "#product-title",
+            summary: "Wireless Headphones Pro is selected in the fake store.",
+          },
+          {
+            id: "ev_cart_total",
+            label: "Cart total",
+            source_type: "dom",
+            source_ref: "#cart-total",
+            summary: "The cart total shown before checkout is $249.00.",
+          },
+        ],
+      });
+
+      const overlay = page.locator("[data-agentclutch-root]");
+      await overlay.waitFor({ state: "visible" });
+      const overlayText = await overlay.innerText();
+
+      expect(overlayText).toContain("AGENTCLUTCH ACTION CARD");
+      expect(overlayText).toContain("Payment or purchase");
+      expect(overlayText).toContain("Reversibility");
+      expect(overlayText).toContain("compensable");
+      expect(overlayText).toContain("Blast radius");
+      expect(overlayText).toContain("single user");
+      expect(overlayText).toContain("Possible residue");
+      expect(overlayText).toContain("Order record may be created");
+      expect(overlayText).toContain("Payment authorization may be captured");
+      expect(overlayText).toContain("Compensation");
+      expect(overlayText).toContain("Cancel order or request refund if available.");
+      expect(overlayText).toContain("The cart total shown before checkout is $249.00.");
+
+      await page.getByRole("button", { name: "Approve once" }).click();
+
+      await expect(resultPromise).resolves.toMatchObject({
+        decision: { type: "approve_once" },
+        executed: true,
+        card: {
+          consequence: {
+            class: "payment_or_purchase",
+            reversibility: "compensable",
+            blast_radius: "single_user",
+          },
+        },
+      });
+      await page.locator("#checkout-result.visible").waitFor({ state: "visible" });
+    } finally {
+      await browser.close();
+    }
+  });
+
   it("approve_once executes click", async () => {
     const page = createFakePage("approve_once");
     const clutch = await attachClutch(page, {
@@ -967,6 +1095,13 @@ async function tempRoot(): Promise<string> {
   const dir = await mkdtemp(join(tmpdir(), "agentclutch-local-"));
   tempDirs.push(dir);
   return dir;
+}
+
+function fakeStoreDemoUrl(): string {
+  const testDir = dirname(fileURLToPath(import.meta.url));
+  return pathToFileURL(
+    join(testDir, "../../../apps/browser-demo/public/fake-store.html"),
+  ).toString();
 }
 
 function checkoutLesson(overrides: Partial<Lesson> = {}): Lesson {

@@ -98,12 +98,7 @@ export function ActionCard({
         "section",
         { className: "ac-section", "aria-label": "Consequence and risk" },
         h("h3", {}, "Consequence and risk"),
-        definitionList([
-          ["Consequence", card.consequence.label],
-          ["Risk", card.risk.level],
-          ["Reversibility", formatToken(card.consequence.reversibility)],
-          ["Blast radius", formatToken(card.consequence.blast_radius)],
-        ]),
+        definitionList(consequenceRows(card)),
       ),
     ),
     changedFields.length === 0
@@ -211,6 +206,30 @@ function definitionList(rows: Array<[string, string]>): ReactElement {
       h("dd", { key: `${label}-value` }, value),
     ]),
   );
+}
+
+function consequenceRows(card: ActionCardModel): Array<[string, string]> {
+  return [
+    ["Consequence", card.consequence.label],
+    ["Risk", card.risk.level],
+    ["Reversibility", formatToken(card.consequence.reversibility)],
+    ["Blast radius", formatToken(card.consequence.blast_radius)],
+    ...optionalRow("Possible residue", card.consequence.possible_residue),
+    ...optionalRow("Compensation", card.consequence.compensation_hint),
+  ];
+}
+
+function optionalRow(
+  label: string,
+  value: string | readonly string[] | undefined,
+): Array<[string, string]> {
+  if (value === undefined) return [];
+
+  if (typeof value === "string") {
+    return value.length === 0 ? [] : [[label, value]];
+  }
+
+  return value.length === 0 ? [] : [[label, value.join("; ")]];
 }
 
 function formatToken(value: string): string {
