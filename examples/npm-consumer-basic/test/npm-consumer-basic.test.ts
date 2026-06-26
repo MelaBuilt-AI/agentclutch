@@ -6,10 +6,14 @@ const execFileAsync = promisify(execFile);
 
 describe("npm consumer basic example", () => {
   it("prints an approved Action Card summary", async () => {
-    const { stdout } = await execFileAsync("pnpm", ["exec", "tsx", "src/index.ts"], {
-      cwd: new URL("..", import.meta.url),
-      timeout: 10_000,
-    });
+    const { stdout } = await execFileAsync(
+      process.execPath,
+      ["--import", "tsx", "src/index.ts"],
+      {
+        cwd: new URL("..", import.meta.url),
+        timeout: 10_000,
+      },
+    );
 
     const summary = JSON.parse(stdout) as {
       cardType: string;
