@@ -72,14 +72,25 @@ The first npm alpha is published as `0.7.3-alpha.0`. Install only the package yo
 pnpm add @agentclutch/core@alpha
 pnpm add @agentclutch/react@alpha
 pnpm add @agentclutch/playwright@alpha playwright
+pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
 
-Run the CLI demo from npm:
+Verify the npm-installed CLI without a source checkout, after the next npm alpha publish:
 
 ```bash
-pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
+pnpm dlx @agentclutch/cli@alpha smoke
 ```
+
+The smoke command is intentionally lightweight. It confirms that the registry CLI entrypoint and Node runtime work, and it does not require local FakeStore demo assets. Until the next npm alpha is published, use `pnpm dlx @agentclutch/cli@alpha --help` as the current registry sanity check.
+
+Run the CLI demo from a source checkout:
+
+```bash
+pnpm demo:checkout --seed-allow-rule
+```
+
+Registry-based FakeStore demos are limited for now because the npm CLI package does not bundle the browser-demo app assets.
 
 ## Minimal npm consumer example
 
@@ -104,4 +115,5 @@ The example imports only from `@agentclutch/core`, creates one email-send Action
 - AgentClutch is alpha-stage and local-first.
 - It is not a generic agent framework, hosted approval service, browser agent, chat UI, or observability dashboard.
 - npm currently exposes the first alpha as both `alpha` and `latest`; prefer explicit `@alpha` installs until stable.
+- The registry CLI smoke command works without a checkout; the full FakeStore demo currently needs this repo's local demo assets.
 - See [Known Limitations](limitations.md) for the full alpha caveat list.

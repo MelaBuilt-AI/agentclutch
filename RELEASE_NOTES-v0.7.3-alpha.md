@@ -42,6 +42,7 @@ The root monorepo remains private in npm terms (`private: true`) and should neve
 pnpm add @agentclutch/core@alpha
 pnpm add @agentclutch/react@alpha
 pnpm add @agentclutch/playwright@alpha playwright
+pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
 
@@ -65,11 +66,13 @@ xvfb-run -a pnpm demo:checkout --seed-block-rule
 pnpm agentclutch inspect latest
 ```
 
-CLI path:
+Registry-safe CLI smoke path, available after the next npm alpha publish:
 
 ```bash
-pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
+pnpm dlx @agentclutch/cli@alpha smoke
 ```
+
+The full FakeStore browser demo currently expects local demo assets from a source checkout.
 
 ## Known caveats
 

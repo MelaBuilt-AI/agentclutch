@@ -41,6 +41,7 @@ These integrations are not included yet:
 ## Demo and automation caveats
 
 - The interactive browser demo needs a GUI and a human decision for `require_clutch` flows.
+- The npm CLI package has a registry-safe `smoke` command in source for the next alpha publish, but the full FakeStore browser demo currently requires demo assets from a source checkout.
 - In WSL, CI, or terminal-only automation, prefer seeded flows:
 
 ```bash

@@ -66,11 +66,13 @@ The demo is intentionally local. It uses a fake store page, local rules, local l
 
 ![GIF: FakeStore checkout demo flow](docs/assets/fakestore-demo.gif)
 
-Public npm alpha CLI command:
+Public npm alpha CLI smoke command, available from source and the next npm alpha publish:
 
 ```bash
-pnpm dlx @agentclutch/cli@alpha demo checkout
+pnpm dlx @agentclutch/cli@alpha smoke
 ```
+
+The smoke command verifies the npm-installed CLI entrypoint without needing a source checkout. Until the next npm alpha is published, the current registry sanity check is `pnpm dlx @agentclutch/cli@alpha --help`. The full FakeStore browser demo currently uses local demo assets from this repo; from a clone, run `pnpm demo:checkout --seed-allow-rule`.
 
 ## Quick Start
 
@@ -246,7 +248,7 @@ You can also summarize the latest recorded run from the CLI after building:
 pnpm agentclutch inspect latest
 ```
 
-The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha --help`.
+The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha --help` today and `pnpm dlx @agentclutch/cli@alpha smoke` after the next npm alpha publish.
 
 ## Packages
 

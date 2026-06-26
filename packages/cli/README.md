@@ -11,16 +11,19 @@ This package is part of [AgentClutch](https://github.com/MelaBuilt-AI/agentclutc
 ## Run without installing
 
 ```bash
+pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
 
 ## Minimal usage
 
-Run a seeded local checkout demo from npm:
+Verify that the registry CLI entrypoint works on a clean machine after this package version is published:
 
 ```bash
-pnpm dlx @agentclutch/cli@alpha demo checkout --seed-allow-rule
+pnpm dlx @agentclutch/cli@alpha smoke
 ```
+
+The smoke command is registry-safe: it does not need a source checkout, browser demo assets, or Playwright browser installation. Until this version is published, use `pnpm dlx @agentclutch/cli@alpha --help` against the current npm alpha.
 
 Inspect the latest local run from a repo or project that has `.agentclutch/runs`:
 
@@ -34,6 +37,8 @@ From a cloned AgentClutch repo, the equivalent local scripts are:
 pnpm demo:checkout --seed-allow-rule
 pnpm agentclutch inspect latest
 ```
+
+Current limitation: the full FakeStore browser demo uses local assets from the source repo. From npm, use `agentclutch smoke` once available and `agentclutch --help`; run browser demos from a clone until the CLI package bundles or fetches demo assets.
 
 ## Package role
 
