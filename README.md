@@ -4,7 +4,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.0-alpha`. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, and Run Story playback.
+Current milestone: `v0.7.1-alpha`. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React UI components, rules, lessons, consequence metadata, and Run Story playback.
 
 ## 30-Second Explanation
 
@@ -293,7 +293,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.0-alpha Consequence Engine`
+Current: `v0.7.1-alpha Launch Prep Polish`
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.0-alpha Consequence Engine
+v0.7.1-alpha Launch Prep Polish
 
 Completed:
 
@@ -50,7 +50,7 @@ ActionProposal
 
 Current Milestone Status:
 
-v0.7.0-alpha release-ready after automated FakeStore consequence display verification
+v0.7.1-alpha published as pre-launch demo polish candidate after browser overlay layout, Playwright version pinning, and CI browser-install fixes
 
 Completed v0.7 Goals:
 
@@ -64,8 +64,8 @@ Completed v0.7 Goals:
 
 Next Planned Work:
 
-* tag v0.7.0-alpha
-* publish release notes when approved
+* review design doc against current implementation
+* resolve launch-prep gaps before public launch decision
 
 Do NOT build yet:
 
@@ -77,4 +77,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-v0.7.0-alpha
+v0.7.1-alpha
