@@ -233,6 +233,12 @@ http://127.0.0.1:5173/
 
 ![Action Card viewer placeholder](docs/assets/action-card-viewer-placeholder.svg)
 
+You can also summarize the latest recorded run from the CLI after building:
+
+```bash
+node packages/cli/dist/index.js inspect latest
+```
+
 ## Packages
 
 | Package | Purpose |
@@ -243,7 +249,7 @@ http://127.0.0.1:5173/
 | `@agentclutch/recorder` | Local JSONL run recording. |
 | `@agentclutch/playwright` | Explicit browser action wrapper and local rule evaluation. |
 | `@agentclutch/react` | Reusable Action Card and Run Story UI components. |
-| `@agentclutch/cli` | Local demo commands. |
+| `@agentclutch/cli` | Local demo commands and run inspection. |
 
 Apps:
 
@@ -285,6 +291,7 @@ pnpm build
 pnpm typecheck
 pnpm test
 pnpm demo:checkout --clear-rules
+node packages/cli/dist/index.js inspect latest
 ```
 
 ## Roadmap

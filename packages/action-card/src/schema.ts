@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { JsonObject, JsonValue } from "./types";
+import type { JsonObject, JsonValue } from "./types.js";
 
 export const ActionSurfaceSchema = z.enum([
   "browser",

@@ -8,7 +8,7 @@ import type {
   ProposedAction,
   RiskDescriptor,
   UserOption
-} from "./types";
+} from "./types.js";
 
 export interface BuildActionCardInput {
   id: string;

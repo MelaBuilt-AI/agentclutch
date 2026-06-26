@@ -318,6 +318,17 @@ Lessons are correction memory:
 
 Expected Run Story language should describe the proposed checkout, the pause before the consequential action, the human decision, any lesson events, and the resume context.
 
+## CLI Run Inspection
+
+After any demo run, summarize the latest local recorder events:
+
+```bash
+pnpm build
+node packages/cli/dist/index.js inspect latest
+```
+
+Expected output includes the run id, event count, latest Action Card, consequence, risk, and final decision.
+
 ## Close
 
 End with:

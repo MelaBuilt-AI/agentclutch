@@ -1,6 +1,6 @@
 import type { ZodIssue } from "zod";
-import { ActionCardSchema } from "./schema";
-import type { ActionCard } from "./types";
+import { ActionCardSchema } from "./schema.js";
+import type { ActionCard } from "./types.js";
 
 export class ActionCardValidationError extends Error {
   public readonly issues: ZodIssue[];
