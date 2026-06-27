@@ -1,0 +1,90 @@
+site_name: AgentClutch Docs
+site_description: Local-first Action Card and takeover UX layer for consequential AI agent actions.
+site_url: https://agentclutch.melabuilt.ai/docs/
+repo_url: https://github.com/MelaBuilt-AI/agentclutch
+repo_name: MelaBuilt-AI/agentclutch
+edit_uri: edit/main/docs/
+
+docs_dir: docs
+site_dir: docs-build
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: red
+      accent: pink
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode
+    - scheme: default
+      primary: red
+      accent: pink
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - navigation.top
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/target
+
+nav:
+  - Home: index.md
+  - Quick Start: quickstart.md
+  - Architecture: architecture.md
+  - Action Cards: action-cards.md
+  - Loops: loops.md
+  - Recorder: recorder.md
+  - Run Story: run-story.md
+  - Playwright: playwright.md
+  - React Components: react-components.md
+  - Limitations: limitations.md
+  - Demo Script: demo-script.md
+  - npm Publishing: npm-publishing.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+  - def_list
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/MelaBuilt-AI/agentclutch
+    - icon: fontawesome/brands/npm
+      link: https://www.npmjs.com/package/@agentclutch/core
+  generator: false
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - search
