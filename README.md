@@ -11,7 +11,25 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha.1` is public on GitHub and published to npm as the latest alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+Current milestone: `v0.7.3-alpha.2` is public on GitHub and published to npm as the latest alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+
+## npm Packages
+
+All public packages are published on the npm registry under the [`@agentclutch`](https://www.npmjs.com/org/agentclutch) scope. Use the explicit `@alpha` tag while the APIs are pre-stable.
+
+| Package | npm | Purpose |
+| --- | --- | --- |
+| [`@agentclutch/action-card`](https://www.npmjs.com/package/@agentclutch/action-card) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/action-card/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/action-card) | Action Card types, schemas, builders, and validation |
+| [`@agentclutch/loop`](https://www.npmjs.com/package/@agentclutch/loop) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/loop/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/loop) | Loop events, normalization, adapters, and resume context |
+| [`@agentclutch/recorder`](https://www.npmjs.com/package/@agentclutch/recorder) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/recorder/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/recorder) | Local JSONL recording and run storage |
+| [`@agentclutch/core`](https://www.npmjs.com/package/@agentclutch/core) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/core/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/core) | Main AgentClutch SDK and consequence engine |
+| [`@agentclutch/react`](https://www.npmjs.com/package/@agentclutch/react) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/react/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/react) | React-compatible Action Card and takeover components |
+| [`@agentclutch/playwright`](https://www.npmjs.com/package/@agentclutch/playwright) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/playwright/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/playwright) | Playwright clutch points and browser overlay |
+| [`@agentclutch/cli`](https://www.npmjs.com/package/@agentclutch/cli) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/cli/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/cli) | CLI smoke, demos, and local run inspection |
+
+```bash
+pnpm dlx @agentclutch/cli@alpha smoke
+```
 
 ## 30-Second Explanation
 
