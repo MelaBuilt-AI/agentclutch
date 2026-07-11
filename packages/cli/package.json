@@ -1,6 +1,6 @@
 {
   "name": "@agentclutch/cli",
-  "version": "0.7.3-alpha.1",
+  "version": "0.7.3-alpha.2",
   "description": "CLI for AgentClutch demos and local run inspection.",
   "license": "Apache-2.0",
   "type": "module",
