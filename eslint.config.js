@@ -9,6 +9,8 @@ export default tseslint.config(
       "**/.turbo/**",
       "**/.agentclutch/**",
       "**/coverage/**",
+      "deploy/docs/**",
+      "site/docs-build/**",
     ],
   },
   ...tseslint.configs.recommended,
