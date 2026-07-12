@@ -5648,32 +5648,36 @@ jobs:
       - run: pnpm test
 ```
 
-`.github/workflows/release.yml`:
+`.github/workflows/stage-alpha.yml`:
 
 ```yaml
-name: Release
+name: Stage npm Alpha
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
-  release:
+  stage:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
-          cache: pnpm
+          package-manager-cache: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
-      - run: pnpm -r publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm stage publish <verified-package-tarball> --tag alpha --access public
 ```
+
+> **Release security requirement:** The implemented workflow validates exact tag/version agreement and all seven tarballs before staging them in dependency order. GitHub Actions OIDC may perform `npm stage publish` only, and a maintainer must approve staged packages on npmjs.com with 2FA. See `docs/npm-publishing.md` for the complete procedure. No long-lived npm publish token or OTP belongs in GitHub secrets.
 
 ---
 
