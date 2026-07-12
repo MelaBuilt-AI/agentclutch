@@ -102,6 +102,58 @@ test("verify-tree rejects nested AgentClutch version skew", (t) => {
   );
 });
 
+function runTreeFixture(t, tree, version = "0.7.3-alpha.3") {
+  const root = mkdtempSync(join(tmpdir(), "agentclutch-tree-test-"));
+  t.after(() => rmSync(root, { force: true, recursive: true }));
+  const treePath = join(root, "npm-tree.json");
+  writeFileSync(treePath, `${JSON.stringify(tree)}\n`);
+  return runRelease("verify-tree", "--version", version, "--tree", treePath);
+}
+
+test("verify-tree rejects a missing root AgentClutch package", (t) => {
+  const tree = createDependencyTree("0.7.3-alpha.3");
+  delete tree.dependencies["@agentclutch/cli"];
+
+  const result = runTreeFixture(t, tree);
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /@agentclutch\/cli is missing at the dependency-tree root or does not equal 0\.7\.3-alpha\.3/,
+  );
+});
+
+test("verify-tree rejects a wrong root AgentClutch version", (t) => {
+  const tree = createDependencyTree("0.7.3-alpha.3");
+  tree.dependencies["@agentclutch/cli"].version = "0.7.3-alpha.2";
+
+  const result = runTreeFixture(t, tree);
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /@agentclutch\/cli is missing at the dependency-tree root or does not equal 0\.7\.3-alpha\.3/,
+  );
+});
+
+test("verify-tree rejects deeply nested AgentClutch version skew", (t) => {
+  const tree = createDependencyTree("0.7.3-alpha.3");
+  tree.dependencies["@agentclutch/core"].dependencies[
+    "@agentclutch/loop"
+  ].dependencies["@agentclutch/recorder"] = {
+    version: "0.7.3-alpha.2",
+    dependencies: {},
+  };
+
+  const result = runTreeFixture(t, tree);
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /@agentclutch\/recorder appears in the npm dependency tree as 0\.7\.3-alpha\.2; expected 0\.7\.3-alpha\.3/,
+  );
+});
+
 const packageNames = [
   "@agentclutch/action-card",
   "@agentclutch/loop",
