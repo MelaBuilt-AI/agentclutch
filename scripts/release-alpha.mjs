@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { gunzipSync } from "node:zlib";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -30,9 +35,10 @@ switch (command) {
     verifyVersions(requiredOption("--version"));
     break;
   case "stage":
-    stagePackages({
+    await stagePackages({
       version: requiredOption("--version"),
       destination: requiredOption("--destination"),
+      evidencePath: option("--evidence"),
       dryRun: args.includes("--dry-run"),
     });
     break;
@@ -140,28 +146,62 @@ function verifyVersions(version) {
   console.log(`All release manifests match ${version}`);
 }
 
-function stagePackages({ version, destination, dryRun }) {
+async function stagePackages({ version, destination, evidencePath, dryRun }) {
   assertAlphaVersion(version);
-  const tarballsByName = inspectPackedTarballs(destination, version);
+  if (process.platform === "win32") {
+    throw new Error(
+      "Tarball validation and real npm staging are supported only on the GitHub-hosted Linux release job.",
+    );
+  }
+  const tarballsByName = await inspectPackedTarballs(destination, version);
+  const evidence = {
+    version,
+    destination: resolve(destination),
+    startedAt: new Date().toISOString(),
+    completedAt: null,
+    results: [],
+  };
+  writeStageEvidence(evidencePath, evidence);
 
   for (const pkg of publishablePackages) {
     const tarball = tarballsByName.get(pkg.name);
     console.log(`STAGE ${pkg.name} ${tarball}`);
-    if (!dryRun) {
-      run("npm", [
-        "stage",
-        "publish",
-        tarball,
-        "--tag",
-        "alpha",
-        "--access",
-        "public",
-      ]);
+    if (dryRun) {
+      continue;
+    }
+
+    const result = runCaptured("npm", [
+      "stage",
+      "publish",
+      tarball,
+      "--tag",
+      "alpha",
+      "--access",
+      "public",
+    ]);
+    evidence.results.push({
+      package: pkg.name,
+      tarball,
+      exitCode: result.status,
+      error: result.error?.message ?? null,
+      stdout: result.stdout ?? "",
+      stderr: result.stderr ?? "",
+    });
+    writeStageEvidence(evidencePath, evidence);
+
+    if (result.status !== 0) {
+      throw new Error(
+        `npm stage publish failed for ${pkg.name} with exit code ${result.status}. ` +
+          "Earlier packages may already be staged; inspect the evidence artifact and reject partial stages on npmjs.com before retrying.",
+      );
     }
   }
+
+  evidence.completedAt = new Date().toISOString();
+  writeStageEvidence(evidencePath, evidence);
 }
 
-function inspectPackedTarballs(destination, version) {
+async function inspectPackedTarballs(destination, version) {
   const expectedNames = new Set(publishablePackages.map((pkg) => pkg.name));
   const tarballsByName = new Map();
   const tarballPaths = readdirSync(destination)
@@ -169,7 +209,7 @@ function inspectPackedTarballs(destination, version) {
     .map((fileName) => resolve(destination, fileName));
 
   for (const tarballPath of tarballPaths) {
-    const manifest = readPackedManifest(tarballPath);
+    const manifest = await readPackedManifest(tarballPath);
     if (!expectedNames.has(manifest.name)) {
       throw new Error(
         `${tarballPath} contains unexpected package ${manifest.name}.`,
@@ -195,40 +235,82 @@ function inspectPackedTarballs(destination, version) {
   return tarballsByName;
 }
 
-function readPackedManifest(tarballPath) {
-  const archive = gunzipSync(readFileSync(tarballPath));
-  let offset = 0;
-
-  while (offset + 512 <= archive.length) {
-    const header = archive.subarray(offset, offset + 512);
-    const name = readTarString(header, 0, 100);
-    if (name === "") {
-      break;
-    }
-
-    const sizeText = readTarString(header, 124, 12).trim();
-    const size = Number.parseInt(sizeText || "0", 8);
-    if (!Number.isFinite(size) || size < 0) {
-      throw new Error(`${tarballPath} has an invalid tar entry size.`);
-    }
-
-    const dataOffset = offset + 512;
-    if (name === "package/package.json") {
-      return JSON.parse(
-        archive.subarray(dataOffset, dataOffset + size).toString("utf8"),
-      );
-    }
-
-    offset = dataOffset + Math.ceil(size / 512) * 512;
+async function readPackedManifest(tarballPath) {
+  const listing = runCaptured("tar", ["-tzf", tarballPath]);
+  if (listing.status !== 0) {
+    throw new Error(
+      `${tarballPath} is not a valid gzip-compressed tar archive: ${listing.stderr ?? listing.error?.message ?? "tar failed"}`,
+    );
+  }
+  const manifestEntries = listing.stdout
+    .split(/\r?\n/)
+    .map((entry) => entry.replace(/^\.\//, ""))
+    .filter((entry) => entry === "package/package.json");
+  if (manifestEntries.length !== 1) {
+    throw new Error(
+      `${tarballPath} must contain exactly one regular package/package.json entry.`,
+    );
   }
 
-  throw new Error(`${tarballPath} does not contain package/package.json.`);
+  const npmInspection = runCaptured("npm", [
+    "publish",
+    tarballPath,
+    "--dry-run",
+    "--json",
+    "--tag",
+    "alpha",
+    "--access",
+    "public",
+  ]);
+  if (npmInspection.status !== 0) {
+    throw new Error(
+      `${tarballPath} failed npm's own publish dry-run inspection: ${npmInspection.stderr ?? npmInspection.error?.message ?? "npm failed"}`,
+    );
+  }
+
+  let report;
+  try {
+    report = JSON.parse(npmInspection.stdout);
+  } catch (error) {
+    throw new Error(
+      `${tarballPath} produced invalid npm inspection JSON: ${error.message}`,
+    );
+  }
+  const inspectedPackage =
+    report?.name !== undefined && report?.version !== undefined
+      ? report
+      : Object.values(report).length === 1
+        ? Object.values(report)[0]
+        : undefined;
+  if (
+    inspectedPackage?.name === undefined ||
+    inspectedPackage?.version === undefined
+  ) {
+    throw new Error(
+      `${tarballPath} produced an unexpected npm inspection report.`,
+    );
+  }
+  return { name: inspectedPackage.name, version: inspectedPackage.version };
 }
 
-function readTarString(buffer, offset, length) {
-  const raw = buffer.subarray(offset, offset + length);
-  const nul = raw.indexOf(0);
-  return raw.subarray(0, nul === -1 ? raw.length : nul).toString("utf8");
+function writeStageEvidence(evidencePath, evidence) {
+  if (evidencePath === undefined) {
+    return;
+  }
+  writeFileSync(
+    resolve(evidencePath),
+    `${JSON.stringify(evidence, null, 2)}\n`,
+    "utf8",
+  );
+}
+
+function runCaptured(commandName, commandArgs) {
+  console.log(`$ ${commandName} ${commandArgs.join(" ")}`);
+  return spawnSync(commandName, commandArgs, {
+    cwd: repoRoot,
+    encoding: "utf8",
+    shell: false,
+  });
 }
 
 function runForPublishablePackages(script, scriptArgs) {
@@ -297,18 +379,37 @@ function writeJson(relativePath, value) {
 }
 
 function run(commandName, commandArgs) {
+  const invocation = resolveCommand(commandName, commandArgs);
   console.log(`$ ${commandName} ${commandArgs.join(" ")}`);
-  const result = spawnSync(commandName, commandArgs, {
+  const result = spawnSync(invocation.command, invocation.args, {
     cwd: repoRoot,
-    shell: process.platform === "win32",
+    shell: false,
     stdio: "inherit",
   });
 
   if (result.status !== 0) {
     throw new Error(
-      `${basename(commandName)} failed with exit code ${result.status}`,
+      `${basename(commandName)} failed with exit code ${result.status ?? "unknown"}`,
     );
   }
+}
+
+function resolveCommand(commandName, commandArgs) {
+  if (process.platform !== "win32" || commandName !== "pnpm") {
+    return { command: commandName, args: commandArgs };
+  }
+
+  const pnpmHome = process.env.PNPM_HOME;
+  const pnpmCli =
+    pnpmHome === undefined
+      ? undefined
+      : resolve(pnpmHome, "..", "pnpm", "bin", "pnpm.cjs");
+  if (pnpmCli === undefined || !existsSync(pnpmCli)) {
+    throw new Error(
+      "Cannot resolve the pnpm JavaScript entrypoint on Windows. Run through pnpm/action-setup or set PNPM_HOME.",
+    );
+  }
+  return { command: process.execPath, args: [pnpmCli, ...commandArgs] };
 }
 
 function printHelp() {
@@ -320,8 +421,9 @@ Usage:
   node scripts/release-alpha.mjs bump --version 0.7.3-alpha.1
   node scripts/release-alpha.mjs verify-version --version 0.7.3-alpha.1
   node scripts/release-alpha.mjs stage --version 0.7.3-alpha.1 --destination /tmp/agentclutch-npm-pack --dry-run
+  node scripts/release-alpha.mjs stage --version 0.7.3-alpha.1 --destination /tmp/agentclutch-npm-pack --evidence npm-stage-evidence.json
   node scripts/release-alpha.mjs dry-run
   node scripts/release-alpha.mjs pack --destination /tmp/agentclutch-npm-pack
 
-This helper intentionally does not run real npm publish. Publish remains a manual maintainer action gated by npm auth and 2FA.`);
+This helper never runs direct npm publish. The trusted GitHub Actions release job may stage verified tarballs through OIDC; a maintainer must still review and approve every staged package with npm 2FA.`);
 }
