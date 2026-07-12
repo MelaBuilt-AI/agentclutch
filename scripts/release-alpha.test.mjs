@@ -60,6 +60,7 @@ function createPackedFixtures(version, overrides = {}) {
       ["pack", "--silent", "--pack-destination", destination],
       {
         cwd: packageDir,
+        shell: process.platform === "win32",
         stdio: "pipe",
       },
     );
