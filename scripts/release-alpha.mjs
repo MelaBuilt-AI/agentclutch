@@ -172,6 +172,7 @@ async function stagePackages({ version, destination, evidencePath, dryRun }) {
       "alpha",
       "--access",
       "public",
+      "--ignore-scripts",
     ]);
     evidence.results.push({
       package: pkg.name,
@@ -255,6 +256,7 @@ async function readPackedManifest(tarballPath) {
     "alpha",
     "--access",
     "public",
+    "--ignore-scripts",
   ]);
   if (npmInspection.status !== 0) {
     throw new Error(
