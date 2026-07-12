@@ -1,6 +1,12 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -17,6 +23,7 @@ const publishablePackages = [
 
 const command = process.argv[2] ?? "help";
 const args = process.argv.slice(3);
+let evidenceWriteSequence = 0;
 
 switch (command) {
   case "check":
@@ -164,6 +171,20 @@ async function stagePackages({ version, destination, evidencePath, dryRun }) {
       continue;
     }
 
+    const stageResult = {
+      package: pkg.name,
+      tarball,
+      state: "attempting",
+      startedAt: new Date().toISOString(),
+      completedAt: null,
+      exitCode: null,
+      error: null,
+      stdout: "",
+      stderr: "",
+    };
+    evidence.results.push(stageResult);
+    writeStageEvidence(evidencePath, evidence);
+
     const result = runCaptured("npm", [
       "stage",
       "publish",
@@ -174,9 +195,9 @@ async function stagePackages({ version, destination, evidencePath, dryRun }) {
       "public",
       "--ignore-scripts",
     ]);
-    evidence.results.push({
-      package: pkg.name,
-      tarball,
+    Object.assign(stageResult, {
+      state: result.status === 0 ? "completed" : "failed",
+      completedAt: new Date().toISOString(),
       exitCode: result.status,
       error: result.error?.message ?? null,
       stdout: result.stdout ?? "",
@@ -243,7 +264,7 @@ async function readPackedManifest(tarballPath) {
     .filter((entry) => entry === "package/package.json");
   if (manifestEntries.length !== 1) {
     throw new Error(
-      `${tarballPath} must contain exactly one regular package/package.json entry.`,
+      `${tarballPath} must contain exactly one package/package.json entry.`,
     );
   }
 
@@ -293,11 +314,13 @@ function writeStageEvidence(evidencePath, evidence) {
   if (evidencePath === undefined) {
     return;
   }
-  writeFileSync(
-    resolve(evidencePath),
-    `${JSON.stringify(evidence, null, 2)}\n`,
-    "utf8",
-  );
+  const targetPath = resolve(evidencePath);
+  const temporaryPath = `${targetPath}.${process.pid}.${++evidenceWriteSequence}.tmp`;
+  writeFileSync(temporaryPath, `${JSON.stringify(evidence, null, 2)}\n`, {
+    encoding: "utf8",
+    mode: 0o600,
+  });
+  renameSync(temporaryPath, targetPath);
 }
 
 function runCaptured(commandName, commandArgs) {

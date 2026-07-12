@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
+import { once } from "node:events";
 import {
   chmodSync,
+  existsSync,
   mkdtempSync,
   mkdirSync,
   readFileSync,
@@ -14,6 +16,7 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { setTimeout as delay } from "node:timers/promises";
 import test from "node:test";
 
 const runRelease = (...args) => runReleaseWithEnv({}, ...args);
@@ -174,7 +177,7 @@ test(
     );
 
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, /exactly one regular package\/package\.json/);
+    assert.match(result.stderr, /exactly one package\/package\.json/);
   },
 );
 
@@ -227,6 +230,9 @@ const previous = existsSync(process.env.NPM_FAKE_LOG)
   : 0;
 const attempt = previous + 1;
 appendFileSync(process.env.NPM_FAKE_LOG, JSON.stringify(args) + "\\n");
+if (Number(process.env.NPM_SLEEP_AT ?? 0) === attempt) {
+  await new Promise((resolve) => setTimeout(resolve, 60_000));
+}
 console.log(JSON.stringify({ stageId: \`fake-stage-\${attempt}\` }));
 if (Number(process.env.NPM_FAIL_AT ?? 0) === attempt) process.exit(9);
 `,
@@ -312,6 +318,74 @@ test(
         ["@agentclutch/action-card", 0],
         ["@agentclutch/loop", 0],
         ["@agentclutch/recorder", 9],
+      ],
+    );
+  },
+);
+
+test(
+  "an interrupted stage leaves valid evidence for the in-flight package",
+  { skip: process.platform === "win32", timeout: 30_000 },
+  async (t) => {
+    const version = "0.7.3-alpha.3";
+    const { destination, root } = createPackedFixtures(version);
+    t.after(() => rmSync(root, { force: true, recursive: true }));
+    const { bin, log, realNpm } = createFakeNpm(root);
+    const evidencePath = join(root, "stage-evidence.json");
+    const child = spawn(
+      process.execPath,
+      [
+        "scripts/release-alpha.mjs",
+        "stage",
+        "--version",
+        version,
+        "--destination",
+        destination,
+        "--evidence",
+        evidencePath,
+      ],
+      {
+        cwd: new URL("..", import.meta.url),
+        env: {
+          ...process.env,
+          PATH: `${bin}:${process.env.PATH}`,
+          NPM_FAKE_LOG: log,
+          NPM_SLEEP_AT: "3",
+          REAL_NPM: realNpm,
+        },
+        detached: true,
+        stdio: ["ignore", "pipe", "pipe"],
+      },
+    );
+
+    const deadline = Date.now() + 20_000;
+    while (
+      (!existsSync(log) ||
+        readFileSync(log, "utf8").trim().split("\n").filter(Boolean).length <
+          3) &&
+      Date.now() < deadline
+    ) {
+      await delay(25);
+    }
+    assert.ok(existsSync(log), "fake npm never started");
+    assert.equal(
+      readFileSync(log, "utf8").trim().split("\n").filter(Boolean).length,
+      3,
+      "third staging attempt never started",
+    );
+
+    const exited = once(child, "exit");
+    process.kill(-child.pid, "SIGTERM");
+    await exited;
+
+    const evidence = JSON.parse(readFileSync(evidencePath, "utf8"));
+    assert.equal(evidence.results.length, 3);
+    assert.deepEqual(
+      evidence.results.map((entry) => [entry.package, entry.state]),
+      [
+        ["@agentclutch/action-card", "completed"],
+        ["@agentclutch/loop", "completed"],
+        ["@agentclutch/recorder", "attempting"],
       ],
     );
   },
