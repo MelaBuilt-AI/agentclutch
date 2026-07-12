@@ -43,6 +43,65 @@ test("verify-version accepts the alpha version committed in every publishable ma
   );
 });
 
+function createDependencyTree(version, nestedVersion = version) {
+  const dependencies = Object.fromEntries(
+    packageNames.map((name) => [name, { version, dependencies: {} }]),
+  );
+  dependencies["@agentclutch/core"].dependencies["@agentclutch/loop"] = {
+    version: nestedVersion,
+    dependencies: {},
+  };
+  return { name: "agentclutch-registry-smoke", version: "1.0.0", dependencies };
+}
+
+test("verify-tree accepts exact root and nested AgentClutch versions", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "agentclutch-tree-test-"));
+  t.after(() => rmSync(root, { force: true, recursive: true }));
+  const treePath = join(root, "npm-tree.json");
+  writeFileSync(
+    treePath,
+    `${JSON.stringify(createDependencyTree("0.7.3-alpha.3"))}\n`,
+  );
+
+  const result = runRelease(
+    "verify-tree",
+    "--version",
+    "0.7.3-alpha.3",
+    "--tree",
+    treePath,
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(
+    result.stdout,
+    /All AgentClutch dependency-tree nodes match 0\.7\.3-alpha\.3/,
+  );
+});
+
+test("verify-tree rejects nested AgentClutch version skew", (t) => {
+  const root = mkdtempSync(join(tmpdir(), "agentclutch-tree-test-"));
+  t.after(() => rmSync(root, { force: true, recursive: true }));
+  const treePath = join(root, "npm-tree.json");
+  writeFileSync(
+    treePath,
+    `${JSON.stringify(createDependencyTree("0.7.3-alpha.3", "0.7.3-alpha.2"))}\n`,
+  );
+
+  const result = runRelease(
+    "verify-tree",
+    "--version",
+    "0.7.3-alpha.3",
+    "--tree",
+    treePath,
+  );
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /@agentclutch\/loop appears in the npm dependency tree as 0\.7\.3-alpha\.2; expected 0\.7\.3-alpha\.3/,
+  );
+});
+
 const packageNames = [
   "@agentclutch/action-card",
   "@agentclutch/loop",

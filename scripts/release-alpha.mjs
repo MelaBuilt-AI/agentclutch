@@ -35,6 +35,9 @@ switch (command) {
   case "verify-version":
     verifyVersions(requiredOption("--version"));
     break;
+  case "verify-tree":
+    verifyDependencyTree(requiredOption("--version"), requiredOption("--tree"));
+    break;
   case "stage":
     await stagePackages({
       version: requiredOption("--version"),
@@ -145,6 +148,44 @@ function verifyVersions(version) {
   }
 
   console.log(`All release manifests match ${version}`);
+}
+
+function verifyDependencyTree(version, treePath) {
+  assertAlphaVersion(version);
+  const tree = JSON.parse(readFileSync(resolve(treePath), "utf8"));
+  const expectedNames = publishablePackages.map((pkg) => pkg.name);
+
+  for (const packageName of expectedNames) {
+    if (tree.dependencies?.[packageName]?.version !== version) {
+      throw new Error(
+        `${packageName} is missing at the dependency-tree root or does not equal ${version}.`,
+      );
+    }
+  }
+
+  let agentClutchNodes = 0;
+  function inspectDependencies(dependencies = {}) {
+    for (const [name, dependency] of Object.entries(dependencies)) {
+      if (name.startsWith("@agentclutch/")) {
+        agentClutchNodes += 1;
+        if (dependency?.version !== version) {
+          throw new Error(
+            `${name} appears in the npm dependency tree as ${dependency?.version}; expected ${version}.`,
+          );
+        }
+      }
+      inspectDependencies(dependency?.dependencies);
+    }
+  }
+
+  inspectDependencies(tree.dependencies);
+  if (agentClutchNodes < expectedNames.length) {
+    throw new Error(
+      `Expected at least ${expectedNames.length} AgentClutch dependency-tree nodes; found ${agentClutchNodes}.`,
+    );
+  }
+
+  console.log(`All AgentClutch dependency-tree nodes match ${version}`);
 }
 
 async function stagePackages({ version, destination, evidencePath, dryRun }) {
@@ -428,6 +469,7 @@ Usage:
   node scripts/release-alpha.mjs list
   node scripts/release-alpha.mjs bump --version 0.7.3-alpha.1
   node scripts/release-alpha.mjs verify-version --version 0.7.3-alpha.1
+  node scripts/release-alpha.mjs verify-tree --version 0.7.3-alpha.1 --tree npm-tree.json
   node scripts/release-alpha.mjs stage --version 0.7.3-alpha.1 --destination /tmp/agentclutch-npm-pack --dry-run
   node scripts/release-alpha.mjs stage --version 0.7.3-alpha.1 --destination /tmp/agentclutch-npm-pack --evidence npm-stage-evidence.json
   node scripts/release-alpha.mjs dry-run

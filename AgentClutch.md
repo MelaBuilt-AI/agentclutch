@@ -5664,6 +5664,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -5684,6 +5686,8 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: 24
@@ -5695,7 +5699,7 @@ jobs:
       - run: node scripts/release-alpha.mjs stage --version <release-version> --destination npm-pack
 ```
 
-> **Release security requirement:** The implemented workflow validates exact tag/version agreement and all seven tarballs before staging them in dependency order. GitHub Actions OIDC may perform `npm stage publish` only, and a maintainer must approve staged packages on npmjs.com with 2FA. See `docs/npm-publishing.md` for the complete procedure. No long-lived npm publish token or OTP belongs in GitHub secrets.
+> **Release security requirement:** The implemented workflow validates exact tag/version agreement, all seven tarballs, and the complete prepared dependency tree before staging in dependency order. Checkout credentials are never persisted, and checksum-verified actionlint guards workflow changes. GitHub Actions OIDC may perform `npm stage publish` only, and a maintainer must approve staged packages on npmjs.com with 2FA. See `docs/npm-publishing.md` for the complete procedure. No long-lived npm publish token or OTP belongs in GitHub secrets.
 
 ---
 

@@ -32,6 +32,8 @@ jobs:
     steps:
       - name: Checkout selected tag
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Require matching release tag
         env:
@@ -114,6 +116,8 @@ jobs:
         run: node scripts/release-alpha.mjs stage --version "$RELEASE_VERSION" --destination npm-pack --dry-run
 
       - name: Clean tarball installation smoke
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
         shell: bash
         run: |
           set -euo pipefail
@@ -121,6 +125,10 @@ jobs:
           cd "$smoke_dir"
           npm init -y >/dev/null
           npm install "$GITHUB_WORKSPACE"/npm-pack/*.tgz playwright@1.61.1
+          npm ls --all --json > "$GITHUB_WORKSPACE/prepared-npm-tree.json"
+          node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" verify-tree \
+            --version "$RELEASE_VERSION" \
+            --tree "$GITHUB_WORKSPACE/prepared-npm-tree.json"
           npx agentclutch --help
           npx agentclutch smoke
 
@@ -142,6 +150,8 @@ jobs:
     steps:
       - name: Checkout selected tag
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Require matching release tag
         env:
@@ -247,6 +257,8 @@ jobs:
     steps:
       - name: Checkout selected tag
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
 
       - name: Require matching release tag
         env:
@@ -301,48 +313,10 @@ jobs:
           done < <(node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" list)
           npm install "${packages[@]}" playwright@1.61.1
           npm ls --all --json > "$GITHUB_WORKSPACE/npm-tree.json"
+          node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" verify-tree \
+            --version "$RELEASE_VERSION" \
+            --tree "$GITHUB_WORKSPACE/npm-tree.json"
           node --input-type=module <<'NODE'
-          import { readFile } from "node:fs/promises";
-          import { join } from "node:path";
-
-          const expected = process.env.RELEASE_VERSION;
-          const expectedNames = [
-            "@agentclutch/action-card",
-            "@agentclutch/loop",
-            "@agentclutch/recorder",
-            "@agentclutch/core",
-            "@agentclutch/react",
-            "@agentclutch/playwright",
-            "@agentclutch/cli",
-          ];
-          const tree = JSON.parse(
-            await readFile(join(process.env.GITHUB_WORKSPACE, "npm-tree.json"), "utf8"),
-          );
-          for (const name of expectedNames) {
-            if (tree.dependencies?.[name]?.version !== expected) {
-              throw new Error(
-                `${name} is missing at the dependency-tree root or does not equal ${expected}.`,
-              );
-            }
-          }
-          let agentClutchNodes = 0;
-          function inspectDependencies(dependencies = {}) {
-            for (const [name, dependency] of Object.entries(dependencies)) {
-              if (name.startsWith("@agentclutch/")) {
-                agentClutchNodes += 1;
-                if (dependency.version !== expected) {
-                  throw new Error(
-                    `${name} appears in the npm dependency tree as ${dependency.version}; expected ${expected}.`,
-                  );
-                }
-              }
-              inspectDependencies(dependency.dependencies);
-            }
-          }
-          inspectDependencies(tree.dependencies);
-          if (agentClutchNodes < 7) {
-            throw new Error(`Expected at least seven AgentClutch dependency-tree nodes; found ${agentClutchNodes}.`);
-          }
           const core = await import("@agentclutch/core");
           if (Object.keys(core).length === 0) {
             throw new Error("@agentclutch/core exported no symbols.");
