@@ -237,7 +237,7 @@ jobs:
             echo
             echo 'No staged package is public until a maintainer approves it with npm 2FA.'
             echo 'If this job failed after any successful stage, open npmjs.com → Staged Packages, identify the recorded package/version entries, and reject every partial stage before retrying.'
-            echo 'After all seven stages are approved, dispatch this workflow from the same tag with `mode=verify`.'
+            echo 'After all seven stages are approved, dispatch this workflow from the same tag with mode=verify.'
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload staged-release evidence
