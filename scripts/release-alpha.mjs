@@ -1,12 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  writeFileSync,
-} from "node:fs";
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -379,11 +373,18 @@ function writeJson(relativePath, value) {
 }
 
 function run(commandName, commandArgs) {
-  const invocation = resolveCommand(commandName, commandArgs);
+  if (
+    process.platform === "win32" &&
+    commandArgs.some((argument) => /[&|<>^()%!"\r\n]/.test(argument))
+  ) {
+    throw new Error(
+      "Refusing a Windows shell argument containing cmd.exe metacharacters.",
+    );
+  }
   console.log(`$ ${commandName} ${commandArgs.join(" ")}`);
-  const result = spawnSync(invocation.command, invocation.args, {
+  const result = spawnSync(commandName, commandArgs, {
     cwd: repoRoot,
-    shell: false,
+    shell: process.platform === "win32",
     stdio: "inherit",
   });
 
@@ -392,24 +393,6 @@ function run(commandName, commandArgs) {
       `${basename(commandName)} failed with exit code ${result.status ?? "unknown"}`,
     );
   }
-}
-
-function resolveCommand(commandName, commandArgs) {
-  if (process.platform !== "win32" || commandName !== "pnpm") {
-    return { command: commandName, args: commandArgs };
-  }
-
-  const pnpmHome = process.env.PNPM_HOME;
-  const pnpmCli =
-    pnpmHome === undefined
-      ? undefined
-      : resolve(pnpmHome, "..", "pnpm", "bin", "pnpm.cjs");
-  if (pnpmCli === undefined || !existsSync(pnpmCli)) {
-    throw new Error(
-      "Cannot resolve the pnpm JavaScript entrypoint on Windows. Run through pnpm/action-setup or set PNPM_HOME.",
-    );
-  }
-  return { command: process.execPath, args: [pnpmCli, ...commandArgs] };
 }
 
 function printHelp() {
