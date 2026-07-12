@@ -84,9 +84,10 @@ Completed v0.7 Goals:
 
 Next Planned Work / TODO:
 
-- [ ] Configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, workflow `stage-alpha.yml`, and the stage-only allowed action.
-- [ ] Run the read-only Alpha Release Prep workflow once and inspect its packed artifacts.
-- [ ] Prove the complete OIDC stage → npm 2FA approval → registry verification path with the next explicitly approved alpha version; never republish immutable `0.7.3-alpha.2`.
+- [ ] **Next session first:** review and squash-merge PR [#8](https://github.com/MelaBuilt-AI/agentclutch/pull/8) into `main`; its OIDC staged-publishing workflow, defense-in-depth checks, independent review, and Ubuntu/Windows/actionlint CI are complete.
+- [ ] After merge, configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, exact workflow filename `stage-alpha.yml`, blank environment, and the stage-only allowed action.
+- [ ] Prepare the next immutable alpha in a separate version PR, run the read-only Alpha Release Prep workflow, and inspect its packed artifacts before tagging.
+- [ ] Prove the complete OIDC stage → npm 2FA approval → registry verification path with the next explicitly approved alpha version (suggested `0.7.3-alpha.3`); never republish immutable `0.7.3-alpha.2`.
 - [ ] After OIDC succeeds, revoke obsolete npm automation tokens and disallow traditional-token publishing where package settings permit it.
 - [ ] Run a stranger test of the public project: fresh clone, follow README only, run quickstart, install from npm `@alpha`, run CLI smoke, and try one minimal integration path.
 - [ ] Convert stranger-test friction into small public GitHub issues.
