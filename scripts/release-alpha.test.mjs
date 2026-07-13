@@ -48,7 +48,11 @@ test("release prep uses Bash for the version input across line endings", () => {
     new URL("../.github/workflows/release-alpha.yml", import.meta.url),
     "utf8",
   );
-  const workflowVariants = [workflow, workflow.replaceAll("\n", "\r\n")];
+  const normalizedWorkflow = workflow.replaceAll("\r\n", "\n");
+  const workflowVariants = [
+    normalizedWorkflow,
+    normalizedWorkflow.replaceAll("\n", "\r\n"),
+  ];
 
   for (const workflowVariant of workflowVariants) {
     assert.match(
