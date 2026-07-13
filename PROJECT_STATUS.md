@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.3-alpha.3 Release Candidate Preparation
+Post-v0.7.3-alpha.3 Public Alpha
 
 Completed:
 
@@ -60,17 +60,17 @@ ActionProposal
 
 Current Milestone Status:
 
-`v0.7.3-alpha.2` remains live as the latest public GitHub release and npm alpha. All eight release manifests (the private monorepo root plus seven public packages) are prepared at `0.7.3-alpha.3` for the next immutable candidate. The exact candidate must pass branch CI and the read-only Alpha Release Prep rehearsal before its tag is created or any package is staged; no `v0.7.3-alpha.3` tag, npm stage, approval, or publication exists yet.
+`v0.7.3-alpha.3` is live as the current public GitHub prerelease and npm alpha. All seven packages were staged through the stage-only `stage-alpha.yml` GitHub Actions OIDC path, approved by a maintainer with npm 2FA, and published with npm SLSA provenance. The exact-tag registry verification and an independent clean installation/CLI smoke passed with zero audit vulnerabilities. The `alpha` dist-tag points to `0.7.3-alpha.3`; the legacy `latest` dist-tag remains unchanged at `0.7.3-alpha.0`.
 
 Published npm alpha packages:
 
-- `@agentclutch/action-card@0.7.3-alpha.2`
-- `@agentclutch/loop@0.7.3-alpha.2`
-- `@agentclutch/recorder@0.7.3-alpha.2`
-- `@agentclutch/core@0.7.3-alpha.2`
-- `@agentclutch/react@0.7.3-alpha.2`
-- `@agentclutch/playwright@0.7.3-alpha.2`
-- `@agentclutch/cli@0.7.3-alpha.2`
+- `@agentclutch/action-card@0.7.3-alpha.3`
+- `@agentclutch/loop@0.7.3-alpha.3`
+- `@agentclutch/recorder@0.7.3-alpha.3`
+- `@agentclutch/core@0.7.3-alpha.3`
+- `@agentclutch/react@0.7.3-alpha.3`
+- `@agentclutch/playwright@0.7.3-alpha.3`
+- `@agentclutch/cli@0.7.3-alpha.3`
 
 Completed v0.7 Goals:
 
@@ -87,8 +87,9 @@ Next Planned Work / TODO:
 - [x] Squash-merge PR [#8](https://github.com/MelaBuilt-AI/agentclutch/pull/8) with its hardened OIDC staged-publishing workflow and defense-in-depth checks.
 - [x] Configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, exact workflow filename `stage-alpha.yml`, blank environment, and the stage-only allowed action; retain no token/OTP fallback.
 - [x] Prepare all eight release manifests at the next immutable version, `0.7.3-alpha.3`, in a separate version branch/PR.
-- [ ] Require green branch CI plus a successful read-only Alpha Release Prep rehearsal, and inspect both Ubuntu and Windows packed artifacts before tagging.
-- [ ] Merge the version PR, create exact tag `v0.7.3-alpha.3`, and prove the complete OIDC stage → npm 2FA approval → registry verification path; never republish immutable `0.7.3-alpha.2`.
+- [x] Require green branch CI plus a successful read-only Alpha Release Prep rehearsal, and inspect both Ubuntu and Windows packed artifacts before tagging.
+- [x] Merge version PR [#9](https://github.com/MelaBuilt-AI/agentclutch/pull/9), create exact tag `v0.7.3-alpha.3`, and prove the complete OIDC stage → npm 2FA approval → registry verification path; never republish immutable `0.7.3-alpha.2`.
+- [x] Publish the [`v0.7.3-alpha.3` GitHub prerelease](https://github.com/MelaBuilt-AI/agentclutch/releases/tag/v0.7.3-alpha.3) with links to the rehearsal, staging, and registry-verification evidence.
 - [ ] After OIDC succeeds, revoke obsolete npm automation tokens and disallow traditional-token publishing where package settings permit it.
 - [ ] Run a stranger test of the public project: fresh clone, follow README only, run quickstart, install from npm `@alpha`, run CLI smoke, and try one minimal integration path.
 - [ ] Convert stranger-test friction into small public GitHub issues.
@@ -115,4 +116,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-`v0.7.3-alpha.2` is the current public release tag and npm alpha checkpoint.
+`v0.7.3-alpha.3` is the current public prerelease tag and npm alpha checkpoint.
