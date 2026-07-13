@@ -1,6 +1,6 @@
 {
   "name": "@agentclutch/action-card",
-  "version": "0.7.3-alpha.2",
+  "version": "0.7.3-alpha.3",
   "description": "TypeScript types, schemas, builders, and validation for AgentClutch Action Cards.",
   "license": "Apache-2.0",
   "type": "module",
