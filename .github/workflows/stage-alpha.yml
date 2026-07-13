@@ -1,0 +1,351 @@
+name: Stage or Verify npm Alpha
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Stage packages with OIDC or verify them after npm 2FA approval
+        required: true
+        type: choice
+        options:
+          - stage
+          - verify
+      version:
+        description: Exact alpha version, for example 0.7.3-alpha.3
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: npm-alpha-${{ inputs.version }}-${{ inputs.mode }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: inputs.mode == 'stage'
+    name: Prepare ${{ inputs.version }} npm tarballs
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout selected tag
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Require matching release tag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "v${RELEASE_VERSION}" ]]; then
+            echo "Dispatch this workflow from tag v${RELEASE_VERSION}; got ${GITHUB_REF_TYPE}:${GITHUB_REF_NAME}." >&2
+            exit 1
+          fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - name: Setup Node and npm registry
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Pin npm with staged-publishing support
+        run: npm install --global npm@11.16.0 --ignore-scripts
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify committed release boundary and version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/release-alpha.mjs check
+          node scripts/release-alpha.mjs verify-version --version "$RELEASE_VERSION"
+
+      - name: Refuse an immutable version that already exists
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r package_name; do
+            error_file="$(mktemp)"
+            if npm view "${package_name}@${RELEASE_VERSION}" version --json --prefer-online 2>"$error_file"; then
+              echo "${package_name}@${RELEASE_VERSION} already exists and cannot be replaced." >&2
+              exit 1
+            fi
+            if ! grep -q 'E404' "$error_file"; then
+              echo "Registry preflight failed for ${package_name}@${RELEASE_VERSION}:" >&2
+              cat "$error_file" >&2
+              exit 1
+            fi
+            rm -f "$error_file"
+          done < <(node scripts/release-alpha.mjs list)
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Test
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: npm publish dry-runs
+        run: node scripts/release-alpha.mjs dry-run
+
+      - name: Pack npm tarballs
+        run: node scripts/release-alpha.mjs pack --destination npm-pack
+
+      - name: Validate tarballs and dependency order
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/release-alpha.mjs stage --version "$RELEASE_VERSION" --destination npm-pack --dry-run
+
+      - name: Clean tarball installation smoke
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          smoke_dir="$(mktemp -d)"
+          cd "$smoke_dir"
+          npm init -y >/dev/null
+          npm install "$GITHUB_WORKSPACE"/npm-pack/*.tgz playwright@1.61.1
+          npm ls --all --json > "$GITHUB_WORKSPACE/prepared-npm-tree.json"
+          node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" verify-tree \
+            --version "$RELEASE_VERSION" \
+            --tree "$GITHUB_WORKSPACE/prepared-npm-tree.json"
+          npx agentclutch --help
+          npx agentclutch smoke
+
+      - name: Upload prepared npm tarballs
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agentclutch-${{ inputs.version }}-prepared-tarballs
+          path: npm-pack/*.tgz
+          if-no-files-found: error
+
+  stage:
+    if: inputs.mode == 'stage'
+    needs: prepare
+    name: Stage ${{ inputs.version }} for npm approval
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout selected tag
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Require matching release tag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "v${RELEASE_VERSION}" ]]; then
+            echo "Dispatch this workflow from tag v${RELEASE_VERSION}; got ${GITHUB_REF_TYPE}:${GITHUB_REF_NAME}." >&2
+            exit 1
+          fi
+
+      - name: Setup Node and npm registry
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Pin npm with staged-publishing support
+        run: npm install --global npm@11.16.0 --ignore-scripts
+
+      - name: Verify committed release boundary and version
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          node scripts/release-alpha.mjs check
+          node scripts/release-alpha.mjs verify-version --version "$RELEASE_VERSION"
+
+      - name: Download prepared npm tarballs
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: agentclutch-${{ inputs.version }}-prepared-tarballs
+          path: npm-pack
+
+      - name: Refuse an immutable version that already exists
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r package_name; do
+            error_file="$(mktemp)"
+            if npm view "${package_name}@${RELEASE_VERSION}" version --json --prefer-online 2>"$error_file"; then
+              echo "${package_name}@${RELEASE_VERSION} already exists and cannot be replaced." >&2
+              exit 1
+            fi
+            if ! grep -q 'E404' "$error_file"; then
+              echo "Registry preflight failed for ${package_name}@${RELEASE_VERSION}:" >&2
+              cat "$error_file" >&2
+              exit 1
+            fi
+            rm -f "$error_file"
+          done < <(node scripts/release-alpha.mjs list)
+
+      - name: Revalidate downloaded tarballs and dependency order
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/release-alpha.mjs stage --version "$RELEASE_VERSION" --destination npm-pack --dry-run
+
+      - name: Stage packages through npm trusted publishing
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: node scripts/release-alpha.mjs stage --version "$RELEASE_VERSION" --destination npm-pack --evidence npm-stage-evidence.json
+
+      - name: Record staged-package evidence and recovery instructions
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo '## npm staged-publishing evidence'
+            echo
+            if [[ -f npm-stage-evidence.json ]]; then
+              echo 'The JSON below captures every attempted package and the raw npm response available to this job.'
+              echo
+              echo '```json'
+              cat npm-stage-evidence.json
+              echo '```'
+            else
+              echo 'Staging did not begin, so no staged-package evidence file was created.'
+            fi
+            echo
+            echo 'No staged package is public until a maintainer approves it with npm 2FA.'
+            echo 'If this job failed after any successful stage, open npmjs.com → Staged Packages, identify the recorded package/version entries, and reject every partial stage before retrying.'
+            echo 'After all seven stages are approved, dispatch this workflow from the same tag with mode=verify.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload staged-release evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agentclutch-${{ inputs.version }}-staged-release-evidence
+          path: |
+            npm-pack/*.tgz
+            npm-stage-evidence.json
+          if-no-files-found: warn
+
+  verify:
+    if: inputs.mode == 'verify'
+    name: Verify ${{ inputs.version }} from npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout selected tag
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+
+      - name: Require matching release tag
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" != "tag" || "$GITHUB_REF_NAME" != "v${RELEASE_VERSION}" ]]; then
+            echo "Dispatch this workflow from tag v${RELEASE_VERSION}; got ${GITHUB_REF_TYPE}:${GITHUB_REF_NAME}." >&2
+            exit 1
+          fi
+          node scripts/release-alpha.mjs verify-version --version "$RELEASE_VERSION"
+
+      - name: Setup Node and npm registry
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: "24"
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+
+      - name: Pin npm
+        run: npm install --global npm@11.16.0 --ignore-scripts
+
+      - name: Verify exact versions and alpha dist-tags
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r package_name; do
+            exact="$(npm view "${package_name}@${RELEASE_VERSION}" version --prefer-online)"
+            alpha="$(npm view "${package_name}@alpha" version --prefer-online)"
+            if [[ "$exact" != "$RELEASE_VERSION" || "$alpha" != "$RELEASE_VERSION" ]]; then
+              echo "Unexpected registry state for ${package_name}: exact=${exact}, alpha=${alpha}." >&2
+              exit 1
+            fi
+            printf '%s\t%s\n' "$package_name" "$exact"
+          done < <(node scripts/release-alpha.mjs list) | tee registry-versions.tsv
+
+      - name: Clean registry installation smoke
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          smoke_dir="$(mktemp -d)"
+          cd "$smoke_dir"
+          npm init -y >/dev/null
+          packages=()
+          while IFS= read -r package_name; do
+            packages+=("${package_name}@${RELEASE_VERSION}")
+          done < <(node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" list)
+          npm install "${packages[@]}" playwright@1.61.1
+          npm ls --all --json > "$GITHUB_WORKSPACE/npm-tree.json"
+          node "$GITHUB_WORKSPACE/scripts/release-alpha.mjs" verify-tree \
+            --version "$RELEASE_VERSION" \
+            --tree "$GITHUB_WORKSPACE/npm-tree.json"
+          node --input-type=module <<'NODE'
+          const core = await import("@agentclutch/core");
+          if (Object.keys(core).length === 0) {
+            throw new Error("@agentclutch/core exported no symbols.");
+          }
+          NODE
+          npx agentclutch --help
+          npx agentclutch smoke
+          npm audit --audit-level=high
+
+      - name: Record registry verification
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          {
+            echo "## npm registry verification passed"
+            echo
+            echo "All seven AgentClutch packages install and smoke successfully at \`${RELEASE_VERSION}\`."
+            echo
+            echo '```text'
+            cat registry-versions.tsv
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload registry verification evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agentclutch-${{ inputs.version }}-registry-verification
+          path: |
+            registry-versions.tsv
+            npm-tree.json
+          if-no-files-found: error

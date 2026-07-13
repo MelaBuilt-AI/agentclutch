@@ -5648,32 +5648,58 @@ jobs:
       - run: pnpm test
 ```
 
-`.github/workflows/release.yml`:
+`.github/workflows/stage-alpha.yml`:
 
 ```yaml
-name: Release
+name: Stage npm Alpha
 
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  release:
+  prepare:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          node-version: 22
-          registry-url: https://registry.npmjs.org
-          cache: pnpm
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test
-      - run: pnpm -r publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: pnpm build && pnpm test
+      - run: node scripts/release-alpha.mjs pack --destination npm-pack
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: prepared-tarballs
+          path: npm-pack/*.tgz
+
+  stage:
+    needs: prepare
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5
+        with:
+          name: prepared-tarballs
+          path: npm-pack
+      - run: node scripts/release-alpha.mjs stage --version <release-version> --destination npm-pack
 ```
+
+> **Release security requirement:** The implemented workflow validates exact tag/version agreement, all seven tarballs, and the complete prepared dependency tree before staging in dependency order. Checkout credentials are never persisted, and checksum-verified actionlint guards workflow changes. GitHub Actions OIDC may perform `npm stage publish` only, and a maintainer must approve staged packages on npmjs.com with 2FA. See `docs/npm-publishing.md` for the complete procedure. No long-lived npm publish token or OTP belongs in GitHub secrets.
 
 ---
 

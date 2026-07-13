@@ -100,33 +100,72 @@ npx agentclutch --help
 npx agentclutch smoke
 ```
 
-## GitHub release-prep workflow
+## GitHub release workflows
 
-Maintainers can also run **Alpha Release Prep** from GitHub Actions with an input like `0.7.3-alpha.1`. The workflow:
+Maintainers have two deliberately separate workflows:
 
-1. validates the explicit publish boundary;
-2. bumps manifests in the workflow workspace only;
-3. runs lint, typecheck, tests, and build on Ubuntu and Windows;
-4. runs npm publish dry-runs with `--tag alpha --access public --no-git-checks`;
-5. packs tarballs and uploads them as artifacts.
+- **Alpha Release Prep** (`release-alpha.yml`) is a read-only rehearsal. It validates the publish boundary, bumps manifests only in the temporary workflow workspace, runs lint/typecheck/tests/build on Ubuntu and Windows, runs npm publish dry-runs, and uploads packed tarballs. It never authenticates to npm.
+- **Stage or Verify npm Alpha** (`stage-alpha.yml`) is the trusted-publishing path for a version already committed and tagged. Dispatch it from the matching `vX.Y.Z-alpha.N` tag with `mode=stage`; after npm approval, dispatch the same tag/version with `mode=verify`.
 
-The workflow has read-only repository permissions and never publishes to npm. Real publication remains manual so npm auth and 2FA stay in the maintainer-controlled step.
+The staging workflow uses a GitHub-hosted Ubuntu runner, Node 24, npm 11.16.0, and these least-privilege permissions:
 
-## Future publish commands
-
-For future alpha versions, run these only after explicit approval:
-
-```bash
-pnpm --filter @agentclutch/action-card publish --tag alpha --access public
-pnpm --filter @agentclutch/loop publish --tag alpha --access public
-pnpm --filter @agentclutch/core publish --tag alpha --access public
-pnpm --filter @agentclutch/recorder publish --tag alpha --access public
-pnpm --filter @agentclutch/playwright publish --tag alpha --access public
-pnpm --filter @agentclutch/react publish --tag alpha --access public
-pnpm --filter @agentclutch/cli publish --tag alpha --access public
+```yaml
+permissions:
+  contents: read
+  id-token: write
 ```
 
-Use `alpha` for future prereleases. npm also created `latest` for `0.7.3-alpha.0` because it was the first version of each package; docs should still recommend explicit `@alpha` installs until a stable release exists.
+The staging path is split into two jobs. The unprivileged preparation job installs dependencies, runs all gates, builds, packs, validates, smoke-tests, traverses the complete prepared-tarball dependency tree for internal version skew, and uploads the tarballs with only `contents: read`. A separate minimal staging job receives `id-token: write`, downloads and revalidates those artifacts, repeats the immutable-version preflight, disables npm lifecycle scripts, and invokes only npm's OIDC staging operations. Every third-party action in both release workflows is pinned to a reviewed full commit SHA, and checkout credentials are never persisted. The workflow refuses branch dispatches, mismatched tags/manifests, versions already present on npm, missing/duplicate/unexpected tarballs, and tarballs whose embedded package name or version does not match the release. Tar inspection uses the runner's maintained `tar` implementation to validate the archive and require exactly one `package/package.json`, then uses npm's own `publish --dry-run --json` parser to verify the package identity npm would stage. `.github/workflows/workflow-lint.yml` runs checksum-verified actionlint on every pull request and on workflow-changing pushes to `main`.
+
+No `NPM_TOKEN` or OTP is stored in GitHub. Staging does not make packages public. A maintainer must inspect npmjs.com → **Staged Packages** and approve each package using normal 2FA. Each staging attempt atomically writes an `attempting` record to `npm-stage-evidence.json` before invoking npm, then atomically replaces it with the completed or failed result and raw npm response. The evidence and tarballs upload even when a later stage fails. If a partial failure occurs, reject every recorded staged package/version on npmjs.com before retrying. The follow-up `mode=verify` job confirms all exact versions and `alpha` dist-tags, traverses the complete `npm ls --all --json` dependency tree to reject nested AgentClutch version skew, installs all seven packages in a clean directory, runs CLI help/smoke, imports core, and runs `npm audit`.
+
+## Configure npm trusted publishing
+
+Each existing public package needs its own npm trusted-publisher entry, all pointing to the same exact workflow:
+
+- Provider: GitHub Actions
+- Organization/user: `MelaBuilt-AI`
+- Repository: `agentclutch`
+- Workflow filename: `stage-alpha.yml`
+- Environment: leave blank unless the workflow is later pinned to a protected GitHub environment
+- Allowed action: **npm stage publish only**
+
+Configure these seven packages:
+
+1. `@agentclutch/action-card`
+2. `@agentclutch/loop`
+3. `@agentclutch/recorder`
+4. `@agentclutch/core`
+5. `@agentclutch/react`
+6. `@agentclutch/playwright`
+7. `@agentclutch/cli`
+
+After the first successful OIDC staging cycle, revoke obsolete automation publish tokens and keep traditional-token publishing disabled where npm package settings allow it.
+
+## Future alpha sequence
+
+Only after explicit approval:
+
+1. Bump all release manifests to a new immutable alpha version and commit the change.
+2. Push and verify normal Build/Test CI.
+3. Run **Alpha Release Prep** and inspect its artifacts.
+4. Create and push an annotated `vX.Y.Z-alpha.N` tag resolving to the intended commit.
+5. Dispatch **Stage or Verify npm Alpha** from that tag with `mode=stage` and the exact version.
+6. Review the staged packages on npmjs.com and approve them with 2FA.
+7. Dispatch the same tag/version with `mode=verify`.
+8. Create or update the matching GitHub release only after registry verification succeeds.
+
+The helper's local staging validation can be rehearsed without npm side effects:
+
+```bash
+pnpm release:pack -- --destination /tmp/agentclutch-npm-pack
+node scripts/release-alpha.mjs stage \
+  --version 0.7.3-alpha.3 \
+  --destination /tmp/agentclutch-npm-pack \
+  --dry-run
+```
+
+Do not attempt to republish an existing version. npm versions are immutable.
 
 ## Postpublish verification
 

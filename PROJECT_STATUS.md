@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-v0.7.3-alpha.1 Public GitHub + npm Alpha
+Post-v0.7.3-alpha.2 Release Automation
 
 Completed:
 
@@ -24,6 +24,7 @@ Completed:
 - npm alpha metadata for the publishable SDK/CLI packages
 - contributor-friendly GitHub issue templates
 - alpha release-prep workflow and helper scripts
+- OIDC trusted staged-publishing and post-approval verification workflow
 - registry-safe CLI smoke command
 
 Verified Working:
@@ -59,17 +60,17 @@ ActionProposal
 
 Current Milestone Status:
 
-`v0.7.3-alpha.1` is live as the latest public GitHub prerelease and npm alpha. The repository is public, the npm packages are published, and registry install smoke tests passed.
+`v0.7.3-alpha.2` is live as the latest public GitHub release and npm alpha. The repository is public, all seven npm packages are published under `@alpha`, GitHub Build/Test are green, and clean registry installation/smoke passed.
 
 Published npm alpha packages:
 
-- `@agentclutch/action-card@0.7.3-alpha.1`
-- `@agentclutch/loop@0.7.3-alpha.1`
-- `@agentclutch/core@0.7.3-alpha.1`
-- `@agentclutch/recorder@0.7.3-alpha.1`
-- `@agentclutch/playwright@0.7.3-alpha.1`
-- `@agentclutch/react@0.7.3-alpha.1`
-- `@agentclutch/cli@0.7.3-alpha.1`
+- `@agentclutch/action-card@0.7.3-alpha.2`
+- `@agentclutch/loop@0.7.3-alpha.2`
+- `@agentclutch/recorder@0.7.3-alpha.2`
+- `@agentclutch/core@0.7.3-alpha.2`
+- `@agentclutch/react@0.7.3-alpha.2`
+- `@agentclutch/playwright@0.7.3-alpha.2`
+- `@agentclutch/cli@0.7.3-alpha.2`
 
 Completed v0.7 Goals:
 
@@ -83,7 +84,11 @@ Completed v0.7 Goals:
 
 Next Planned Work / TODO:
 
-- [ ] User should revoke the temporary granular npm publish token created for the `0.7.3-alpha.1` publish.
+- [ ] **Next session first:** review and squash-merge PR [#8](https://github.com/MelaBuilt-AI/agentclutch/pull/8) into `main`; its OIDC staged-publishing workflow, defense-in-depth checks, independent review, and Ubuntu/Windows/actionlint CI are complete.
+- [ ] After merge, configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, exact workflow filename `stage-alpha.yml`, blank environment, and the stage-only allowed action.
+- [ ] Prepare the next immutable alpha in a separate version PR, run the read-only Alpha Release Prep workflow, and inspect its packed artifacts before tagging.
+- [ ] Prove the complete OIDC stage → npm 2FA approval → registry verification path with the next explicitly approved alpha version (suggested `0.7.3-alpha.3`); never republish immutable `0.7.3-alpha.2`.
+- [ ] After OIDC succeeds, revoke obsolete npm automation tokens and disallow traditional-token publishing where package settings permit it.
 - [ ] Run a stranger test of the public project: fresh clone, follow README only, run quickstart, install from npm `@alpha`, run CLI smoke, and try one minimal integration path.
 - [ ] Convert stranger-test friction into small public GitHub issues.
 - [ ] Seed the next public roadmap issue batch:
@@ -91,7 +96,7 @@ Next Planned Work / TODO:
   - improve npm CLI demo experience and decide whether FakeStore demo assets should ship in the CLI package or be fetched/generated;
   - add a minimal React/Vite consumer example using public npm packages;
   - add docs for integrating AgentClutch into an existing agent loop;
-  - manually run and verify the new Alpha Release Prep workflow artifacts;
+  - keep release automation stage-only with human npm 2FA approval;
   - add security/data redaction examples for Action Cards, JSONL, Run Stories, screenshots, and logs.
 - [ ] Draft and post a small public-alpha launch/update post linking the quickstart, limitations, npm packages, and feedback/issues.
 - [ ] Make the next product milestone: make AgentClutch easy to try from npm without cloning the repo.
@@ -109,4 +114,4 @@ Do NOT build yet:
 
 Current Git Tag:
 
-`v0.7.3-alpha.1` public prerelease tag is cut from verified `main` for the latest npm alpha.
+`v0.7.3-alpha.2` is the current public release tag and npm alpha checkpoint.
