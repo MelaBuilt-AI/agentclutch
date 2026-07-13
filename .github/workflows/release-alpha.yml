@@ -49,6 +49,7 @@ jobs:
       - name: Bump package manifests in workspace
         env:
           RELEASE_VERSION: ${{ inputs.version }}
+        shell: bash
         run: node scripts/release-alpha.mjs bump --version "$RELEASE_VERSION"
 
       - name: Lint
