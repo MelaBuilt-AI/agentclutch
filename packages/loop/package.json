@@ -1,6 +1,6 @@
 {
   "name": "@agentclutch/loop",
-  "version": "0.7.3-alpha.2",
+  "version": "0.7.3-alpha.3",
   "description": "Loop lifecycle contracts for AgentClutch action proposals, decisions, events, and resume context.",
   "license": "Apache-2.0",
   "type": "module",

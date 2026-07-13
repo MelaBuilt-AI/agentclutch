@@ -1,7 +1,7 @@
 # AgentClutch Status
 
 Current milestone:
-Post-v0.7.3-alpha.2 Release Automation
+v0.7.3-alpha.3 Release Candidate Preparation
 
 Completed:
 
@@ -60,7 +60,7 @@ ActionProposal
 
 Current Milestone Status:
 
-`v0.7.3-alpha.2` is live as the latest public GitHub release and npm alpha. The repository is public, all seven npm packages are published under `@alpha`, GitHub Build/Test are green, and clean registry installation/smoke passed.
+`v0.7.3-alpha.2` remains live as the latest public GitHub release and npm alpha. All eight release manifests (the private monorepo root plus seven public packages) are prepared at `0.7.3-alpha.3` for the next immutable candidate. The exact candidate must pass branch CI and the read-only Alpha Release Prep rehearsal before its tag is created or any package is staged; no `v0.7.3-alpha.3` tag, npm stage, approval, or publication exists yet.
 
 Published npm alpha packages:
 
@@ -84,10 +84,11 @@ Completed v0.7 Goals:
 
 Next Planned Work / TODO:
 
-- [ ] **Next session first:** review and squash-merge PR [#8](https://github.com/MelaBuilt-AI/agentclutch/pull/8) into `main`; its OIDC staged-publishing workflow, defense-in-depth checks, independent review, and Ubuntu/Windows/actionlint CI are complete.
-- [ ] After merge, configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, exact workflow filename `stage-alpha.yml`, blank environment, and the stage-only allowed action.
-- [ ] Prepare the next immutable alpha in a separate version PR, run the read-only Alpha Release Prep workflow, and inspect its packed artifacts before tagging.
-- [ ] Prove the complete OIDC stage → npm 2FA approval → registry verification path with the next explicitly approved alpha version (suggested `0.7.3-alpha.3`); never republish immutable `0.7.3-alpha.2`.
+- [x] Squash-merge PR [#8](https://github.com/MelaBuilt-AI/agentclutch/pull/8) with its hardened OIDC staged-publishing workflow and defense-in-depth checks.
+- [x] Configure npm trusted publishing separately for all seven packages using `MelaBuilt-AI/agentclutch`, exact workflow filename `stage-alpha.yml`, blank environment, and the stage-only allowed action; retain no token/OTP fallback.
+- [x] Prepare all eight release manifests at the next immutable version, `0.7.3-alpha.3`, in a separate version branch/PR.
+- [ ] Require green branch CI plus a successful read-only Alpha Release Prep rehearsal, and inspect both Ubuntu and Windows packed artifacts before tagging.
+- [ ] Merge the version PR, create exact tag `v0.7.3-alpha.3`, and prove the complete OIDC stage → npm 2FA approval → registry verification path; never republish immutable `0.7.3-alpha.2`.
 - [ ] After OIDC succeeds, revoke obsolete npm automation tokens and disallow traditional-token publishing where package settings permit it.
 - [ ] Run a stranger test of the public project: fresh clone, follow README only, run quickstart, install from npm `@alpha`, run CLI smoke, and try one minimal integration path.
 - [ ] Convert stranger-test friction into small public GitHub issues.

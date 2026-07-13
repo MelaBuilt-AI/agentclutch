@@ -1,7 +1,7 @@
 {
   "name": "agentclutch-monorepo",
   "private": true,
-  "version": "0.7.3-alpha.2",
+  "version": "0.7.3-alpha.3",
   "description": "AgentClutch: the open Action Card and takeover UX for consequential AI agent actions.",
   "license": "Apache-2.0",
   "type": "module",

@@ -1,6 +1,6 @@
 {
   "name": "@agentclutch/react",
-  "version": "0.7.3-alpha.2",
+  "version": "0.7.3-alpha.3",
   "description": "React-compatible components for AgentClutch Action Cards and takeover UX.",
   "license": "Apache-2.0",
   "type": "module",
