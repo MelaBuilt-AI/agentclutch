@@ -43,16 +43,19 @@ test("verify-version accepts the alpha version committed in every publishable ma
   );
 });
 
-test("release prep uses Bash when expanding the version environment variable", () => {
+test("release prep uses Bash for the version input across line endings", () => {
   const workflow = readFileSync(
     new URL("../.github/workflows/release-alpha.yml", import.meta.url),
     "utf8",
   );
+  const workflowVariants = [workflow, workflow.replaceAll("\n", "\r\n")];
 
-  assert.match(
-    workflow,
-    /- name: Bump package manifests in workspace\n\s+env:\n\s+RELEASE_VERSION: \$\{\{ inputs\.version \}\}\n\s+shell: bash\n\s+run: node scripts\/release-alpha\.mjs bump --version "\$RELEASE_VERSION"/,
-  );
+  for (const workflowVariant of workflowVariants) {
+    assert.match(
+      workflowVariant.replaceAll("\r\n", "\n"),
+      /- name: Bump package manifests in workspace\n\s+env:\n\s+RELEASE_VERSION: \$\{\{ inputs\.version \}\}\n\s+shell: bash\n\s+run: node scripts\/release-alpha\.mjs bump --version "\$RELEASE_VERSION"/,
+    );
+  }
 });
 
 function createDependencyTree(version, nestedVersion = version) {
