@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@agentclutch/core": "0.7.3-alpha.0"
+    "@agentclutch/core": "0.7.3-alpha.3"
   },
   "devDependencies": {
     "@types/node": "latest",

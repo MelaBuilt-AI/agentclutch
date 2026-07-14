@@ -100,8 +100,8 @@ importers:
   examples/npm-consumer-basic:
     dependencies:
       '@agentclutch/core':
-        specifier: 0.7.3-alpha.0
-        version: 0.7.3-alpha.0
+        specifier: 0.7.3-alpha.3
+        version: 0.7.3-alpha.3
     devDependencies:
       '@types/node':
         specifier: latest
@@ -215,16 +215,16 @@ importers:
 
 packages:
 
-  '@agentclutch/action-card@0.7.3-alpha.0':
-    resolution: {integrity: sha512-0x5d3/jV7JDn8sfKgAw1zK1scu2IcElnGCUzD4RC3xA53QpYwRL5Qprpl4Fn59kgGoaO6n8NLejHH5380njiIw==}
+  '@agentclutch/action-card@0.7.3-alpha.3':
+    resolution: {integrity: sha512-58GTAMuq7ZdXMvR6kfSquRDg7PI1CRnmlUqpZRzwqaXQw/7NqYH40r1EmUxRR6BA6OF+tR0cIXm3jKUgIKjDzQ==}
     engines: {node: '>=22'}
 
-  '@agentclutch/core@0.7.3-alpha.0':
-    resolution: {integrity: sha512-7AnEfYDwnu3SCl6Hh97p+bg9B2wbD66JmRnTXIFkOazQDRBm9EWniE9fJUD9IETZJiRrfnyaKV+TUnP0OtN/oA==}
+  '@agentclutch/core@0.7.3-alpha.3':
+    resolution: {integrity: sha512-n7Q3dcVayK9352swjWEqTdZ33bYq0KLfCrGmH7wTMSLl+QE2nVPCHczIKi9YfXSILMqFjhZY20R6Lo8jfuu8Jw==}
     engines: {node: '>=22'}
 
-  '@agentclutch/loop@0.7.3-alpha.0':
-    resolution: {integrity: sha512-CjFkEPfee/I+6PC6kdU21cSK0GdFiVsNVNqHqddFAQLpJYiiwsk8LvEYgMe7wzfa3LSZrLUm/U3MMlyqDZIxFg==}
+  '@agentclutch/loop@0.7.3-alpha.3':
+    resolution: {integrity: sha512-xsy9TEA+ppZCFOjntjg6B8kxN0Ns9m1I92VSY6NSRe1kfcvdP31p3ePfnsDZ/P7YKpzMjy4c9DlZZD/xHEHvLg==}
     engines: {node: '>=22'}
 
   '@emnapi/core@1.11.1':
@@ -1252,16 +1252,16 @@ packages:
 
 snapshots:
 
-  '@agentclutch/action-card@0.7.3-alpha.0':
+  '@agentclutch/action-card@0.7.3-alpha.3':
     dependencies:
       zod: 4.4.3
 
-  '@agentclutch/core@0.7.3-alpha.0':
+  '@agentclutch/core@0.7.3-alpha.3':
     dependencies:
-      '@agentclutch/action-card': 0.7.3-alpha.0
-      '@agentclutch/loop': 0.7.3-alpha.0
+      '@agentclutch/action-card': 0.7.3-alpha.3
+      '@agentclutch/loop': 0.7.3-alpha.3
 
-  '@agentclutch/loop@0.7.3-alpha.0': {}
+  '@agentclutch/loop@0.7.3-alpha.3': {}
 
   '@emnapi/core@1.11.1':
     dependencies:

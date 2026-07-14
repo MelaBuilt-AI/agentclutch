@@ -58,6 +58,24 @@ test("the public clone quickstart works without GitHub SSH credentials", () => {
 
 test("the npm consumer quickstart is no-build and pnpm 11 safe", () => {
   const contents = read("examples/npm-consumer-basic/README.md");
+  const exampleManifest = JSON.parse(
+    read("examples/npm-consumer-basic/package.json"),
+  );
+
+  assert.equal(
+    exampleManifest.dependencies["@agentclutch/core"],
+    currentVersion,
+    "the in-repo consumer must exercise the current alpha",
+  );
+  const lockfile = read("pnpm-lock.yaml").replaceAll("\r\n", "\n");
+  const escapedVersion = currentVersion.replaceAll(".", "\\.");
+  assert.match(
+    lockfile,
+    new RegExp(
+      `examples/npm-consumer-basic:\\n\\s+dependencies:\\n\\s+'@agentclutch/core':\\n\\s+specifier: ${escapedVersion}\\n\\s+version: ${escapedVersion}`,
+    ),
+    "the lockfile must resolve the in-repo consumer to the current alpha",
+  );
   assert.match(contents, /npm init -y/);
   assert.match(contents, /npm pkg set type=module/);
   assert.match(
@@ -80,6 +98,33 @@ test("release-day pnpm behavior is explained without disabling safety globally",
     assert.match(contents, /@agentclutch\/\*/);
     assert.doesNotMatch(contents, /minimumReleaseAge:\s*0/);
   }
+});
+
+test("current public release links target the current alpha", () => {
+  const currentTag = `v${currentVersion}`;
+
+  for (const path of [
+    "docs/launch-announcement-drafts.md",
+    "site/docs/launch-announcement-drafts.md",
+    "site/docs-build/launch-announcement-drafts/index.html",
+    "deploy/docs/launch-announcement-drafts/index.html",
+  ]) {
+    const linkedTags = [
+      ...read(path).matchAll(/releases\/tag\/(v0\.7\.3-alpha\.\d+)/g),
+    ].map((match) => match[1]);
+    assert.ok(linkedTags.length > 0, `${path} must contain a release link`);
+    assert.deepEqual(
+      [...new Set(linkedTags)],
+      [currentTag],
+      `${path} must only link the current alpha`,
+    );
+  }
+});
+
+test("generated docs have an explicit whitespace policy", () => {
+  const attributes = read(".gitattributes");
+  assert.match(attributes, /^site\/docs-build\/\*\* whitespace=-trailing-space$/m);
+  assert.match(attributes, /^deploy\/docs\/\*\* whitespace=-trailing-space$/m);
 });
 
 test("the root Quick Start includes a runnable deterministic renderer", () => {
