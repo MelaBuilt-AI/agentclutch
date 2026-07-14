@@ -115,9 +115,13 @@ test("the published Action Card manifest uses a reproducible Zod range", () => {
   const packageManifest = JSON.parse(read("packages/action-card/package.json"));
   assert.equal(packageManifest.dependencies.zod, "^4.4.3");
 
-  const lockfile = read("pnpm-lock.yaml");
-  assert.match(
-    lockfile,
-    /packages\/action-card:\n\s+dependencies:\n\s+zod:\n\s+specifier: \^4\.4\.3\n\s+version: 4\.4\.3/,
-  );
+  const lockfile = read("pnpm-lock.yaml").replaceAll("\r\n", "\n");
+  const lockfileVariants = [lockfile, lockfile.replaceAll("\n", "\r\n")];
+
+  for (const variant of lockfileVariants) {
+    assert.match(
+      variant.replaceAll("\r\n", "\n"),
+      /packages\/action-card:\n\s+dependencies:\n\s+zod:\n\s+specifier: \^4\.4\.3\n\s+version: 4\.4\.3/,
+    );
+  }
 });
