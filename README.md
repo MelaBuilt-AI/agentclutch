@@ -11,7 +11,7 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha.2` is public on GitHub and published to npm as the latest alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+Current milestone: `v0.7.3-alpha.3` is public on GitHub and published to npm through the `alpha` dist-tag with SLSA provenance. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
 
 ## npm Packages
 
@@ -96,14 +96,38 @@ The smoke command verifies the npm-installed CLI entrypoint without needing a so
 
 ### `prompt_guard`
 
-For one prompt and one risky action:
+Create a clean no-build JavaScript consumer:
 
-```ts
+```bash
+mkdir agentclutch-quickstart
+cd agentclutch-quickstart
+npm init -y
+npm pkg set type=module
+npm install @agentclutch/core@0.7.3-alpha.3
+```
+
+Save this as `index.mjs`:
+
+```js
 import { createClutch } from "@agentclutch/core";
 
-const clutch = createClutch({ runId: "run_email_001", renderer });
+const approveRenderer = {
+  async decide() {
+    return {
+      type: "approve_once",
+      approvedBy: "quickstart-user",
+      decidedAt: new Date().toISOString(),
+      note: "Reviewed the recipient, subject, and body preview.",
+    };
+  },
+};
 
-const { decision, resumeContext } = await clutch.confirmAction({
+const clutch = createClutch({
+  runId: "run_email_001",
+  renderer: approveRenderer,
+});
+
+const { card, decision, resumeContext } = await clutch.confirmAction({
   userGoal: {
     original: "Send a follow-up email to the client",
     summary: "Send follow-up email",
@@ -112,10 +136,11 @@ const { decision, resumeContext } = await clutch.confirmAction({
     kind: "email.send",
     label: "Send email",
     targetSurface: "email",
-    targetApp: "Gmail",
+    targetApp: "Example Mail",
     rawInput: {
       to: "client@example.com",
       subject: "Follow-up from today",
+      bodyPreview: "Thanks for the call. Here are the next steps...",
     },
   },
   riskHints: {
@@ -125,10 +150,20 @@ const { decision, resumeContext } = await clutch.confirmAction({
   },
 });
 
-if (decision.type === "approve_once") {
-  await sendEmail();
-}
+console.log({
+  cardType: card.type,
+  decision: decision.type,
+  resumePolicy: resumeContext.continuePolicy,
+});
 ```
+
+Run it:
+
+```bash
+node index.mjs
+```
+
+This deterministic renderer approves a local example; it does not send a real email. Replace it with your UI decision renderer, then execute the real side effect only after checking the returned decision. See the [complete no-build npm consumer](examples/npm-consumer-basic/README.md) for expected output.
 
 ### `tool_wrapper`
 
@@ -316,6 +351,7 @@ Common commands:
 pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
+pnpm lint
 pnpm test
 pnpm demo:checkout --clear-rules
 pnpm agentclutch inspect latest
@@ -329,7 +365,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.3-alpha.2` public GitHub release and npm alpha.
+Current: `v0.7.3-alpha.3` public GitHub prerelease and npm alpha.
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

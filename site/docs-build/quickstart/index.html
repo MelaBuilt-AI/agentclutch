@@ -653,6 +653,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="npm alpha install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pnpm-11-release-age-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pnpm 11 release-age behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1056,6 +1073,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="npm alpha install">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pnpm-11-release-age-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pnpm 11 release-age behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1112,23 +1146,26 @@
 
 
 <h1 id="agentclutch-quickstart">AgentClutch Quickstart<a class="headerlink" href="#agentclutch-quickstart" title="Permanent link">&para;</a></h1>
-<p>Use this guide to try AgentClutch from a clean checkout or npm alpha install.</p>
+<p>Use this guide to try AgentClutch from a clean checkout or a clean npm consumer project.</p>
 <h2 id="requirements">Requirements<a class="headerlink" href="#requirements" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Node.js 22+</li>
-<li>pnpm 11+</li>
+<li>pnpm 11+ for a source checkout</li>
 <li>Linux, WSL2 Ubuntu, or native Windows</li>
 <li>Chromium installed through Playwright for browser demos/tests</li>
 </ul>
 <h2 id="clone-and-install">Clone and install<a class="headerlink" href="#clone-and-install" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:MelaBuilt-AI/agentclutch.git
+<p>The repository is public, so HTTPS works without a configured GitHub SSH key:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/MelaBuilt-AI/agentclutch.git
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>agentclutch
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pnpm<span class="w"> </span>build
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>pnpm<span class="w"> </span>typecheck
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pnpm<span class="w"> </span><span class="nb">test</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>pnpm<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>playwright<span class="w"> </span>install<span class="w"> </span>chromium
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>pnpm<span class="w"> </span>lint
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>pnpm<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>pnpm<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>playwright<span class="w"> </span>install<span class="w"> </span>chromium
 </span></code></pre></div>
+<p>Maintainers who already have GitHub SSH authentication configured may use <code>git@github.com:MelaBuilt-AI/agentclutch.git</code> instead.</p>
 <h2 id="run-the-local-checkout-demo">Run the local checkout demo<a class="headerlink" href="#run-the-local-checkout-demo" title="Permanent link">&para;</a></h2>
 <p>Interactive GUI flow:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span>demo:checkout
@@ -1153,20 +1190,43 @@
 </span></code></pre></div>
 <p>The viewer can render sample Action Card JSON and recorder JSONL from <code>.agentclutch/runs/&lt;run_id&gt;/events.jsonl</code>.</p>
 <h2 id="npm-alpha-install">npm alpha install<a class="headerlink" href="#npm-alpha-install" title="Permanent link">&para;</a></h2>
-<p>The first npm alpha is published as <code>0.7.3-alpha.0</code>. Install only the package you need and prefer the explicit <code>@alpha</code> tag while the API is unstable:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/core@alpha
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/react@alpha
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/playwright@alpha<span class="w"> </span>playwright
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
+<p>The current npm alpha is <code>0.7.3-alpha.3</code>. For an immediate, reproducible install—including during the first day after a release—use npm with the exact version:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>npm<span class="w"> </span>install<span class="w"> </span>@agentclutch/core@0.7.3-alpha.3
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>install<span class="w"> </span>@agentclutch/react@0.7.3-alpha.3
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>npm<span class="w"> </span>install<span class="w"> </span>@agentclutch/playwright@0.7.3-alpha.3<span class="w"> </span>playwright
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>npx<span class="w"> </span>-y<span class="w"> </span>@agentclutch/cli@0.7.3-alpha.3<span class="w"> </span>smoke
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>npx<span class="w"> </span>-y<span class="w"> </span>@agentclutch/cli@0.7.3-alpha.3<span class="w"> </span>--help
 </span></code></pre></div>
-<p>Run the CLI demo from npm:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>demo<span class="w"> </span>checkout<span class="w"> </span>--seed-allow-rule
+<p>For normal alpha tracking after the package has aged through your package manager's safety window, use the <code>alpha</code> dist-tag:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/core@alpha
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/react@alpha
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/playwright@alpha<span class="w"> </span>playwright
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>smoke
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
 </span></code></pre></div>
+<h3 id="pnpm-11-release-age-behavior">pnpm 11 release-age behavior<a class="headerlink" href="#pnpm-11-release-age-behavior" title="Permanent link">&para;</a></h3>
+<p>pnpm 11 defaults <code>minimumReleaseAge</code> to 1,440 minutes (24 hours). During that window, <code>pnpm add @agentclutch/core@alpha</code> can intentionally select the previous alpha even when <code>pnpm view @agentclutch/core@alpha version</code> reports the new one.</p>
+<p>If your project deliberately needs a same-day AgentClutch release through pnpm, add a narrowly scoped exception to that project's <code>pnpm-workspace.yaml</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">minimumReleaseAgeExclude</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;@agentclutch/*&quot;</span>
+</span></code></pre></div>
+<p>Keep the global safety delay enabled. Verify what was actually installed with <code>pnpm list @agentclutch/core</code>.</p>
+<p>The CLI <code>smoke</code> command is intentionally lightweight. It confirms that the registry CLI entrypoint and Node runtime work without requiring local FakeStore assets. The full FakeStore browser demo currently requires a source checkout.</p>
 <h2 id="minimal-npm-consumer-example">Minimal npm consumer example<a class="headerlink" href="#minimal-npm-consumer-example" title="Permanent link">&para;</a></h2>
-<p>For the smallest external-consumer-style example, copy <code>examples/npm-consumer-basic</code> into a fresh project or run it from this repo after install/build:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/example-npm-consumer-basic<span class="w"> </span>start
+<p>The smallest path uses npm and plain JavaScript, so it does not need <code>tsx</code>, TypeScript, or pnpm build-script approval:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>mkdir<span class="w"> </span>agentclutch-npm-consumer-basic
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="nb">cd</span><span class="w"> </span>agentclutch-npm-consumer-basic
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>npm<span class="w"> </span>init<span class="w"> </span>-y
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>npm<span class="w"> </span>pkg<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">type</span><span class="o">=</span>module
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>npm<span class="w"> </span>install<span class="w"> </span>@agentclutch/core@0.7.3-alpha.3
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>src
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>cp<span class="w"> </span>/path/to/agentclutch/examples/npm-consumer-basic/src/index.mjs<span class="w"> </span>src/index.mjs
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>node<span class="w"> </span>src/index.mjs
 </span></code></pre></div>
-<p>The example imports only from <code>@agentclutch/core</code>, creates one email-send Action Card, approves it with a deterministic renderer, and prints the decision plus resume policy.</p>
+<p>From the source checkout, the same no-build example is:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/example-npm-consumer-basic<span class="w"> </span>start
+</span></code></pre></div>
+<p>The example creates one email-send Action Card, approves it with a deterministic renderer, and prints the decision plus resume policy. See <a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/examples/npm-consumer-basic/README.md"><code>examples/npm-consumer-basic</code></a> for expected output and the optional TypeScript source.</p>
 <h2 id="what-success-looks-like">What success looks like<a class="headerlink" href="#what-success-looks-like" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Build, typecheck, lint, and tests pass.</li>
@@ -1174,12 +1234,14 @@
 <li>Seeded block flow prevents checkout.</li>
 <li><code>pnpm agentclutch inspect latest</code> summarizes the latest run.</li>
 <li>The viewer renders an Action Card and Run Story from sample or recorded JSONL.</li>
+<li>A clean npm consumer runs <code>src/index.mjs</code> and the registry CLI smoke command.</li>
 </ul>
 <h2 id="current-caveats">Current caveats<a class="headerlink" href="#current-caveats" title="Permanent link">&para;</a></h2>
 <ul>
 <li>AgentClutch is alpha-stage and local-first.</li>
 <li>It is not a generic agent framework, hosted approval service, browser agent, chat UI, or observability dashboard.</li>
-<li>npm currently exposes the first alpha as both <code>alpha</code> and <code>latest</code>; prefer explicit <code>@alpha</code> installs until stable.</li>
+<li>npm exposes <code>0.7.3-alpha.3</code> through the <code>alpha</code> dist-tag; use the exact version when release-day reproducibility matters.</li>
+<li>The registry CLI smoke command works without a checkout; the full FakeStore demo currently needs this repo's local demo assets.</li>
 <li>See <a href="../limitations/">Known Limitations</a> for the full alpha caveat list.</li>
 </ul>
 

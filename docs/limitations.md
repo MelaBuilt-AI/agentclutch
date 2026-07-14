@@ -1,6 +1,6 @@
 # Known Limitations and Non-Goals
 
-AgentClutch `0.7.3-alpha.1` is an early public alpha. It is useful for trying the Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story loop, but the package boundaries and APIs may still change.
+AgentClutch `0.7.3-alpha.3` is an early public alpha. It is useful for trying the Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story loop, but the package boundaries and APIs may still change.
 
 ## Current alpha scope
 
@@ -55,7 +55,7 @@ pnpm agentclutch inspect latest
 
 ## npm alpha caveat
 
-The latest npm alpha is published as `0.7.3-alpha.1` under the `@agentclutch/*` scope.
+The current npm alpha is `0.7.3-alpha.3` under the `@agentclutch/*` scope. npm's `latest` dist-tag deliberately remains on `0.7.3-alpha.0`.
 
 Until a stable release exists, prefer explicit `@alpha` installs:
 
@@ -66,6 +66,8 @@ pnpm add @agentclutch/playwright@alpha playwright
 pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
+
+pnpm 11's default 24-hour `minimumReleaseAge` can select the previous alpha immediately after a release. Use npm with the exact version for same-day reproducibility, or add only `@agentclutch/*` to a project's `minimumReleaseAgeExclude`; do not disable the global safety delay.
 
 ## Security and data handling limits
 

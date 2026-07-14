@@ -85,14 +85,9 @@ Completed v0.7 Goals:
 Next Up — Public Onboarding Sprint (execute in order):
 
 1. [ ] **Close the npm security loop:** revoke obsolete npm automation tokens, if any remain; retain stage-only Trusted Publishing plus human 2FA approval; disallow traditional-token publishing where package settings permit it.
-2. [ ] **Run the public stranger test — highest priority:** start from a disposable fresh clone and clean npm consumer project, follow only the public README, run the quickstart, install from npm `@alpha`, run CLI help/smoke, and complete one minimal integration path. Capture exact commands, timings, screenshots, and friction.
-3. [ ] **Convert confirmed friction into a focused public issue batch:** create small actionable issues from stranger-test evidence, then consider the known candidates:
-   - improve CLI npm UX and consider `agentclutch doctor`;
-   - improve the npm CLI demo experience and decide whether FakeStore assets should ship, be fetched, or be generated;
-   - add a minimal React/Vite consumer example using public npm packages;
-   - document integration into an existing agent loop;
-   - add security/data-redaction examples for Action Cards, JSONL, Run Stories, screenshots, and logs.
-4. [ ] **Choose the next product milestone from evidence:** prioritize making AgentClutch easy to try from npm without cloning the repository; treat `agentclutch doctor` and an npm-native demo as hypotheses until the stranger test confirms the need.
+2. [x] **Run the public stranger test:** completed from a disposable fresh clone plus clean pnpm/npm consumer projects. Source build/typecheck/lint/tests, seeded allow/block demos, registry CLI smoke/help, the no-build npm integration, dependency-tree validation, and audit passed; the temporary environment was removed and cleanup verified.
+3. [x] **Resolve confirmed stranger-test friction:** fixed the public HTTPS clone path, stale alpha references, unsupported `pnpm pkg` command, pnpm 11 release-age/build-approval traps, non-runnable root Quick Start, and non-reproducible Zod tag. Added regressions and a no-build JavaScript consumer. No issues were opened for unconfirmed hypotheses such as `agentclutch doctor`, npm-native FakeStore assets, React/Vite examples, broader loop docs, or additional redaction examples.
+4. [ ] **Choose the next product milestone from evidence:** prioritize making AgentClutch easy to try from npm without cloning the repository; treat `agentclutch doctor` and an npm-native demo as hypotheses until further onboarding evidence confirms the need.
 5. [ ] **Publish a small public-alpha update:** link the quickstart, known limitations, npm packages, GitHub prerelease, and feedback/issues page.
 
 Ongoing guardrails:
