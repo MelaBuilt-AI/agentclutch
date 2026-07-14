@@ -7,8 +7,18 @@
   background: linear-gradient(135deg, #0a0a0f 0%, #1a1a28 100%);
 }
 
+.md-tabs {
+  background: #1a1a28;
+}
+
 .md-header__title {
   font-weight: 700;
+}
+
+/* GitHub's release fact uses the stable-only /releases/latest endpoint, which
+   omits AgentClutch prereleases and can contradict the documented alpha. */
+.md-source__facts {
+  display: none;
 }
 
 .md-typeset code {

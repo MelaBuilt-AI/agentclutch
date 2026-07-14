@@ -1068,7 +1068,7 @@
 
 
 <h1 id="known-limitations-and-non-goals">Known Limitations and Non-Goals<a class="headerlink" href="#known-limitations-and-non-goals" title="Permanent link">&para;</a></h1>
-<p>AgentClutch <code>0.7.3-alpha.0</code> is an early public alpha. It is useful for trying the Action Proposal -&gt; Action Card -&gt; Clutch Decision -&gt; Resume Context -&gt; Run Story loop, but the package boundaries and APIs may still change.</p>
+<p>AgentClutch <code>0.7.3-alpha.3</code> is an early public alpha. It is useful for trying the Action Proposal -&gt; Action Card -&gt; Clutch Decision -&gt; Resume Context -&gt; Run Story loop, but the package boundaries and APIs may still change.</p>
 <h2 id="current-alpha-scope">Current alpha scope<a class="headerlink" href="#current-alpha-scope" title="Permanent link">&para;</a></h2>
 <p>AgentClutch focuses on one control moment: before an AI agent performs a consequential action, show a human an inspectable card and return a structured decision to the host app or loop.</p>
 <p>Included today:</p>
@@ -1104,6 +1104,7 @@
 <h2 id="demo-and-automation-caveats">Demo and automation caveats<a class="headerlink" href="#demo-and-automation-caveats" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The interactive browser demo needs a GUI and a human decision for <code>require_clutch</code> flows.</li>
+<li>The npm CLI package has a registry-safe <code>smoke</code> command, but the full FakeStore browser demo currently requires demo assets from a source checkout.</li>
 <li>In WSL, CI, or terminal-only automation, prefer seeded flows:</li>
 </ul>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>xvfb-run<span class="w"> </span>-a<span class="w"> </span>pnpm<span class="w"> </span>demo:checkout<span class="w"> </span>--seed-allow-rule
@@ -1115,13 +1116,15 @@
 <li>Seeded flows are verification aids. They do not replace testing the live Action Card decision flow in a GUI.</li>
 </ul>
 <h2 id="npm-alpha-caveat">npm alpha caveat<a class="headerlink" href="#npm-alpha-caveat" title="Permanent link">&para;</a></h2>
-<p>The first npm alpha is published as <code>0.7.3-alpha.0</code> under the <code>@agentclutch/*</code> scope.</p>
-<p>Because this is the first published version of each package, npm currently exposes it as both the <code>alpha</code> and <code>latest</code> dist-tags. Until a stable release exists, prefer explicit <code>@alpha</code> installs:</p>
+<p>The current npm alpha is <code>0.7.3-alpha.3</code> under the <code>@agentclutch/*</code> scope. npm's <code>latest</code> dist-tag deliberately remains on <code>0.7.3-alpha.0</code>.</p>
+<p>Until a stable release exists, prefer explicit <code>@alpha</code> installs:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/core@alpha
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/react@alpha
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/playwright@alpha<span class="w"> </span>playwright
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>smoke
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
 </span></code></pre></div>
+<p>pnpm 11's default 24-hour <code>minimumReleaseAge</code> can select the previous alpha immediately after a release. Use npm with the exact version for same-day reproducibility, or add only <code>@agentclutch/*</code> to a project's <code>minimumReleaseAgeExclude</code>; do not disable the global safety delay.</p>
 <h2 id="security-and-data-handling-limits">Security and data handling limits<a class="headerlink" href="#security-and-data-handling-limits" title="Permanent link">&para;</a></h2>
 <p>AgentClutch is local-first, but Action Cards, recorder JSONL, Run Stories, and screenshots can contain sensitive action metadata. Integrators should redact or avoid storing:</p>
 <ul>

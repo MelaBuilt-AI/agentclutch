@@ -157,7 +157,7 @@ importers:
   packages/action-card:
     dependencies:
       zod:
-        specifier: latest
+        specifier: ^4.4.3
         version: 4.4.3
 
   packages/cli:

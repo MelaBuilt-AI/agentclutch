@@ -9,7 +9,7 @@
 **Initial license:** Apache-2.0 or MIT. Recommended: Apache-2.0 for enterprise comfort and patent language.  
 **Initial language:** TypeScript-first. Rust and Python are planned adapter/sidecar layers, not the MVP core.  
 **Initial runtime:** Node.js 22+, pnpm workspaces, Playwright, React, Vite. First-class targets: Linux, WSL2 Ubuntu, and native Windows.  
-**Document status:** Living design and launch-readiness specification. Current implementation is public as `v0.7.3-alpha.1` on GitHub and npm.
+**Document status:** Living design and launch-readiness specification. Current implementation is public as `v0.7.3-alpha.3` on GitHub and npm.
 
 ---
 
@@ -1745,7 +1745,7 @@ loop_native   -> engineered observe-plan-act loops
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "zod": "latest"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "typescript": "latest",
@@ -2241,7 +2241,7 @@ export * from "./resume-context.js";
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "zod": "latest"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "typescript": "latest",

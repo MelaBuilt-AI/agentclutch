@@ -11,7 +11,25 @@
 
 AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.
 
-Current milestone: `v0.7.3-alpha.0` is public on GitHub and published to npm as the first alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+Current milestone: `v0.7.3-alpha.3` is public on GitHub and published to npm through the `alpha` dist-tag with SLSA provenance. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the `@agentclutch/cli` npm package.
+
+## npm Packages
+
+All public packages are published on the npm registry under the [`@agentclutch`](https://www.npmjs.com/org/agentclutch) scope. Use the explicit `@alpha` tag while the APIs are pre-stable.
+
+| Package | npm | Purpose |
+| --- | --- | --- |
+| [`@agentclutch/action-card`](https://www.npmjs.com/package/@agentclutch/action-card) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/action-card/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/action-card) | Action Card types, schemas, builders, and validation |
+| [`@agentclutch/loop`](https://www.npmjs.com/package/@agentclutch/loop) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/loop/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/loop) | Loop events, normalization, adapters, and resume context |
+| [`@agentclutch/recorder`](https://www.npmjs.com/package/@agentclutch/recorder) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/recorder/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/recorder) | Local JSONL recording and run storage |
+| [`@agentclutch/core`](https://www.npmjs.com/package/@agentclutch/core) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/core/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/core) | Main AgentClutch SDK and consequence engine |
+| [`@agentclutch/react`](https://www.npmjs.com/package/@agentclutch/react) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/react/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/react) | React-compatible Action Card and takeover components |
+| [`@agentclutch/playwright`](https://www.npmjs.com/package/@agentclutch/playwright) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/playwright/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/playwright) | Playwright clutch points and browser overlay |
+| [`@agentclutch/cli`](https://www.npmjs.com/package/@agentclutch/cli) | [![npm alpha](https://img.shields.io/npm/v/@agentclutch/cli/alpha?label=alpha)](https://www.npmjs.com/package/@agentclutch/cli) | CLI smoke, demos, and local run inspection |
+
+```bash
+pnpm dlx @agentclutch/cli@alpha smoke
+```
 
 ## 30-Second Explanation
 
@@ -66,24 +84,50 @@ The demo is intentionally local. It uses a fake store page, local rules, local l
 
 ![GIF: FakeStore checkout demo flow](https://raw.githubusercontent.com/MelaBuilt-AI/agentclutch/main/docs/assets/fakestore-demo.gif)
 
-Public npm alpha CLI command:
+Public npm alpha CLI smoke command:
 
 ```bash
-pnpm dlx @agentclutch/cli@alpha demo checkout
+pnpm dlx @agentclutch/cli@alpha smoke
 ```
+
+The smoke command verifies the npm-installed CLI entrypoint without needing a source checkout. The full FakeStore browser demo currently uses local demo assets from this repo; from a clone, run `pnpm demo:checkout --seed-allow-rule`.
 
 ## Quick Start
 
 ### `prompt_guard`
 
-For one prompt and one risky action:
+Create a clean no-build JavaScript consumer:
 
-```ts
+```bash
+mkdir agentclutch-quickstart
+cd agentclutch-quickstart
+npm init -y
+npm pkg set type=module
+npm install @agentclutch/core@0.7.3-alpha.3
+```
+
+Save this as `index.mjs`:
+
+```js
 import { createClutch } from "@agentclutch/core";
 
-const clutch = createClutch({ runId: "run_email_001", renderer });
+const approveRenderer = {
+  async decide() {
+    return {
+      type: "approve_once",
+      approvedBy: "quickstart-user",
+      decidedAt: new Date().toISOString(),
+      note: "Reviewed the recipient, subject, and body preview.",
+    };
+  },
+};
 
-const { decision, resumeContext } = await clutch.confirmAction({
+const clutch = createClutch({
+  runId: "run_email_001",
+  renderer: approveRenderer,
+});
+
+const { card, decision, resumeContext } = await clutch.confirmAction({
   userGoal: {
     original: "Send a follow-up email to the client",
     summary: "Send follow-up email",
@@ -92,10 +136,11 @@ const { decision, resumeContext } = await clutch.confirmAction({
     kind: "email.send",
     label: "Send email",
     targetSurface: "email",
-    targetApp: "Gmail",
+    targetApp: "Example Mail",
     rawInput: {
       to: "client@example.com",
       subject: "Follow-up from today",
+      bodyPreview: "Thanks for the call. Here are the next steps...",
     },
   },
   riskHints: {
@@ -105,10 +150,20 @@ const { decision, resumeContext } = await clutch.confirmAction({
   },
 });
 
-if (decision.type === "approve_once") {
-  await sendEmail();
-}
+console.log({
+  cardType: card.type,
+  decision: decision.type,
+  resumePolicy: resumeContext.continuePolicy,
+});
 ```
+
+Run it:
+
+```bash
+node index.mjs
+```
+
+This deterministic renderer approves a local example; it does not send a real email. Replace it with your UI decision renderer, then execute the real side effect only after checking the returned decision. See the [complete no-build npm consumer](https://github.com/MelaBuilt-AI/agentclutch/blob/main/examples/npm-consumer-basic/README.md) for expected output.
 
 ### `tool_wrapper`
 
@@ -246,19 +301,9 @@ You can also summarize the latest recorded run from the CLI after building:
 pnpm agentclutch inspect latest
 ```
 
-The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha --help`.
+The package-level CLI exposes the `agentclutch` binary for npm installs. From a clone, use the local root script above; from npm, use `pnpm dlx @agentclutch/cli@alpha smoke` or `pnpm dlx @agentclutch/cli@alpha --help`.
 
-## Packages
-
-| Package | First npm alpha version | Purpose | Docs |
-| --- | --- | --- | --- |
-| `@agentclutch/action-card` | `0.7.3-alpha.0` | Action Card types, schema, builders, and validation. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/action-card/README.md) |
-| `@agentclutch/loop` | `0.7.3-alpha.0` | Action Proposal, Clutch Decision, loop events, and Resume Context. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/loop/README.md) |
-| `@agentclutch/core` | `0.7.3-alpha.0` | Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/core/README.md) |
-| `@agentclutch/recorder` | `0.7.3-alpha.0` | Local JSONL run recording. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/recorder/README.md) |
-| `@agentclutch/playwright` | `0.7.3-alpha.0` | Explicit browser action wrapper and local rule evaluation. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/playwright/README.md) |
-| `@agentclutch/react` | `0.7.3-alpha.0` | Reusable Action Card and Run Story UI components. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/react/README.md) |
-| `@agentclutch/cli` | `0.7.3-alpha.0` | Local demo commands and run inspection. | [README](https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/cli/README.md) |
+## Apps and Examples
 
 Apps:
 
@@ -306,6 +351,7 @@ Common commands:
 pnpm install --frozen-lockfile
 pnpm build
 pnpm typecheck
+pnpm lint
 pnpm test
 pnpm demo:checkout --clear-rules
 pnpm agentclutch inspect latest
@@ -319,7 +365,7 @@ Current alpha:
 - Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.
 - Keep Run Story generation tied to structured recorder events.
 
-Current: `v0.7.3-alpha.0` public GitHub prerelease and npm alpha.
+Current: `v0.7.3-alpha.3` public GitHub prerelease and npm alpha.
 
 - Adds a consequence registry.
 - Adds reversibility, compensation, and residue metadata.

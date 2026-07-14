@@ -1,6 +1,6 @@
 # Known Limitations and Non-Goals
 
-AgentClutch `0.7.3-alpha.0` is an early public alpha. It is useful for trying the Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story loop, but the package boundaries and APIs may still change.
+AgentClutch `0.7.3-alpha.3` is an early public alpha. It is useful for trying the Action Proposal -> Action Card -> Clutch Decision -> Resume Context -> Run Story loop, but the package boundaries and APIs may still change.
 
 ## Current alpha scope
 
@@ -41,6 +41,7 @@ These integrations are not included yet:
 ## Demo and automation caveats
 
 - The interactive browser demo needs a GUI and a human decision for `require_clutch` flows.
+- The npm CLI package has a registry-safe `smoke` command, but the full FakeStore browser demo currently requires demo assets from a source checkout.
 - In WSL, CI, or terminal-only automation, prefer seeded flows:
 
 ```bash
@@ -54,16 +55,19 @@ pnpm agentclutch inspect latest
 
 ## npm alpha caveat
 
-The first npm alpha is published as `0.7.3-alpha.0` under the `@agentclutch/*` scope.
+The current npm alpha is `0.7.3-alpha.3` under the `@agentclutch/*` scope. npm's `latest` dist-tag deliberately remains on `0.7.3-alpha.0`.
 
-Because this is the first published version of each package, npm currently exposes it as both the `alpha` and `latest` dist-tags. Until a stable release exists, prefer explicit `@alpha` installs:
+Until a stable release exists, prefer explicit `@alpha` installs:
 
 ```bash
 pnpm add @agentclutch/core@alpha
 pnpm add @agentclutch/react@alpha
 pnpm add @agentclutch/playwright@alpha playwright
+pnpm dlx @agentclutch/cli@alpha smoke
 pnpm dlx @agentclutch/cli@alpha --help
 ```
+
+pnpm 11's default 24-hour `minimumReleaseAge` can select the previous alpha immediately after a release. Use npm with the exact version for same-day reproducibility, or add only `@agentclutch/*` to a project's `minimumReleaseAgeExclude`; do not disable the global safety delay.
 
 ## Security and data handling limits
 

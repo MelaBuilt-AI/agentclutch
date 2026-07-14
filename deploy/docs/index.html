@@ -561,6 +561,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#npm-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm Packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#30-second-explanation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -688,10 +699,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#packages" class="md-nav__link">
+  <a href="#apps-and-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Packages
+        Apps and Examples
       
     </span>
   </a>
@@ -1063,6 +1074,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#npm-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        npm Packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#30-second-explanation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1190,10 +1212,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#packages" class="md-nav__link">
+  <a href="#apps-and-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Packages
+        Apps and Examples
       
     </span>
   </a>
@@ -1261,7 +1283,57 @@
 <a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/github/license/MelaBuilt-AI/agentclutch" /></a>
 <a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/tsconfig.base.json"><img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-blue" /></a></p>
 <p>AgentClutch is an open, local-first Action Card and takeover UX layer for consequential AI agent actions. It pauses a proposed side effect before execution, shows what will happen, and returns a structured decision back to the host app or agent loop.</p>
-<p>Current milestone: <code>v0.7.3-alpha.0</code> is public on GitHub and published to npm as the first alpha. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the <code>@agentclutch/cli</code> npm package.</p>
+<p>Current milestone: <code>v0.7.3-alpha.3</code> is public on GitHub and published to npm through the <code>alpha</code> dist-tag with SLSA provenance. The repo is a TypeScript pnpm monorepo with Action Cards, loop events, local recording, Playwright browser control, React-compatible UI components, rules, lessons, consequence metadata, Run Story playback, runnable consequential-action examples, and the <code>@agentclutch/cli</code> npm package.</p>
+<h2 id="npm-packages">npm Packages<a class="headerlink" href="#npm-packages" title="Permanent link">&para;</a></h2>
+<p>All public packages are published on the npm registry under the <a href="https://www.npmjs.com/org/agentclutch"><code>@agentclutch</code></a> scope. Use the explicit <code>@alpha</code> tag while the APIs are pre-stable.</p>
+<table>
+<thead>
+<tr>
+<th>Package</th>
+<th>npm</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/action-card"><code>@agentclutch/action-card</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/action-card"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/action-card/alpha?label=alpha" /></a></td>
+<td>Action Card types, schemas, builders, and validation</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/loop"><code>@agentclutch/loop</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/loop"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/loop/alpha?label=alpha" /></a></td>
+<td>Loop events, normalization, adapters, and resume context</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/recorder"><code>@agentclutch/recorder</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/recorder"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/recorder/alpha?label=alpha" /></a></td>
+<td>Local JSONL recording and run storage</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/core"><code>@agentclutch/core</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/core"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/core/alpha?label=alpha" /></a></td>
+<td>Main AgentClutch SDK and consequence engine</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/react"><code>@agentclutch/react</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/react"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/react/alpha?label=alpha" /></a></td>
+<td>React-compatible Action Card and takeover components</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/playwright"><code>@agentclutch/playwright</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/playwright"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/playwright/alpha?label=alpha" /></a></td>
+<td>Playwright clutch points and browser overlay</td>
+</tr>
+<tr>
+<td><a href="https://www.npmjs.com/package/@agentclutch/cli"><code>@agentclutch/cli</code></a></td>
+<td><a href="https://www.npmjs.com/package/@agentclutch/cli"><img alt="npm alpha" src="https://img.shields.io/npm/v/@agentclutch/cli/alpha?label=alpha" /></a></td>
+<td>CLI smoke, demos, and local run inspection</td>
+</tr>
+</tbody>
+</table>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>smoke
+</span></code></pre></div>
 <h2 id="30-second-explanation">30-Second Explanation<a class="headerlink" href="#30-second-explanation" title="Permanent link">&para;</a></h2>
 <p>Agents are moving from chat into action: clicking checkout, sending messages, deleting files, changing records, and calling tools. Raw logs and chat transcripts are not enough at the moment something consequential is about to happen.</p>
 <p>AgentClutch owns that moment:</p>
@@ -1277,12 +1349,12 @@
 <h2 id="fakestore-interactive-demo">FakeStore Interactive Demo<a class="headerlink" href="#fakestore-interactive-demo" title="Permanent link">&para;</a></h2>
 <p>FakeStore is a local interactive demo. It opens a browser, loads a local fake store page, simulates an agent preparing to buy headphones, and pauses before the checkout button can create the side effect.</p>
 <p>Install once:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>pnpm<span class="w"> </span>build
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>pnpm<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>playwright<span class="w"> </span>install<span class="w"> </span>chromium
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>pnpm<span class="w"> </span>build
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>pnpm<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>playwright<span class="w"> </span>install<span class="w"> </span>chromium
 </span></code></pre></div>
 <p>Run the demo:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pnpm<span class="w"> </span>demo:checkout
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pnpm<span class="w"> </span>demo:checkout
 </span></code></pre></div>
 <p>Demo flow:</p>
 <ol>
@@ -1299,106 +1371,135 @@
 <p><img alt="Screenshot: FakeStore checkout Action Card overlay" src="https://raw.githubusercontent.com/MelaBuilt-AI/agentclutch/main/docs/assets/fakestore-action-card-overlay.png" /></p>
 <p><strong>Demo GIF:</strong> FakeStore search -&gt; clutch point -&gt; approve once -&gt; local checkout completion.</p>
 <p><img alt="GIF: FakeStore checkout demo flow" src="https://raw.githubusercontent.com/MelaBuilt-AI/agentclutch/main/docs/assets/fakestore-demo.gif" /></p>
-<p>Public npm alpha CLI command:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>demo<span class="w"> </span>checkout
+<p>Public npm alpha CLI smoke command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>smoke
 </span></code></pre></div>
+<p>The smoke command verifies the npm-installed CLI entrypoint without needing a source checkout. The full FakeStore browser demo currently uses local demo assets from this repo; from a clone, run <code>pnpm demo:checkout --seed-allow-rule</code>.</p>
 <h2 id="quick-start">Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h2>
 <h3 id="prompt_guard"><code>prompt_guard</code><a class="headerlink" href="#prompt_guard" title="Permanent link">&para;</a></h3>
-<p>For one prompt and one risky action:</p>
-<div class="language-ts highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClutch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/core&quot;</span><span class="p">;</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">clutch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClutch</span><span class="p">({</span><span class="w"> </span><span class="nx">runId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;run_email_001&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">renderer</span><span class="w"> </span><span class="p">});</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">decision</span><span class="p">,</span><span class="w"> </span><span class="nx">resumeContext</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">confirmAction</span><span class="p">({</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span><span class="nx">userGoal</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nx">original</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send a follow-up email to the client&quot;</span><span class="p">,</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send follow-up email&quot;</span><span class="p">,</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nx">proposedAction</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;email.send&quot;</span><span class="p">,</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">    </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send email&quot;</span><span class="p">,</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">    </span><span class="nx">targetSurface</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;email&quot;</span><span class="p">,</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">    </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Gmail&quot;</span><span class="p">,</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">    </span><span class="nx">rawInput</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">      </span><span class="nx">to</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;client@example.com&quot;</span><span class="p">,</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="w">      </span><span class="nx">subject</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Follow-up from today&quot;</span><span class="p">,</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span class="w">    </span><span class="p">},</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span class="w">  </span><span class="nx">riskHints</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span class="w">    </span><span class="nx">requiresApproval</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span class="w">    </span><span class="nx">reversibility</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;not_reversible&quot;</span><span class="p">,</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span class="w">    </span><span class="nx">blastRadius</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;external&quot;</span><span class="p">,</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span class="p">});</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="nx">decision</span><span class="p">.</span><span class="kr">type</span><span class="w"> </span><span class="o">===</span><span class="w"> </span><span class="s2">&quot;approve_once&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span class="w">  </span><span class="k">await</span><span class="w"> </span><span class="nx">sendEmail</span><span class="p">();</span>
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span class="p">}</span>
+<p>Create a clean no-build JavaScript consumer:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>mkdir<span class="w"> </span>agentclutch-quickstart
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nb">cd</span><span class="w"> </span>agentclutch-quickstart
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>npm<span class="w"> </span>init<span class="w"> </span>-y
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>npm<span class="w"> </span>pkg<span class="w"> </span><span class="nb">set</span><span class="w"> </span><span class="nv">type</span><span class="o">=</span>module
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>npm<span class="w"> </span>install<span class="w"> </span>@agentclutch/core@0.7.3-alpha.3
 </span></code></pre></div>
+<p>Save this as <code>index.mjs</code>:</p>
+<div class="language-js highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">createClutch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/core&quot;</span><span class="p">;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">approveRenderer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="k">async</span><span class="w"> </span><span class="nx">decide</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">      </span><span class="nx">type</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;approve_once&quot;</span><span class="p">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">      </span><span class="nx">approvedBy</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;quickstart-user&quot;</span><span class="p">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">      </span><span class="nx">decidedAt</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">().</span><span class="nx">toISOString</span><span class="p">(),</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span><span class="nx">note</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Reviewed the recipient, subject, and body preview.&quot;</span><span class="p">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="p">};</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="p">};</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="kd">const</span><span class="w"> </span><span class="nx">clutch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">createClutch</span><span class="p">({</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">  </span><span class="nx">runId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;run_email_001&quot;</span><span class="p">,</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">  </span><span class="nx">renderer</span><span class="o">:</span><span class="w"> </span><span class="nx">approveRenderer</span><span class="p">,</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="p">});</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">card</span><span class="p">,</span><span class="w"> </span><span class="nx">decision</span><span class="p">,</span><span class="w"> </span><span class="nx">resumeContext</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">confirmAction</span><span class="p">({</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">  </span><span class="nx">userGoal</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">    </span><span class="nx">original</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send a follow-up email to the client&quot;</span><span class="p">,</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="nx">summary</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send follow-up email&quot;</span><span class="p">,</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">  </span><span class="nx">proposedAction</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">    </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;email.send&quot;</span><span class="p">,</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">    </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Send email&quot;</span><span class="p">,</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">    </span><span class="nx">targetSurface</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;email&quot;</span><span class="p">,</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">    </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Example Mail&quot;</span><span class="p">,</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">    </span><span class="nx">rawInput</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">      </span><span class="nx">to</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;client@example.com&quot;</span><span class="p">,</span>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">      </span><span class="nx">subject</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Follow-up from today&quot;</span><span class="p">,</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">      </span><span class="nx">bodyPreview</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Thanks for the call. Here are the next steps...&quot;</span><span class="p">,</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">  </span><span class="nx">riskHints</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">    </span><span class="nx">requiresApproval</span><span class="o">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">    </span><span class="nx">reversibility</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;not_reversible&quot;</span><span class="p">,</span>
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">    </span><span class="nx">blastRadius</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;external&quot;</span><span class="p">,</span>
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a><span class="p">});</span>
+</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a>
+</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">({</span>
+</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">  </span><span class="nx">cardType</span><span class="o">:</span><span class="w"> </span><span class="nx">card</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span>
+</span><span id="__span-5-44"><a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="w">  </span><span class="nx">decision</span><span class="o">:</span><span class="w"> </span><span class="nx">decision</span><span class="p">.</span><span class="nx">type</span><span class="p">,</span>
+</span><span id="__span-5-45"><a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">  </span><span class="nx">resumePolicy</span><span class="o">:</span><span class="w"> </span><span class="nx">resumeContext</span><span class="p">.</span><span class="nx">continuePolicy</span><span class="p">,</span>
+</span><span id="__span-5-46"><a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="p">});</span>
+</span></code></pre></div>
+<p>Run it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>node<span class="w"> </span>index.mjs
+</span></code></pre></div>
+<p>This deterministic renderer approves a local example; it does not send a real email. Replace it with your UI decision renderer, then execute the real side effect only after checking the returned decision. See the <a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/examples/npm-consumer-basic/README.md">complete no-build npm consumer</a> for expected output.</p>
 <h3 id="tool_wrapper"><code>tool_wrapper</code><a class="headerlink" href="#tool_wrapper" title="Permanent link">&para;</a></h3>
 <p>For browser actions, shell commands, file writes, API calls, and other wrapped functions:</p>
-<div class="language-ts highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">attachClutch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/playwright&quot;</span><span class="p">;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">clutch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">attachClutch</span><span class="p">(</span><span class="nx">page</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nx">runId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;run_checkout_001&quot;</span><span class="p">,</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nx">agentName</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser-agent&quot;</span><span class="p">,</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="p">});</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="s2">&quot;#checkout&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">  </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser.checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Complete checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;FakeStore&quot;</span><span class="p">,</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nx">changedFields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Wireless Headphones Pro&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;quantity&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;total&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;$249.00&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="p">});</span>
+<div class="language-ts highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">attachClutch</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/playwright&quot;</span><span class="p">;</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">clutch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">attachClutch</span><span class="p">(</span><span class="nx">page</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nx">runId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;run_checkout_001&quot;</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nx">agentName</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser-agent&quot;</span><span class="p">,</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">});</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">click</span><span class="p">(</span><span class="s2">&quot;#checkout&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">  </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser.checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Complete checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">  </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;FakeStore&quot;</span><span class="p">,</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">  </span><span class="nx">changedFields</span><span class="o">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;product&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Wireless Headphones Pro&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;quantity&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="kt">1</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nx">field</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;total&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">after</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;$249.00&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">editable</span><span class="o">:</span><span class="w"> </span><span class="kt">false</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="p">});</span>
 </span></code></pre></div>
 <h3 id="loop_native"><code>loop_native</code><a class="headerlink" href="#loop_native" title="Permanent link">&para;</a></h3>
 <p>For engineered observe-plan-act loops:</p>
-<div class="language-ts highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">normalizeActionProposal</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/loop&quot;</span><span class="p">;</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">proposal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">normalizeActionProposal</span><span class="p">({</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nx">sourceMode</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;loop_native&quot;</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nx">loopId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;loop_checkout_001&quot;</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nx">stepId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;step_checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="nx">proposedAction</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser.checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Complete checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="nx">targetSurface</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser&quot;</span><span class="p">,</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;FakeStore&quot;</span><span class="p">,</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nx">targetIdentifier</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;#checkout&quot;</span><span class="p">,</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">  </span><span class="nx">riskHints</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="nx">requiresApproval</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="nx">reversibility</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;compensable&quot;</span><span class="p">,</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="nx">blastRadius</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;single_user&quot;</span><span class="p">,</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">  </span><span class="p">},</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="p">});</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">decision</span><span class="p">,</span><span class="w"> </span><span class="nx">resumeContext</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">onActionProposed</span><span class="p">(</span><span class="nx">proposal</span><span class="p">);</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="k">await</span><span class="w"> </span><span class="nx">agentLoop</span><span class="p">.</span><span class="nx">resume</span><span class="p">(</span><span class="nx">resumeContext</span><span class="p">);</span>
+<div class="language-ts highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">import</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">normalizeActionProposal</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="kr">from</span><span class="w"> </span><span class="s2">&quot;@agentclutch/loop&quot;</span><span class="p">;</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="kd">const</span><span class="w"> </span><span class="nx">proposal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nx">normalizeActionProposal</span><span class="p">({</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nx">sourceMode</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;loop_native&quot;</span><span class="p">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span><span class="nx">loopId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;loop_checkout_001&quot;</span><span class="p">,</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="nx">stepId</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;step_checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">  </span><span class="nx">proposedAction</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="nx">kind</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser.checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="w">    </span><span class="nx">label</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;Complete checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">    </span><span class="nx">targetSurface</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;browser&quot;</span><span class="p">,</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">    </span><span class="nx">targetApp</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;FakeStore&quot;</span><span class="p">,</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">    </span><span class="nx">targetIdentifier</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;#checkout&quot;</span><span class="p">,</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="w">  </span><span class="nx">riskHints</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">    </span><span class="nx">requiresApproval</span><span class="o">:</span><span class="w"> </span><span class="kt">true</span><span class="p">,</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">    </span><span class="nx">reversibility</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;compensable&quot;</span><span class="p">,</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span class="w">    </span><span class="nx">blastRadius</span><span class="o">:</span><span class="w"> </span><span class="s2">&quot;single_user&quot;</span><span class="p">,</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span class="p">});</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a><span class="kd">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nx">decision</span><span class="p">,</span><span class="w"> </span><span class="nx">resumeContext</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">await</span><span class="w"> </span><span class="nx">clutch</span><span class="p">.</span><span class="nx">onActionProposed</span><span class="p">(</span><span class="nx">proposal</span><span class="p">);</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a><span class="k">await</span><span class="w"> </span><span class="nx">agentLoop</span><span class="p">.</span><span class="nx">resume</span><span class="p">(</span><span class="nx">resumeContext</span><span class="p">);</span>
 </span></code></pre></div>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>flowchart LR
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  Goal[User goal] --&gt; Source[Prompt app, wrapped tool, or loop]
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  Source --&gt; Proposal[Action Proposal]
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>  Proposal --&gt; Card[Action Card]
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  Card --&gt; Decision[Clutch Decision]
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>  Decision --&gt; Resume[Loop Resume Context]
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>  Resume --&gt; Source
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>  Proposal --&gt; Recorder[Local JSONL Recorder]
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>  Card --&gt; Recorder
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>  Decision --&gt; Recorder
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>  Resume --&gt; Recorder
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>  Recorder --&gt; Story[Run Story]
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>  Rules[Local rules] --&gt; Card
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>  Rules --&gt; Decision
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>flowchart LR
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  Goal[User goal] --&gt; Source[Prompt app, wrapped tool, or loop]
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  Source --&gt; Proposal[Action Proposal]
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  Proposal --&gt; Card[Action Card]
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>  Card --&gt; Decision[Clutch Decision]
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  Decision --&gt; Resume[Loop Resume Context]
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>  Resume --&gt; Source
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>  Proposal --&gt; Recorder[Local JSONL Recorder]
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>  Card --&gt; Recorder
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>  Decision --&gt; Recorder
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>  Resume --&gt; Recorder
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>  Recorder --&gt; Story[Run Story]
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>  Rules[Local rules] --&gt; Card
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a>  Rules --&gt; Decision
 </span></code></pre></div>
 <p>The core chain is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>Action Proposal -&gt; Action Card -&gt; Clutch Decision -&gt; Resume Context -&gt; Run Story
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>Action Proposal -&gt; Action Card -&gt; Clutch Decision -&gt; Resume Context -&gt; Run Story
 </span></code></pre></div>
 <h2 id="progressive-adoption">Progressive Adoption<a class="headerlink" href="#progressive-adoption" title="Permanent link">&para;</a></h2>
 <p>AgentClutch keeps the same artifact chain across three adoption levels:</p>
@@ -1449,71 +1550,17 @@
 <p>Lessons live in <code>.agentclutch/lessons/lessons.json</code> in the local-first setup. Rules still decide whether an action is allowed, blocked, or forced through a clutch point; lessons only help shape the proposed action shown at that point.</p>
 <h2 id="viewer">Viewer<a class="headerlink" href="#viewer" title="Permanent link">&para;</a></h2>
 <p>The local viewer renders Action Card JSON and recorder JSONL, then generates a Run Story timeline.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/action-card-viewer<span class="w"> </span>dev
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/action-card-viewer<span class="w"> </span>dev
 </span></code></pre></div>
 <p>Open the Vite URL printed in the terminal, usually:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>http://127.0.0.1:5173/
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>http://127.0.0.1:5173/
 </span></code></pre></div>
 <p><img alt="Screenshot: Action Card viewer rendering sample checkout card" src="https://raw.githubusercontent.com/MelaBuilt-AI/agentclutch/main/docs/assets/action-card-viewer-screenshot.png" /></p>
 <p>You can also summarize the latest recorded run from the CLI after building:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>pnpm<span class="w"> </span>agentclutch<span class="w"> </span>inspect<span class="w"> </span>latest
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>pnpm<span class="w"> </span>agentclutch<span class="w"> </span>inspect<span class="w"> </span>latest
 </span></code></pre></div>
-<p>The package-level CLI exposes the <code>agentclutch</code> binary for npm installs. From a clone, use the local root script above; from npm, use <code>pnpm dlx @agentclutch/cli@alpha --help</code>.</p>
-<h2 id="packages">Packages<a class="headerlink" href="#packages" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Package</th>
-<th>First npm alpha version</th>
-<th>Purpose</th>
-<th>Docs</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>@agentclutch/action-card</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Action Card types, schema, builders, and validation.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/action-card/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/loop</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Action Proposal, Clutch Decision, loop events, and Resume Context.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/loop/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/core</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Consequence classification, risk scoring, sessions, lessons, facade APIs, and Run Story helpers.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/core/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/recorder</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Local JSONL run recording.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/recorder/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/playwright</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Explicit browser action wrapper and local rule evaluation.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/playwright/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/react</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Reusable Action Card and Run Story UI components.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/react/README.md">README</a></td>
-</tr>
-<tr>
-<td><code>@agentclutch/cli</code></td>
-<td><code>0.7.3-alpha.0</code></td>
-<td>Local demo commands and run inspection.</td>
-<td><a href="https://github.com/MelaBuilt-AI/agentclutch/blob/main/packages/cli/README.md">README</a></td>
-</tr>
-</tbody>
-</table>
+<p>The package-level CLI exposes the <code>agentclutch</code> binary for npm installs. From a clone, use the local root script above; from npm, use <code>pnpm dlx @agentclutch/cli@alpha smoke</code> or <code>pnpm dlx @agentclutch/cli@alpha --help</code>.</p>
+<h2 id="apps-and-examples">Apps and Examples<a class="headerlink" href="#apps-and-examples" title="Permanent link">&para;</a></h2>
 <p>Apps:</p>
 <ul>
 <li><code>apps/browser-demo</code>: local fake store checkout page.</li>
@@ -1554,12 +1601,13 @@
 <li>Linux, WSL2 Ubuntu, or native Windows</li>
 </ul>
 <p>Common commands:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>pnpm<span class="w"> </span>build
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>pnpm<span class="w"> </span>typecheck
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>pnpm<span class="w"> </span><span class="nb">test</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>pnpm<span class="w"> </span>demo:checkout<span class="w"> </span>--clear-rules
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>pnpm<span class="w"> </span>agentclutch<span class="w"> </span>inspect<span class="w"> </span>latest
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>pnpm<span class="w"> </span>build
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>pnpm<span class="w"> </span>typecheck
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>pnpm<span class="w"> </span>lint
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>pnpm<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>pnpm<span class="w"> </span>demo:checkout<span class="w"> </span>--clear-rules
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>pnpm<span class="w"> </span>agentclutch<span class="w"> </span>inspect<span class="w"> </span>latest
 </span></code></pre></div>
 <h2 id="roadmap">Roadmap<a class="headerlink" href="#roadmap" title="Permanent link">&para;</a></h2>
 <p>Current alpha:</p>
@@ -1568,7 +1616,7 @@
 <li>Support approve once, edit quantity, block, create rule, lesson creation, lesson reuse, and seeded local rules.</li>
 <li>Keep Run Story generation tied to structured recorder events.</li>
 </ul>
-<p>Current: <code>v0.7.3-alpha.0</code> public GitHub prerelease and npm alpha.</p>
+<p>Current: <code>v0.7.3-alpha.3</code> public GitHub prerelease and npm alpha.</p>
 <ul>
 <li>Adds a consequence registry.</li>
 <li>Adds reversibility, compensation, and residue metadata.</li>

@@ -924,10 +924,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-publish-commands" class="md-nav__link">
+  <a href="#github-release-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future publish commands
+        GitHub release workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure-npm-trusted-publishing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure npm trusted publishing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-alpha-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future alpha sequence
       
     </span>
   </a>
@@ -1046,10 +1068,32 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#future-publish-commands" class="md-nav__link">
+  <a href="#github-release-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Future publish commands
+        GitHub release workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configure-npm-trusted-publishing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configure npm trusted publishing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#future-alpha-sequence" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future alpha sequence
       
     </span>
   </a>
@@ -1124,22 +1168,24 @@
 </span></code></pre></div>
 <p>For future new packages, npm should return <code>E404</code> before first publish. Existing AgentClutch packages should return their published versions.</p>
 <h2 id="prepublish-verification-for-future-versions">Prepublish verification for future versions<a class="headerlink" href="#prepublish-verification-for-future-versions" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>pnpm<span class="w"> </span>build
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>pnpm<span class="w"> </span>typecheck
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>pnpm<span class="w"> </span>lint
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>pnpm<span class="w"> </span><span class="nb">test</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>git<span class="w"> </span>diff<span class="w"> </span>--check
+<p>AgentClutch uses a lightweight release helper instead of Changesets for the current alpha line. It keeps the publishable package list explicit and intentionally does <strong>not</strong> run real <code>npm publish</code>.</p>
+<p>Validate the publish boundary before preparing a release:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pnpm<span class="w"> </span>release:check
+</span></code></pre></div>
+<p>Bump the root package marker and all publishable package manifests:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pnpm<span class="w"> </span>release:bump<span class="w"> </span>--<span class="w"> </span>--version<span class="w"> </span><span class="m">0</span>.7.3-alpha.1
+</span></code></pre></div>
+<p>The helper only accepts prerelease versions shaped like <code>x.y.z-alpha.n</code>, which keeps alpha release prep from accidentally producing stable package metadata.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pnpm<span class="w"> </span>install<span class="w"> </span>--frozen-lockfile
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pnpm<span class="w"> </span>build
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>pnpm<span class="w"> </span>typecheck
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>pnpm<span class="w"> </span>lint
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>pnpm<span class="w"> </span><span class="nb">test</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>git<span class="w"> </span>diff<span class="w"> </span>--check
 </span></code></pre></div>
 <h2 id="package-dry-run-for-future-versions">Package dry-run for future versions<a class="headerlink" href="#package-dry-run-for-future-versions" title="Permanent link">&para;</a></h2>
 <p>Run from the repo root after building:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/action-card<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/loop<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/core<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/recorder<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/playwright<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/react<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/cli<span class="w"> </span>publish<span class="w"> </span>--dry-run<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pnpm<span class="w"> </span>release:dry-run
 </span></code></pre></div>
 <p>Inspect each dry-run manifest and tarball listing for:</p>
 <ul>
@@ -1150,40 +1196,78 @@
 </ul>
 <h2 id="tarball-smoke-test-before-future-publish">Tarball smoke test before future publish<a class="headerlink" href="#tarball-smoke-test-before-future-publish" title="Permanent link">&para;</a></h2>
 <p>Pack tarballs into a temporary directory and install them together in a clean app before publishing. Use <code>npm install</code> for this prepublish tarball smoke because the packed manifests correctly rewrite <code>workspace:*</code> dependencies to exact registry versions; until the packages exist on npm, pnpm may try to resolve those exact transitive versions from the registry instead of the sibling tarballs.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span>/tmp/agentclutch-npm-pack<span class="w"> </span>/tmp/agentclutch-npm-smoke
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/tmp/agentclutch-npm-pack<span class="w"> </span>/tmp/agentclutch-npm-smoke
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/action-card<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/loop<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/core<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/recorder<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/playwright<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/react<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/cli<span class="w"> </span>pack<span class="w"> </span>--pack-destination<span class="w"> </span>/tmp/agentclutch-npm-pack
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="nb">cd</span><span class="w"> </span>/tmp/agentclutch-npm-smoke
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>npm<span class="w"> </span>init<span class="w"> </span>-y
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>npm<span class="w"> </span>install<span class="w"> </span>/tmp/agentclutch-npm-pack/*.tgz<span class="w"> </span>playwright@1.61.1
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>npx<span class="w"> </span>agentclutch<span class="w"> </span>--help
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>rm<span class="w"> </span>-rf<span class="w"> </span>/tmp/agentclutch-npm-pack<span class="w"> </span>/tmp/agentclutch-npm-smoke
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>/tmp/agentclutch-npm-pack<span class="w"> </span>/tmp/agentclutch-npm-smoke
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>pnpm<span class="w"> </span>release:pack<span class="w"> </span>--<span class="w"> </span>--destination<span class="w"> </span>/tmp/agentclutch-npm-pack
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="nb">cd</span><span class="w"> </span>/tmp/agentclutch-npm-smoke
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>npm<span class="w"> </span>init<span class="w"> </span>-y
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>npm<span class="w"> </span>install<span class="w"> </span>/tmp/agentclutch-npm-pack/*.tgz<span class="w"> </span>playwright@1.61.1
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>npx<span class="w"> </span>agentclutch<span class="w"> </span>--help
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>npx<span class="w"> </span>agentclutch<span class="w"> </span>smoke
 </span></code></pre></div>
-<h2 id="future-publish-commands">Future publish commands<a class="headerlink" href="#future-publish-commands" title="Permanent link">&para;</a></h2>
-<p>For future alpha versions, run these only after explicit approval:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/action-card<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/loop<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/core<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/recorder<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/playwright<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/react<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>pnpm<span class="w"> </span>--filter<span class="w"> </span>@agentclutch/cli<span class="w"> </span>publish<span class="w"> </span>--tag<span class="w"> </span>alpha<span class="w"> </span>--access<span class="w"> </span>public
+<h2 id="github-release-workflows">GitHub release workflows<a class="headerlink" href="#github-release-workflows" title="Permanent link">&para;</a></h2>
+<p>Maintainers have two deliberately separate workflows:</p>
+<ul>
+<li><strong>Alpha Release Prep</strong> (<code>release-alpha.yml</code>) is a read-only rehearsal. It validates the publish boundary, bumps manifests only in the temporary workflow workspace, runs lint/typecheck/tests/build on Ubuntu and Windows, runs npm publish dry-runs, and uploads packed tarballs. It never authenticates to npm.</li>
+<li><strong>Stage or Verify npm Alpha</strong> (<code>stage-alpha.yml</code>) is the trusted-publishing path for a version already committed and tagged. Dispatch it from the matching <code>vX.Y.Z-alpha.N</code> tag with <code>mode=stage</code>; after npm approval, dispatch the same tag/version with <code>mode=verify</code>.</li>
+</ul>
+<p>The staging workflow uses a GitHub-hosted Ubuntu runner, Node 24, npm 11.16.0, and these least-privilege permissions:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">permissions</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">contents</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">read</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">id-token</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">write</span>
 </span></code></pre></div>
-<p>Use <code>alpha</code> for future prereleases. npm also created <code>latest</code> for <code>0.7.3-alpha.0</code> because it was the first version of each package; docs should still recommend explicit <code>@alpha</code> installs until a stable release exists.</p>
+<p>The staging path is split into two jobs. The unprivileged preparation job installs dependencies, runs all gates, builds, packs, validates, smoke-tests, traverses the complete prepared-tarball dependency tree for internal version skew, and uploads the tarballs with only <code>contents: read</code>. A separate minimal staging job receives <code>id-token: write</code>, downloads and revalidates those artifacts, repeats the immutable-version preflight, disables npm lifecycle scripts, and invokes only npm's OIDC staging operations. Every third-party action in both release workflows is pinned to a reviewed full commit SHA, and checkout credentials are never persisted. The workflow refuses branch dispatches, mismatched tags/manifests, versions already present on npm, missing/duplicate/unexpected tarballs, and tarballs whose embedded package name or version does not match the release. Tar inspection uses the runner's maintained <code>tar</code> implementation to validate the archive and require exactly one <code>package/package.json</code>, then uses npm's own <code>publish --dry-run --json</code> parser to verify the package identity npm would stage. <code>.github/workflows/workflow-lint.yml</code> runs checksum-verified actionlint on every pull request and on workflow-changing pushes to <code>main</code>.</p>
+<p>No <code>NPM_TOKEN</code> or OTP is stored in GitHub. Staging does not make packages public. A maintainer must inspect npmjs.com → <strong>Staged Packages</strong> and approve each package using normal 2FA. Each staging attempt atomically writes an <code>attempting</code> record to <code>npm-stage-evidence.json</code> before invoking npm, then atomically replaces it with the completed or failed result and raw npm response. The evidence and tarballs upload even when a later stage fails. If a partial failure occurs, reject every recorded staged package/version on npmjs.com before retrying. The follow-up <code>mode=verify</code> job confirms all exact versions and <code>alpha</code> dist-tags, traverses the complete <code>npm ls --all --json</code> dependency tree to reject nested AgentClutch version skew, installs all seven packages in a clean directory, runs CLI help/smoke, imports core, and runs <code>npm audit</code>.</p>
+<h2 id="configure-npm-trusted-publishing">Configure npm trusted publishing<a class="headerlink" href="#configure-npm-trusted-publishing" title="Permanent link">&para;</a></h2>
+<p>Each existing public package needs its own npm trusted-publisher entry, all pointing to the same exact workflow:</p>
+<ul>
+<li>Provider: GitHub Actions</li>
+<li>Organization/user: <code>MelaBuilt-AI</code></li>
+<li>Repository: <code>agentclutch</code></li>
+<li>Workflow filename: <code>stage-alpha.yml</code></li>
+<li>Environment: leave blank unless the workflow is later pinned to a protected GitHub environment</li>
+<li>Allowed action: <strong>npm stage publish only</strong></li>
+</ul>
+<p>Configure these seven packages:</p>
+<ol>
+<li><code>@agentclutch/action-card</code></li>
+<li><code>@agentclutch/loop</code></li>
+<li><code>@agentclutch/recorder</code></li>
+<li><code>@agentclutch/core</code></li>
+<li><code>@agentclutch/react</code></li>
+<li><code>@agentclutch/playwright</code></li>
+<li><code>@agentclutch/cli</code></li>
+</ol>
+<p>After the first successful OIDC staging cycle, revoke obsolete automation publish tokens and keep traditional-token publishing disabled where npm package settings allow it.</p>
+<h2 id="future-alpha-sequence">Future alpha sequence<a class="headerlink" href="#future-alpha-sequence" title="Permanent link">&para;</a></h2>
+<p>Only after explicit approval:</p>
+<ol>
+<li>Bump all release manifests to a new immutable alpha version and commit the change.</li>
+<li>Push and verify normal Build/Test CI.</li>
+<li>Run <strong>Alpha Release Prep</strong> and inspect its artifacts.</li>
+<li>Create and push an annotated <code>vX.Y.Z-alpha.N</code> tag resolving to the intended commit.</li>
+<li>Dispatch <strong>Stage or Verify npm Alpha</strong> from that tag with <code>mode=stage</code> and the exact version.</li>
+<li>Review the staged packages on npmjs.com and approve them with 2FA.</li>
+<li>Dispatch the same tag/version with <code>mode=verify</code>.</li>
+<li>Create or update the matching GitHub release only after registry verification succeeds.</li>
+</ol>
+<p>The helper's local staging validation can be rehearsed without npm side effects:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pnpm<span class="w"> </span>release:pack<span class="w"> </span>--<span class="w"> </span>--destination<span class="w"> </span>/tmp/agentclutch-npm-pack
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>node<span class="w"> </span>scripts/release-alpha.mjs<span class="w"> </span>stage<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--version<span class="w"> </span><span class="m">0</span>.7.3-alpha.3<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span>--destination<span class="w"> </span>/tmp/agentclutch-npm-pack<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="w">  </span>--dry-run
+</span></code></pre></div>
+<p>Do not attempt to republish an existing version. npm versions are immutable.</p>
 <h2 id="postpublish-verification">Postpublish verification<a class="headerlink" href="#postpublish-verification" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>npm<span class="w"> </span>view<span class="w"> </span>@agentclutch/core<span class="w"> </span>dist-tags<span class="w"> </span>version
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>npm<span class="w"> </span>view<span class="w"> </span>@agentclutch/cli<span class="w"> </span>dist-tags<span class="w"> </span>version
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>rm<span class="w"> </span>-rf<span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>mkdir<span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nb">cd</span><span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>pnpm<span class="w"> </span>init
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/core@alpha<span class="w"> </span>@agentclutch/react@alpha<span class="w"> </span>@agentclutch/playwright@alpha<span class="w"> </span>playwright
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>npm<span class="w"> </span>view<span class="w"> </span>@agentclutch/core<span class="w"> </span>dist-tags<span class="w"> </span>version
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>npm<span class="w"> </span>view<span class="w"> </span>@agentclutch/cli<span class="w"> </span>dist-tags<span class="w"> </span>version
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>rm<span class="w"> </span>-rf<span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>mkdir<span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="nb">cd</span><span class="w"> </span>/tmp/agentclutch-npm-registry-smoke
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>pnpm<span class="w"> </span>init
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>pnpm<span class="w"> </span>add<span class="w"> </span>@agentclutch/core@alpha<span class="w"> </span>@agentclutch/react@alpha<span class="w"> </span>@agentclutch/playwright@alpha<span class="w"> </span>playwright
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>pnpm<span class="w"> </span>dlx<span class="w"> </span>@agentclutch/cli@alpha<span class="w"> </span>--help
 </span></code></pre></div>
 <p>If a published alpha is bad, deprecate it and publish a new alpha patch. Do not try to overwrite an npm version; npm versions are immutable.</p>
 
